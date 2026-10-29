@@ -1,0 +1,29 @@
+[project]
+name = "aurahealth"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "Balu", email = "balu04t@gmail.com" }
+]
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.162.0",
+    "httpx>=0.28.1",
+    "pillow>=13.0.0",
+    "pydantic>=2.14.1",
+    "python-multipart>=0.0.32",
+    "uvicorn[standard]>=0.54.0",
+]
+
+[project.scripts]
+aurahealth = "aurahealth:main"
+
+[build-system]
+requires = ["uv_build>=0.12.9,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "playwright>=1.64.1",
+    "pytest>=9.2.0",
+]

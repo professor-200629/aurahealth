@@ -1,0 +1,16 @@
+# Local session data (answers and report images). Never commit.
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Node / build output (rebuilt with: cd frontend; npm run build)
+node_modules/
+frontend/dist/
+
+# Secrets, if any are ever added (use environment variables instead)
+.env
+*.key

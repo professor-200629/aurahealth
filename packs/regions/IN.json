@@ -1,0 +1,19 @@
+{
+  "id": "IN",
+  "name": { "en": "India", "te": "భారతదేశం" },
+  "status": "implemented",
+  "emergency": {
+    "number": "112",
+    "tel_uri": "tel:112",
+    "source": {
+      "title": "Ministry of Home Affairs (Government of India), Emergency Response Support System (ERSS) page",
+      "reference_url": "https://www.mha.gov.in/en/commoncontent/emergency-response-support-system-erss",
+      "fact_used": "112 is India's single emergency number (ERSS: 'One India One Emergency Number 112').",
+      "checked": "2026-10-29",
+      "reuse_note": "MHA's website policy does not allow reproducing its content without permission, so no MHA text is bundled. Only the number and a one-line fact in AuraHealth's own words are used, with this reference."
+    }
+  },
+  "languages": ["en", "te"],
+  "guidance_cards": [],
+  "guidance_note": "No medical guidance is bundled for India in this prototype: no authoritative source was found whose reuse terms allow bundling AND that has been reviewed for this use. AuraHealth shows an honest 'cannot assess' message instead."
+}

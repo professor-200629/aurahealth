@@ -1,0 +1,72 @@
+# Running checklist
+
+Kept up to date so work can resume if context is lost. `[x]` = done and checked, `[ ]` = not done,
+`[~]` = partly done (see note). Last update: 29 Oct 2026.
+
+## Phase 1: inspect the environment, choose the path
+
+- [x] Windows 11, Intel Core Ultra 5 125U, 15.5 GB RAM, integrated graphics, ~490 GB free disk
+- [x] uv 0.12.9 / Python 3.11, Node 24.14, Ollama 0.32.3, Microsoft Edge (for browser tests)
+- [x] Path: React + Vite phone web app, FastAPI laptop server, Ollama for Meta Llama models, SQLite file
+
+## Phase 2: core journey with manual input and handoff
+
+- [x] Always-visible emergency control (`tel:112`, opens the dialer, never calls by itself)
+- [x] Questions: who, approximate age, what happened, onset, details; "I don't know" everywhere it fits
+- [x] Deterministic handoff card with provenance per line, unknowns list, "not assessed" line
+- [x] Evidence view (full description with highlighted span; image → model read → final value)
+- [x] Copy (with non-secure-context fallback), download .txt, print
+- [x] Delete session (also removes report images)
+
+## Phase 3: real local Meta model integration
+
+- [x] Llama 3.2 3B text helper via Ollama, exact-words check, dropped count, left-out words kept
+- [x] Live-tested in the app and in `scripts/eval_splitter.py` (8 cases, real calls)
+- [~] Llama 3.2 Vision 11B report reader: code, background job, polling UI and eval script done;
+      **model not installed, not measured**. 29 Oct: download approved, but `ollama pull` failed 5 times on the
+      Jio mobile hotspot (drops every few minutes, restarts from zero). Stopped at the developer's request; he
+      will run `ollama pull llama3.2-vision:11b` himself on 30 Oct morning. A resumable partial copy (0.35 GB)
+      is in `C:\Users\Balu\ollama-import\` with `import_vision.py`; delete that folder if `ollama pull` works.
+      After install: `uv run python scripts/eval_reader.py` (close other apps first, ~8 GB RAM needed)
+- [x] Manual-entry fallback when the reader is missing or fails
+
+## Phase 4: source/region architecture and safe fallback
+
+- [x] Region pack India: 112 with source reference and reuse note; only `implemented` packs are offered
+- [x] Language packs en (baseline) and te (unreviewed draft), key-completeness check
+- [x] No guidance cards (no source with suitable reuse terms); honest "can't assess" message instead
+- [x] Packs bundled into the app, so the emergency card works with the server down
+
+## Phase 5: design and mobile usability
+
+- [x] Phone-first layout, large tap targets, sticky top bar above dialogs, side-by-side report studio on wide screens
+- [x] System fonts only (Noto Sans Telugu / Nirmala UI fallbacks), no remote fonts or icons
+- [x] Reduced-motion and print styles, focus outlines, screen place kept in the URL (reload/back work)
+- [x] Real phone check, 29 Oct: Samsung Galaxy A36 5G, Android 16, Chrome, laptop on the phone's hotspot
+      (full flow; 3 problems found and fixed: pairing cookie, keyboard hiding the top bar, confusing label box)
+- [ ] Telugu, download and print on the real phone; other browsers and iPhone
+
+## Phase 6: test the actual application and fix failures
+
+- [x] 19 API/safety tests pass (`uv run pytest -q`)
+- [x] 3 browser tests pass in Edge (`$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v`)
+- [x] Fixed: crash on first screen change (effect cleanup), cramped card lines, blank sample thumbnails,
+      emergency pill hidden behind dialogs, text helper silently dropping a sentence
+- [ ] Manual no-internet test on a real phone (steps in `EVALUATION.md`; phone hotspot with mobile data off)
+
+## Phase 7: demo, evaluation and submission files
+
+- [x] `README.md`, `DEMO_SCRIPT.md` (90 s and 3 min), `EVALUATION.md`, `SUBMISSION.md`, `ROADMAP.md`
+- [x] `SAMPLE_DATA/` with 5 synthetic reports, answer keys and README
+- [x] `start.ps1` (laptop only, or `-Wifi` for the phone)
+- [ ] Demo video (developer)
+
+## Phase 8: commands and honest report
+
+- [x] Commands in `README.md`
+- [ ] Nothing committed to git yet (repo initialised, no commits); commit only when the developer says so
+
+## Open decisions for the developer
+
+- Download `llama3.2-vision:11b` (~7.8 GB) and measure it?
+- Commit and/or publish the repository? Which license?
