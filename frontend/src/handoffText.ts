@@ -69,6 +69,7 @@ export function toPlainText(t: T, lang: Lang, h: Handoff, preparedAt: Date): str
   lines.push(t('card.simulation'))
   lines.push(t('card.prepared', { time: preparedAt.toLocaleString() }))
   lines.push(`${t('card.region')}: ${regionName(lang)} · ${t('card.number')}: ${EMERGENCY_NUMBER}`)
+  if (h.last_seen_well) lines.push(t('card.lastSeenWell', { time: new Date(h.last_seen_well).toLocaleTimeString() }))
   for (const s of SECTIONS) {
     const items = h.items.filter((i) => sectionOf(i) === s)
     if (!items.length) continue

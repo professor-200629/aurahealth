@@ -140,6 +140,23 @@ Found on the phone and fixed:
 
 Not checked on the phone: Telugu screens, download .txt, print, the report reader, and a run with no internet.
 
+## 6. Android app and night guard (29 Oct 2026, Samsung Galaxy A36, Android 16)
+
+- Knock detector on made-up sounds (`android/tools/KnockDetectorCheck.java`): **11 of 11** cases right: 3 knocks
+  (loud, soft, very soft) trigger once; 2 knocks, slow knocks, one bouncing knock, speech-like sound (loud and
+  quiet), steady music and a door slam do not; a second triple inside 10 s is ignored.
+- On the real phone, sounds played from the laptop speaker: a speech-like sound did not trigger; 3 synthetic
+  knocks were each detected (about 30 ms long, 0.5 s apart) and the **"Are you OK?" countdown, alarm sound and
+  full-screen notification** appeared; "I'm OK" stopped the alarm and the alert. The first try failed because the
+  speaker was quiet (peak energy 0.0003 against a 0.001 minimum); the minimum was lowered to 0.0001 and the
+  laptop tests re-run.
+- The test alert ("no call") played the alarm and was cancelled; the night-guard service ran as a microphone
+  foreground service; permissions (microphone, calls, SMS, notifications, full-screen) were granted on the phone.
+- Night-guard events and the "Good night" check-in reached the laptop and the card ("last seen well").
+- Read-aloud (Google TTS) and the CPR beat sound played on the phone.
+- **Not tested:** a real knock by a person on a real bed or table, a real automatic call and SMS (no numbers were
+  entered), a whole night with the screen off and Samsung battery saving on, other phones.
+
 ## Not tested
 
 - Real phone: only one phone (above). Other browsers (Samsung Internet, Firefox) and iPhone were not tested.

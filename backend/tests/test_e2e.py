@@ -236,3 +236,19 @@ def test_first_aid_works_while_the_laptop_is_unreachable_and_syncs_later(phone):
     expect(page.get_by_test_id("pending")).to_have_count(0, timeout=30_000)
     events = [e["text"] for e in httpx.get(base + "/api/session").json()["session"]["events"]]
     assert "Pressing on the wound" in events and "Helped them lie down" in events
+
+
+def test_night_guard_page_in_a_browser_explains_the_app_and_checkins_work(phone):
+    page, _, base = phone
+    page.goto(base + "/")
+    page.get_by_test_id("tile-guard").click()
+    expect(page.get_by_test_id("guard-web-only")).to_be_visible()  # no listening or calls from a web page
+    _check_sos(page)
+    page.get_by_test_id("checkin-night").click()
+    expect(page.get_by_test_id("last-checkin")).to_be_visible()
+    for _ in range(30):
+        events = (httpx.get(base + "/api/session").json()["session"] or {}).get("events", [])
+        if any(e["kind"] == "checkin_night" for e in events):
+            break
+        page.wait_for_timeout(1000)
+    assert any(e["text"] == "Said good night (last seen well)" for e in events)

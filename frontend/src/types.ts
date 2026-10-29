@@ -85,6 +85,7 @@ export interface Handoff {
   not_assessed: boolean
   simulation: boolean
   sources: { title: string; publisher: string; url: string }[]
+  last_seen_well: string | null
 }
 
 export interface Health {

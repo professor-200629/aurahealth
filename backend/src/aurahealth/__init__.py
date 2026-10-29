@@ -18,6 +18,25 @@ def _lan_addresses() -> list[str]:
     return sorted(addresses)
 
 
+def _stable_pair_code() -> str:
+    """Keep the pairing code across restarts so a paired phone keeps working. Delete the file to change it."""
+    import secrets
+
+    from . import config
+
+    path = config.DATA_DIR / "pair_code.txt"
+    try:
+        code = path.read_text(encoding="utf-8").strip()
+        if len(code) >= 8:
+            return code
+    except OSError:
+        pass
+    code = secrets.token_urlsafe(6)
+    config.DATA_DIR.mkdir(parents=True, exist_ok=True)
+    path.write_text(code, encoding="utf-8")
+    return code
+
+
 def main() -> None:
     import uvicorn
 
@@ -31,6 +50,8 @@ def main() -> None:
     args = parser.parse_args()
 
     app_module.STATE["lan"] = args.lan
+    if args.lan:
+        app_module.STATE["pair_code"] = _stable_pair_code()
     host = "0.0.0.0" if args.lan else "127.0.0.1"
     status = ollama.status()
     print("\nAuraHealth (research prototype, simulation only)")
@@ -41,6 +62,7 @@ def main() -> None:
         for ip in _lan_addresses():
             print(f"    http://{ip}:{args.port}/pair?code={code}")
         print("  Anyone on this network with the link can open the app. Use a trusted network only.")
+        print("  The code stays the same after restarts; delete data/pair_code.txt to make a new one.")
     else:
         print("  Local only. Add --lan to let your phone connect over Wi-Fi.")
     print(f"  Model runtime (Ollama): {'running' if status['runtime'] else 'NOT running'}")

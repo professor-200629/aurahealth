@@ -1,0 +1,14 @@
+// AGP 9.1.0 asks for Kotlin Gradle plugin 2.2.10; use the 2.2.21 already on this laptop so the build works offline.
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == "org.jetbrains.kotlin" && details.requested.version == "2.2.10") {
+                details.useVersion("2.2.21")
+            }
+        }
+    }
+}
+
+plugins {
+    id "com.android.application" version "9.1.0" apply false
+}

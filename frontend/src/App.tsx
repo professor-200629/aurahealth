@@ -3,11 +3,14 @@ import type { JSX } from 'react'
 import { api } from './api'
 import { clearPending, flush, pendingCount, setSessionListener } from './eventlog'
 import { GUIDES } from './guides'
+import { AlertOverlay } from './components/AlertOverlay'
 import { StatusSheet } from './components/StatusSheet'
 import { TopBar } from './components/TopBar'
 import { makeT } from './i18n'
+import { guardStatus, isNativeApp, onNativeEvent } from './native'
 import { About } from './screens/About'
 import { DocumentStep } from './screens/DocumentStep'
+import { Guard } from './screens/Guard'
 import { GuidePlayer } from './screens/GuidePlayer'
 import { Help } from './screens/Help'
 import { Home } from './screens/Home'
@@ -17,7 +20,7 @@ import type { StepProps } from './screens/Steps'
 import type { Health, Lang, Session } from './types'
 import { UiContext } from './ui'
 
-type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide'
+type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide' | 'guard'
 const FLOW: Screen[] = ['who', 'age', 'what', 'onset', 'details', 'doc', 'review']
 const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   who: Who,
@@ -27,7 +30,7 @@ const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   details: Details,
   doc: DocumentStep,
 }
-const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help']
+const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help', 'guard']
 interface Route {
   screen: Screen
   guide: string
@@ -41,6 +44,11 @@ const fromHash = (): Route => {
 const hashFor = (r: Route) =>
   r.screen === 'home' ? window.location.pathname : r.screen === 'guide' ? `#guide=${r.guide}` : `#${r.screen}`
 
+const lastCheckin = (s: Session | null) => {
+  const c = (s?.events ?? []).filter((e) => e.kind === 'checkin_night' || e.kind === 'checkin_morning')
+  return c.length ? c.map((e) => e.at).sort()[c.length - 1] : null
+}
+
 export default function App() {
   const [lang, setLang] = useState<Lang>('en')
   const [health, setHealth] = useState<Health | null>(null)
@@ -52,6 +60,7 @@ export default function App() {
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [guardOn, setGuardOn] = useState(() => !!guardStatus()?.on)
   const t = useMemo(() => makeT(lang), [lang])
   const ui = useMemo(() => ({ lang, t, health, serverDown }), [lang, t, health, serverDown])
   const latest = useRef({ session, lang })
@@ -115,6 +124,14 @@ export default function App() {
   }, [])
 
   useEffect(() => setSessionListener(setSession), [])
+
+  useEffect(
+    () =>
+      onNativeEvent((e) => {
+        if (e.type === 'guard') setGuardOn(e.on)
+      }),
+    [],
+  )
 
   const go = (s: Screen, guide = '') => {
     setNotice('')
@@ -187,6 +204,9 @@ export default function App() {
             notice={notice}
             onStart={start}
             onHelp={openHelp}
+            onGuard={() => go('guard')}
+            guardOn={guardOn}
+            inApp={isNativeApp()}
             onResume={() => go('who')}
             onAbout={() => go('about')}
             onLang={changeLang}
@@ -198,6 +218,7 @@ export default function App() {
         {screen === 'review' && session && <Review session={session} onEdit={() => go('who')} onDeleted={deleted} />}
         {screen === 'about' && <About hasSession={!!session} onBack={() => go('home')} onDeleted={deleted} />}
         {screen === 'help' && <Help onPick={(id) => go('guide', id)} />}
+        {screen === 'guard' && <Guard lastCheckin={lastCheckin(session)} />}
         {screen === 'guide' && (
           <GuidePlayer
             key={route.guide}
@@ -208,6 +229,7 @@ export default function App() {
           />
         )}
       </main>
+      <AlertOverlay onHelp={openHelp} />
       {statusOpen && (
         <StatusSheet
           onClose={() => setStatusOpen(false)}

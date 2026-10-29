@@ -87,6 +87,11 @@ export function Review({ session, onEdit, onDeleted }: Props) {
             <br />
             {t('card.region')}: {regionName(lang)} · {t('card.number')}: {EMERGENCY_NUMBER}
           </div>
+          {handoff.last_seen_well && (
+            <div className="seen-well" data-testid="last-seen-well">
+              {t('card.lastSeenWell', { time: longTime(handoff.last_seen_well) })}
+            </div>
+          )}
           <p className="small muted no-print" style={{ marginTop: 8 }}>
             {t('review.evidenceHint')}
           </p>

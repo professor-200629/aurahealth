@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { api } from '../api'
 import { LANGUAGES } from '../i18n'
 import type { Lang } from '../types'
+import { isNativeApp, native } from '../native'
 import { Sheet, useUi } from '../ui'
 
 export function LanguageToggle({ onChange }: { onChange: (l: Lang) => void }) {
@@ -64,6 +65,7 @@ export function StatusSheet({ onClose, onLang, onAbout }: { onClose: () => void;
       <p className="small">
         <b>{t('app.setup')}</b>
       </p>
+      {isNativeApp() && <HubSettings />}
       <div className="row between" style={{ marginTop: 12 }}>
         <span className="small">{t('lang.label')}</span>
         <LanguageToggle onChange={onLang} />
@@ -86,5 +88,36 @@ function Row({ label, dot, value }: { label: string; dot: string; value: string 
         {value}
       </span>
     </div>
+  )
+}
+
+/** In the Android app: which laptop to use as the AI helper. Without it, the bundled copy works on its own. */
+function HubSettings() {
+  const { t } = useUi()
+  const saved = (() => {
+    try {
+      return JSON.parse(native()?.getHub?.() ?? '{}') as { url?: string; code?: string }
+    } catch {
+      return {}
+    }
+  })()
+  const [url, setUrl] = useState(saved.url || 'http://')
+  const [code, setCode] = useState(saved.code || '')
+  return (
+    <section className="card flat" style={{ marginTop: 12 }} data-testid="hub-settings">
+      <h3>{t('hub.title')}</h3>
+      <p className="small muted">{t('hub.note')}</p>
+      <label className="field" htmlFor="hub-url">
+        {t('hub.address')}
+      </label>
+      <input id="hub-url" className="input" value={url} inputMode="url" autoComplete="off" placeholder="http://192.168.1.10:8000" onChange={(e) => setUrl(e.target.value.trim())} />
+      <label className="field" htmlFor="hub-code">
+        {t('hub.code')}
+      </label>
+      <input id="hub-code" className="input" value={code} autoComplete="off" onChange={(e) => setCode(e.target.value.trim())} />
+      <button className="btn primary" style={{ marginTop: 12 }} onClick={() => native()?.setHub?.(url, code)}>
+        {t('hub.connect')}
+      </button>
+    </section>
   )
 }

@@ -72,10 +72,14 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       no doses, `adapted_unreviewed`), "Help someone now" screen, one-step-per-screen player, read-aloud,
       110/min CPR beat, every step saved with phone time (kept on the phone if the laptop is unreachable),
       time log on the handoff card; 24 API + 5 browser tests pass
-- [ ] Real-phone check of the guides, read-aloud and beat (phone was not on USB)
+- [x] Real-phone check of the guides: read-aloud (Google TTS) and the CPR beat sound play on the Galaxy A36
 - [ ] Doctor review of the 9 guides (developer's doctor friend)
-- [ ] Android app shell, night guard, check-ins, medicines (31 Oct–2 Nov)
-- [ ] IFRC email (draft in `docs/IFRC_EMAIL_DRAFT.md`; developer sends)
+- [x] Android app (Java, WebView + bridge, bundled web app, laptop optional), night guard (knock detector,
+      alarm, full-screen countdown, auto-call neighbour, SMS family), check-ins, premium home and guard design;
+      tested on the real phone with played sounds (see EVALUATION.md section 6)
+- [ ] Real knock test by a person, and a real auto-call + SMS to the 2 borrowed phones (developer)
+- [ ] Medicine list + strip reading + daily ticks (needs the vision model)
+- [x] IFRC email sent to first.aid@ifrc.org from the developer's Gmail on 29 Oct (his approval)
 
 ## Open decisions for the developer
 

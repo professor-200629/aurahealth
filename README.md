@@ -44,6 +44,29 @@ It does not diagnose, triage, rank urgency, recommend medicine doses, call 112 b
 work as a phone-only app (yet). The first-aid steps are fixed text adapted from the Red Cross (IFRC) 2020
 guidelines; no model writes them (see `packs/sources/README.md`).
 
+## Android app and night guard (`android/`)
+
+A native Android app (Java, no extra libraries) wraps the same web app:
+
+- **Works with no laptop and no internet:** the web app is bundled inside the APK, so first aid, the night
+  guard, check-ins and the time log work on the phone alone. When the laptop is reachable (Status → Laptop AI
+  helper), its copy is used instead, with the Llama helpers, and the phone's saved log is sent to it.
+- **Night guard:** a foreground service listens for **3 knocks** (sharp sounds, each 0.12–1.5 s apart, all within
+  3 s; speech and music are ignored). Audio is processed in memory, never recorded or sent; only loudness numbers
+  go to the Android debug log. Then a loud alarm and a full-screen **"Are you OK?"** countdown (30 s). If nobody
+  taps "I'm OK", it **phones the neighbour** and **texts the family** (numbers stay on the phone). It cannot call
+  112 by itself: Android does not allow apps to; the big button opens the dialer.
+- **Check-ins:** "Good night" / "Good morning" give the card a **last seen well** time.
+- **Voice:** steps are read with the phone's own text-to-speech.
+
+Build and install (phone on USB with USB debugging on):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\android\build-apk.ps1
+```
+
+Knock detector check on the laptop (made-up sounds): see `android/tools/KnockDetectorCheck.java`.
+
 ## How it fits together
 
 ```

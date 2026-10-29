@@ -11,7 +11,7 @@ Missing answers are listed as unknown. Nothing is inferred.
 
 from __future__ import annotations
 
-from . import packs
+from . import firstaid, packs
 
 AGE_KEYS = {"under1", "1to12", "13to17", "18to39", "40to64", "65plus"}
 ONSET_KEYS = {"lt15", "15to60", "1to6h", "gt6h"}
@@ -79,12 +79,13 @@ def build(session: dict) -> dict:
             items.append(_item("report_current", {"current": doc.get("current")}, "user"))
 
     sources = []
+    all_events = session.get("events") or []
     # "Opened a guide" is kept in the session but is noise for a clinician, so the card shows actions and answers.
-    events = sorted((e for e in session.get("events") or [] if e["kind"] != "guide_open"), key=lambda e: e["at"])
+    events = sorted((e for e in all_events if e["kind"] != "guide_open"), key=lambda e: e["at"])
     for ev in events:
         items.append(_item("firstaid", {"text": ev["text"], "at": ev["at"]}, "user_logged",
-                           {"guide": ev["guide"], "step": ev["step"], "received": ev["received"]}))
-    if events:
+                           {"guide": ev.get("guide"), "step": ev.get("step"), "received": ev["received"]}))
+    if any(e.get("guide") for e in events):
         sources.append(packs.guides()["meta"]["source"])
 
     return {
@@ -94,6 +95,7 @@ def build(session: dict) -> dict:
         "unknown": unknown,
         "not_assessed": True,
         "sources": sources,
+        "last_seen_well": firstaid.last_seen_well(all_events),
         "simulation": True,
     }
 

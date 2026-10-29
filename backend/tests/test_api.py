@@ -296,3 +296,39 @@ def test_delete_session_removes_the_first_aid_log(client):
     client.post("/api/session/events", json={"events": [_event(id="d1")]})
     client.delete("/api/session")
     assert client.get("/api/session").json()["session"] is None
+
+
+def test_night_guard_events_use_fixed_text_and_give_last_seen_well(client):
+    from datetime import datetime, timedelta, timezone
+    client.post("/api/session", json={"region": "IN", "language": "en"})
+    now = datetime.now(timezone.utc)
+    t = lambda m: (now - timedelta(minutes=m)).isoformat()
+    events = [
+        {"id": "g1", "kind": "checkin_night", "at": t(240)},
+        {"id": "g2", "kind": "guard_on", "at": t(239)},
+        {"id": "g3", "kind": "guard_knock", "at": t(5)},
+        {"id": "g4", "kind": "guard_call", "role": "neighbour", "at": t(4)},
+        {"id": "g5", "kind": "guard_sms", "role": "family", "at": t(4)},
+        {"id": "g6", "kind": "checkin_morning", "at": t(1)},
+    ]
+    r = client.post("/api/session/events", json={"events": events}).json()
+    assert r["accepted"] == 6
+    card = client.get("/api/handoff").json()
+    texts = [i["value"]["text"] for i in card["items"] if i["section"] == "firstaid"]
+    assert "Knock signal heard (3 knocks)" in texts and "Phoned the neighbour automatically" in texts
+    assert "Sent an alert text to family" in texts
+    assert card["last_seen_well"] == events[0]["at"]  # the morning check-in came after the alert
+    assert card["sources"] == []  # no guide was used
+
+
+def test_night_guard_events_reject_unknown_roles_and_free_text(client):
+    from datetime import datetime, timezone
+    client.post("/api/session", json={"region": "IN", "language": "en"})
+    now = datetime.now(timezone.utc).isoformat()
+    r = client.post("/api/session/events", json={"events": [
+        {"id": "r1", "kind": "guard_call", "role": "police", "at": now},
+        {"id": "r2", "kind": "guard_call", "at": now},
+        {"id": "r3", "kind": "guard_knock", "at": now, "text": "she is fine"},
+    ]}).json()
+    assert r["accepted"] == 1 and r["rejected"] == 2
+    assert r["session"]["events"][0]["text"] == "Knock signal heard (3 knocks)"

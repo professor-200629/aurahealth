@@ -174,9 +174,10 @@ def _clean_description(desc: dict) -> dict:
 class GuideEvent(BaseModel):
     id: str
     kind: str
-    guide: str
+    guide: str | None = None
     step: str | None = None
     choice: str | None = None
+    role: str | None = None
     at: str
 
 
