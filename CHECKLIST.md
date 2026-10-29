@@ -77,7 +77,8 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
 - [x] Android app (Java, WebView + bridge, bundled web app, laptop optional), night guard (knock detector,
       alarm, full-screen countdown, auto-call neighbour, SMS family), check-ins, premium home and guard design;
       tested on the real phone with played sounds (see EVALUATION.md section 6)
-- [ ] Real knock test by a person, and a real auto-call + SMS to the 2 borrowed phones (developer)
+- [x] Real auto-call + SMS to the developer's 2 numbers after 3 played knocks (29 Oct 20:40 IST)
+- [ ] Real knock by a person on a bed or table; a whole night with the screen off
 - [ ] Medicine list + strip reading + daily ticks (needs the vision model)
 - [x] IFRC email sent to first.aid@ifrc.org from the developer's Gmail on 29 Oct (his approval)
 

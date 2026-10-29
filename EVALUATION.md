@@ -154,8 +154,13 @@ Not checked on the phone: Telugu screens, download .txt, print, the report reade
   foreground service; permissions (microphone, calls, SMS, notifications, full-screen) were granted on the phone.
 - Night-guard events and the "Good night" check-in reached the laptop and the card ("last seen well").
 - Read-aloud (Google TTS) and the CPR beat sound played on the phone.
-- **Not tested:** a real knock by a person on a real bed or table, a real automatic call and SMS (no numbers were
-  entered), a whole night with the screen off and Samsung battery saving on, other phones.
+- **Real call and text (29 Oct, 20:40 IST):** with the developer's two numbers saved and the developer's go-ahead,
+  3 played knocks were heard at 20:40:04; nobody tapped "I'm OK"; at 20:40:34 the app placed the call to the
+  neighbour number (phone went off-hook) and at 20:40:35 sent the alert text to the family number (it is in the
+  phone's sent messages). All four events reached the laptop's time log. The developer confirmed that the
+  neighbour phone rang and the family phone received the text.
+- **Not tested:** a real knock by a person on a real bed or table (the knocks were played from a laptop
+  speaker), a whole night with the screen off and Samsung battery saving on, other phones.
 
 ## Not tested
 
