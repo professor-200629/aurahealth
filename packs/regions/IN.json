@@ -1,6 +1,9 @@
 {
   "id": "IN",
-  "name": { "en": "India", "te": "భారతదేశం" },
+  "name": {
+    "en": "India",
+    "te": "భారతదేశం"
+  },
   "status": "implemented",
   "emergency": {
     "number": "112",
@@ -13,7 +16,10 @@
       "reuse_note": "MHA's website policy does not allow reproducing its content without permission, so no MHA text is bundled. Only the number and a one-line fact in AuraHealth's own words are used, with this reference."
     }
   },
-  "languages": ["en", "te"],
+  "languages": [
+    "en",
+    "te"
+  ],
   "guidance_cards": [],
-  "guidance_note": "No medical guidance is bundled for India in this prototype: no authoritative source was found whose reuse terms allow bundling AND that has been reviewed for this use. AuraHealth shows an honest 'cannot assess' message instead."
+  "guidance_note": "No India-specific guidance cards are bundled. The general first-aid guides come from the IFRC 2020 guidelines (packs/guides), adapted in plain English and not yet reviewed by a clinician."
 }

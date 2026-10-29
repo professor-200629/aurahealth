@@ -21,6 +21,7 @@ EMPTY_SESSION = {
     "onset": {"choice": None, "other_text": ""},
     "details": {"allergies": "", "medicines": "", "conditions": "", "other": ""},
     "document": None,
+    "events": [],  # first-aid steps the person marked done, with the phone's time
 }
 
 

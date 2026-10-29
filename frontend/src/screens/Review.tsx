@@ -3,8 +3,9 @@ import type { ReactNode } from 'react'
 import { api, imageUrl } from '../api'
 import { EmergencyCard } from '../components/EmergencyCard'
 import { EMERGENCY_NUMBER } from '../i18n'
-import { itemText, provClass, provLabel, regionName, SECTIONS, sectionOf, sectionTitle, toPlainText, unknownLabel } from '../handoffText'
+import { itemText, provClass, provLabel, regionName, SECTIONS, sectionOf, sectionTitle, shortTime, toPlainText, unknownLabel } from '../handoffText'
 import type { Handoff, HandoffItem, Session } from '../types'
+import { GUIDES } from '../guides'
 import { Dual, Icon, Sheet, useUi } from '../ui'
 
 interface Props {
@@ -96,12 +97,20 @@ export function Review({ session, onEdit, onDeleted }: Props) {
             return (
               <div className="hsec" key={s}>
                 <h3>{sectionTitle(t, s)}</h3>
-                {items.map((item, idx) => (
-                  <button key={idx} className="hitem" onClick={() => setEvidence(item)} data-testid={`item-${item.section}`}>
-                    <span className="val">{itemText(t, item)}</span>
-                    <span className={`chip ${provClass(item.provenance)}`}>{provLabel(t, item.provenance)}</span>
-                  </button>
-                ))}
+                {s === 'firstaid' && <span className="chip user">{t('prov.logged')}</span>}
+                {items.map((item, idx) =>
+                  s === 'firstaid' ? (
+                    <button key={idx} className="hitem log" onClick={() => setEvidence(item)} data-testid="item-firstaid">
+                      <span className="time">{shortTime(item.value.at)}</span>
+                      <span className="val">{String(item.value.text ?? '')}</span>
+                    </button>
+                  ) : (
+                    <button key={idx} className="hitem" onClick={() => setEvidence(item)} data-testid={`item-${item.section}`}>
+                      <span className="val">{itemText(t, item)}</span>
+                      <span className={`chip ${provClass(item.provenance)}`}>{provLabel(t, item.provenance)}</span>
+                    </button>
+                  ),
+                )}
               </div>
             )
           })}
@@ -120,6 +129,11 @@ export function Review({ session, onEdit, onDeleted }: Props) {
           <div className="not-assessed">
             <Dual k="card.notAssessed" />
           </div>
+          {handoff.sources.map((s) => (
+            <p key={s.url} className="tiny muted" style={{ marginTop: 10 }}>
+              First-aid steps adapted from: {s.publisher}, {s.title}.
+            </p>
+          ))}
         </article>
       )}
 
@@ -158,6 +172,9 @@ export function Review({ session, onEdit, onDeleted }: Props) {
     </div>
   )
 }
+
+const longTime = (iso: string | null | undefined) =>
+  iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '—'
 
 function copyFallback(text: string) {
   // Plain http over Wi-Fi is not a secure context, so the async clipboard API is unavailable there.
@@ -241,6 +258,21 @@ function EvidenceSheet({ item, onClose }: { item: HandoffItem; onClose: () => vo
             )}
             <p className="small muted">{t('evidence.noBoxes')}</p>
           </>
+        )}
+
+        {item.provenance === 'user_logged' && (
+          <div className="flow" style={{ gridTemplateColumns: '1fr' }}>
+            <div className="box">
+              <div className="k">{t('evidence.finalValue')}</div>
+              <div className="v">{String(item.value.text ?? '')}</div>
+              <p className="small" style={{ margin: '8px 0 0' }}>
+                {t('evidence.loggedAt', { time: longTime(item.value.at) })} {t('evidence.receivedAt', { time: longTime(ev.received) })}
+              </p>
+              <p className="small muted" style={{ margin: '4px 0 0' }}>
+                {t('evidence.guideSource', { guide: GUIDES[ev.guide ?? '']?.title ?? ev.guide ?? '' })}
+              </p>
+            </div>
+          </div>
         )}
 
         {item.provenance === 'user' && !ev.from_document && (

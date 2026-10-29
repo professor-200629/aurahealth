@@ -66,6 +66,17 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
 - [x] Commands in `README.md`
 - [x] First local commit 11ca51a on 29 Oct (developer's OK). Not pushed; no remote, no license chosen yet
 
+## v2 "first hour" (see PLAN_V2.md)
+
+- [x] 30 Oct work, started 29 Oct evening: 9 first-aid guides from IFRC 2020 (`packs/guides/en.json`, sourced,
+      no doses, `adapted_unreviewed`), "Help someone now" screen, one-step-per-screen player, read-aloud,
+      110/min CPR beat, every step saved with phone time (kept on the phone if the laptop is unreachable),
+      time log on the handoff card; 24 API + 5 browser tests pass
+- [ ] Real-phone check of the guides, read-aloud and beat (phone was not on USB)
+- [ ] Doctor review of the 9 guides (developer's doctor friend)
+- [ ] Android app shell, night guard, check-ins, medicines (31 Oct–2 Nov)
+- [ ] IFRC email (draft in `docs/IFRC_EMAIL_DRAFT.md`; developer sends)
+
 ## Open decisions for the developer
 
 - Download `llama3.2-vision:11b` (~7.8 GB) and measure it?

@@ -63,6 +63,8 @@ export const api = {
   saveFields: (fields: unknown[], current: string | null) =>
     call<{ session: Session }>('/api/document/fields', json('PUT', { fields, current })),
   handoff: () => call<Handoff>('/api/handoff'),
+  sendEvents: (events: unknown[]) =>
+    call<{ session: Session; accepted: number; rejected: number }>('/api/session/events', json('POST', { events }), 8000),
 }
 
 export const imageUrl = (docId: string) => `/api/document/image/${docId}`

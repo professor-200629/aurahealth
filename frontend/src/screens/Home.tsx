@@ -9,12 +9,13 @@ interface Props {
   error: string
   notice: string
   onStart: () => void
+  onHelp: () => void
   onResume: () => void
   onAbout: () => void
   onLang: (l: Lang) => void
 }
 
-export function Home({ hasSession, busy, error, notice, onStart, onResume, onAbout, onLang }: Props) {
+export function Home({ hasSession, busy, error, notice, onStart, onHelp, onResume, onAbout, onLang }: Props) {
   const { t } = useUi()
   return (
     <div className="stack">
@@ -38,12 +39,18 @@ export function Home({ hasSession, busy, error, notice, onStart, onResume, onAbo
           </div>
         )}
         <div className="stack">
+          <button className="btn help block" onClick={onHelp} data-testid="help-now">
+            {t('home.help')}
+          </button>
+          <p className="small muted" style={{ margin: '-6px 0 4px' }}>
+            {t('home.helpNote')}
+          </p>
           {hasSession && (
             <button className="btn primary block" onClick={onResume} disabled={busy}>
               {t('home.resume')}
             </button>
           )}
-          <button className={`btn ${hasSession ? 'secondary' : 'primary'} block`} onClick={onStart} disabled={busy} data-testid="start">
+          <button className="btn secondary block" onClick={onStart} disabled={busy} data-testid="start">
             {busy ? t('common.loading') : t('home.start')}
           </button>
         </div>

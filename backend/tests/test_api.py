@@ -45,9 +45,30 @@ def test_every_language_pack_has_every_key():
     assert base <= set(langs["te"])
 
 
-def test_no_medical_guidance_is_bundled():
+def test_no_region_specific_guidance_is_bundled():
     region = packs.regions()["IN"]
     assert region["guidance_cards"] == []
+
+
+def test_first_aid_guides_are_sourced_valid_and_give_no_doses():
+    pack = packs.guides()
+    assert "ifrc.org" in pack["meta"]["source"]["url"]
+    assert pack["meta"]["review"] == "adapted_unreviewed"
+    assert {"check", "cpr", "recovery", "choking", "bleeding", "chest_pain", "stroke", "snakebite", "seizure"} <= set(
+        pack["guides"])
+    text = json.dumps(pack["guides"]).lower()
+    for banned in ("mg", "aspirin", "acetylsalicylic", "diagnos", "safe to wait"):
+        assert banned not in text
+    cpr = pack["guides"]["cpr"]
+    assert any(s["kind"] == "call" for s in cpr["steps"]) and any(s["kind"] == "cpr" for s in cpr["steps"])
+
+
+def _event(**kw):
+    from datetime import datetime, timezone
+    base = {"id": kw.pop("id", "e1"), "kind": "done", "guide": "cpr", "step": "call",
+            "at": datetime.now(timezone.utc).isoformat()}
+    base.update(kw)
+    return base
 
 
 # ---------- session + handoff ----------
@@ -223,3 +244,55 @@ def test_handoff_never_contains_reassurance_keys():
     text = json.dumps(card).lower()
     for word in ("safe to wait", "low risk", "diagnos", "not an emergency"):
         assert word not in text
+
+
+# ---------- first-aid time log ----------
+
+def test_first_aid_events_use_pack_text_and_appear_on_the_card_in_time_order(client):
+    client.post("/api/session", json={"region": "IN", "language": "en"})
+    from datetime import datetime, timedelta, timezone
+    now = datetime.now(timezone.utc)
+    later = _event(id="b", step="compress", kind="cpr_start", at=now.isoformat())
+    earlier = _event(id="a", step="call", at=(now - timedelta(minutes=1)).isoformat())
+    r = client.post("/api/session/events", json={"events": [later, earlier]}).json()
+    assert r["accepted"] == 2 and r["rejected"] == 0
+    card = client.get("/api/handoff").json()
+    log = [i for i in card["items"] if i["section"] == "firstaid"]
+    assert [i["value"]["text"] for i in log] == ["Called or asked someone to call 112", "Chest compressions started"]
+    assert all(i["provenance"] == "user_logged" for i in log)
+    assert "ifrc.org" in card["sources"][0]["url"]
+
+
+def test_first_aid_events_are_validated_and_deduplicated(client):
+    client.post("/api/session", json={"region": "IN", "language": "en"})
+    bad = [
+        _event(id="x1", guide="not-a-guide"),
+        _event(id="x2", step="not-a-step"),
+        _event(id="x3", kind="whatever"),
+        _event(id="x4", kind="done", step="compress", text="I invented this"),
+        _event(id="x5", kind="choice", guide="check", step="respond", choice="maybe"),
+        _event(id="x6", at="1999-01-01T00:00:00+00:00"),
+        _event(id="x7", at="not a time"),
+        _event(id="x8", kind="cpr_start", step="call"),
+    ]
+    r = client.post("/api/session/events", json={"events": bad}).json()
+    # x4 is valid (done on a cpr step) but its extra "text" is ignored; the rest are rejected
+    assert r["accepted"] == 1 and r["rejected"] == 7
+    again = client.post("/api/session/events", json={"events": [_event(id="x4", kind="done", step="compress")]}).json()
+    assert again["accepted"] == 1
+    log = [e for e in again["session"]["events"]]
+    assert len(log) == 1 and log[0]["text"] == "Chest compressions"
+
+
+def test_choice_events_record_the_question_and_answer(client):
+    client.post("/api/session", json={"region": "IN", "language": "en"})
+    r = client.post("/api/session/events", json={"events": [
+        _event(id="c1", kind="choice", guide="check", step="breathing", choice="unsure")]}).json()
+    assert r["session"]["events"][0]["text"] == "Breathing normally? I'm not sure"
+
+
+def test_delete_session_removes_the_first_aid_log(client):
+    client.post("/api/session", json={"region": "IN", "language": "en"})
+    client.post("/api/session/events", json={"events": [_event(id="d1")]})
+    client.delete("/api/session")
+    assert client.get("/api/session").json()["session"] is None

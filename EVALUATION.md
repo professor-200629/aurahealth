@@ -17,12 +17,15 @@ safety or usability validation.
 
 | Suite | Command | Result |
 | --- | --- | --- |
-| API and safety rules | `uv run pytest -q` | **19 passed** |
-| Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **3 passed** |
+| API and safety rules | `uv run pytest -q` | **24 passed** (29 Oct, after the first-aid guides) |
+| Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **5 passed** |
 
 What the API tests check (model output is injected, no model call):
 
-- only implemented regions and languages are offered; every language pack has every key; no guidance is bundled
+- only implemented regions and languages are offered; every language pack has every key; no region guidance cards
+- the first-aid guides have a source, valid steps and links, and contain no medicine doses or "diagnose"
+- the first-aid time log takes card text from the guide pack only (invented text, unknown guides or steps,
+  bad times are rejected), ignores repeats, keeps time order, and is removed by delete
 - session lifecycle; unanswered questions become unknown; unimplemented region/language rejected
 - a client cannot fake "split by the text helper" for words that are not in the description
 - deleting the session removes its report images
@@ -48,6 +51,10 @@ What the browser tests check (real server, real built web app, real Llama 3.2 3B
 - with the browser's network cut (simulating the phone losing the laptop), the "laptop not reachable" banner
   appears and the emergency call link still works
 - Telugu shows the "Unreviewed draft translation" label and keeps the English lines under safety text
+- "Help someone now" → start here → no response → not breathing → CPR guide: call, hands, beat (runs, Call 112
+  still reachable), every step reaches the card with its time, and the source line is shown
+- with the network cut, the heavy-bleeding steps are kept on the phone ("saved on this phone only") and are
+  sent to the laptop once it is reachable again
 
 ## 2. Text helper (Meta Llama 3.2 3B), real calls
 
@@ -143,6 +150,8 @@ Not checked on the phone: Telugu screens, download .txt, print, the report reade
 - No clinical review, no usability study with real users, no accessibility audit with assistive technology,
   no security review or penetration test.
 - Storage is not encrypted.
+- First-aid guides: not yet checked by a clinician against the IFRC guidelines; read-aloud and the CPR beat
+  sound were not checked on the real phone (it was not connected when they were built).
 
 ## Manual offline check (for the developer)
 

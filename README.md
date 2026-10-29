@@ -12,6 +12,12 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
 
 ## What it does
 
+- **"Help someone now": step-by-step first aid while waiting for help.** 9 guides (start here, CPR, recovery
+  position, choking, heavy bleeding, chest pain, stroke signs, snakebite, seizure), adapted in plain English
+  from the IFRC 2020 first aid guidelines, one big step per screen, read aloud, with a 110-per-minute beat for
+  chest compressions. **Every step tapped is saved with the phone's time** and appears on the handoff card,
+  so the doctor sees what was done and when. It works with the laptop out of reach; the log is sent later.
+  Not yet reviewed by a clinician; medicine doses are left out on purpose.
 - **Emergency call button on every screen.** It is a plain `tel:112` link (India), so it opens the phone's dialer
   even if the laptop or the models are down. It never places a call by itself. A call still needs mobile network.
 - **Short guided questions** (who, approximate age, what happened, when it started, details), each with
@@ -26,7 +32,7 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
 - **Handoff card with provenance.** Every line says where it came from: *You said*, *Your words, split by the
   text helper*, *From report, you confirmed*, or *From report, you corrected*. Tap a line to see the evidence:
   the full description with the span highlighted, or the image → model reading → final value.
-- **"AuraHealth can't assess this situation."** No diagnosis, no triage, no "safe to wait", no treatment advice.
+- **"AuraHealth can't assess this situation."** No diagnosis, no triage, no "safe to wait", no medicine doses; only the fixed Red Cross first-aid steps.
   The card always says it has not been assessed, next to the call button.
 - **Privacy.** Answers are stored only on the laptop (`data/sessions.sqlite3`, **not encrypted**). Report images
   are re-encoded (metadata removed). One tap deletes the session and its images. No accounts, no analytics,
@@ -34,9 +40,9 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
 
 ## What it does not do
 
-It does not diagnose, triage, rank urgency, recommend treatment, give medical guidance, call anyone, send data
-anywhere, or work as a phone-only app. There are no bundled first-aid cards: no source was found whose reuse
-terms allow bundling and that was reviewed for this use (see `packs/sources/README.md`).
+It does not diagnose, triage, rank urgency, recommend medicine doses, call 112 by itself, send data anywhere, or
+work as a phone-only app (yet). The first-aid steps are fixed text adapted from the Red Cross (IFRC) 2020
+guidelines; no model writes them (see `packs/sources/README.md`).
 
 ## How it fits together
 

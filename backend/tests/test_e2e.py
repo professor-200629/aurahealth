@@ -183,3 +183,56 @@ def test_telugu_is_labelled_unreviewed_with_english_under_safety_lines(phone):
     _check_sos(page)
     page.get_by_role("button", name="English").first.click()
     expect(page.locator(".lang-strip")).to_have_count(0)
+
+
+def test_first_aid_guide_logs_each_step_with_its_time(phone):
+    page, requests, base = phone
+    page.goto(base + "/")
+    page.get_by_test_id("help-now").click()
+    expect(page.get_by_role("heading", name="What is happening?")).to_be_visible()
+    _check_sos(page)
+    page.get_by_test_id("guide-check").click()
+    page.get_by_test_id("step-done").click()  # place is safe
+    page.get_by_test_id("choice-no").click()  # no response
+    page.get_by_test_id("choice-no").click()  # not breathing normally -> CPR guide
+    expect(page.locator("#guide-title")).to_have_text("Not responding and not breathing normally")
+    _check_sos(page)
+    page.get_by_test_id("step-done").click()  # call
+    page.get_by_test_id("step-done").click()  # hands
+    page.get_by_test_id("cpr-start").click()
+    page.wait_for_timeout(2000)
+    expect(page.get_by_test_id("cpr-beat")).not_to_contain_text("0 beats")
+    _check_sos(page)  # still reachable while the beat runs
+    page.get_by_test_id("cpr-pause").click()
+    page.get_by_test_id("step-done").click()  # next
+    page.get_by_test_id("step-done").click()  # keep going -> finished
+    expect(page.get_by_test_id("guide-finished")).to_be_visible()
+    expect(page.get_by_test_id("pending")).to_have_count(0, timeout=30_000)
+    page.get_by_test_id("open-card").click()
+    log = page.get_by_test_id("item-firstaid")
+    expect(log.first).to_be_visible()
+    texts = log.all_inner_texts()
+    for expected in ("Responds to voice or touch? No response", "Breathing normally? No, or only gasping",
+                     "Called or asked someone to call 112", "Chest compressions started", "Chest compressions paused"):
+        assert any(expected in t for t in texts), (expected, texts)
+    assert all(":" in t.split(" ")[0] or ":" in t[:6] for t in texts)  # every line starts with a time
+    expect(page.get_by_test_id("handoff")).to_contain_text("First-aid steps adapted from")
+    hosts = {urlparse(u).netloc for u in requests}
+    assert hosts == {urlparse(base).netloc}
+
+
+def test_first_aid_works_while_the_laptop_is_unreachable_and_syncs_later(phone):
+    page, _, base = phone
+    page.goto(base + "/")
+    expect(page.get_by_test_id("help-now")).to_be_visible()
+    page.context.set_offline(True)
+    page.get_by_test_id("help-now").click()
+    page.get_by_test_id("guide-bleeding").click()
+    page.get_by_test_id("step-done").click()  # pressing on the wound
+    page.get_by_test_id("step-done").click()  # helped them lie down
+    expect(page.get_by_test_id("pending")).to_be_visible()
+    _check_sos(page)
+    page.context.set_offline(False)
+    expect(page.get_by_test_id("pending")).to_have_count(0, timeout=30_000)
+    events = [e["text"] for e in httpx.get(base + "/api/session").json()["session"]["events"]]
+    assert "Pressing on the wound" in events and "Helped them lie down" in events

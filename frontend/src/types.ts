@@ -45,12 +45,23 @@ export interface Session {
   onset: { choice: string | null; other_text: string }
   details: { allergies: string; medicines: string; conditions: string; other: string }
   document: DocumentState | null
+  events?: GuideEventStored[]
 }
 
-export type Provenance = 'user' | 'user_split' | 'doc_confirmed' | 'doc_corrected'
+export interface GuideEventStored {
+  id: string
+  kind: string
+  guide: string
+  step: string | null
+  at: string
+  received: string
+  text: string
+}
+
+export type Provenance = 'user' | 'user_split' | 'doc_confirmed' | 'doc_corrected' | 'user_logged'
 
 export interface HandoffItem {
-  section: 'person' | 'age' | 'what' | 'onset' | 'details' | 'report' | 'report_current'
+  section: 'person' | 'age' | 'what' | 'onset' | 'details' | 'report' | 'report_current' | 'firstaid'
   value: Record<string, string | null>
   provenance: Provenance
   evidence: {
@@ -60,6 +71,9 @@ export interface HandoffItem {
     model_value?: string | null
     flag_instruction?: boolean
     from_document?: boolean
+    guide?: string
+    step?: string | null
+    received?: string
   }
 }
 
@@ -70,6 +84,7 @@ export interface Handoff {
   unknown: string[]
   not_assessed: boolean
   simulation: boolean
+  sources: { title: string; publisher: string; url: string }[]
 }
 
 export interface Health {

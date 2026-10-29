@@ -55,6 +55,43 @@ def regions() -> dict[str, dict]:
     return result
 
 
+STEP_KINDS = {"action", "call", "cpr", "question"}
+
+
+@lru_cache(maxsize=1)
+def guides() -> dict:
+    """First-aid guides: fixed text adapted from the IFRC 2020 guidelines. No model ever writes or edits them."""
+    data = json.loads((config.PACKS_DIR / "guides" / "en.json").read_text(encoding="utf-8"))
+    source = (data.get("meta") or {}).get("source") or {}
+    if not source.get("url") or not source.get("publisher"):
+        raise PackError("guides: every guide pack needs a source")
+    by_id: dict[str, dict] = {}
+    for guide in data.get("guides", []):
+        gid = guide.get("id")
+        if not gid or gid in by_id:
+            raise PackError(f"guides: missing or duplicate id {gid!r}")
+        steps = guide.get("steps") or []
+        step_ids = [s.get("id") for s in steps]
+        if not steps or None in step_ids or len(set(step_ids)) != len(step_ids):
+            raise PackError(f"guide {gid}: steps need unique ids")
+        for step in steps:
+            if step.get("kind") not in STEP_KINDS or not step.get("text") or not step.get("log"):
+                raise PackError(f"guide {gid}/{step.get('id')}: needs a known kind, text and log")
+            if step["kind"] == "question" and not step.get("choices"):
+                raise PackError(f"guide {gid}/{step['id']}: a question needs choices")
+        by_id[gid] = guide
+    for gid, guide in by_id.items():
+        step_ids = {s["id"] for s in guide["steps"]}
+        targets = [c.get("goto") for s in guide["steps"] for c in s.get("choices", [])]
+        targets += [link.get("goto") for link in guide.get("links", [])]
+        for target in targets:
+            ok = target in ("next", "list") or target in step_ids or (
+                isinstance(target, str) and target.startswith("guide:") and target[6:] in by_id)
+            if not ok:
+                raise PackError(f"guide {gid}: unknown target {target!r}")
+    return {"meta": data["meta"], "guides": by_id}
+
+
 def summary() -> dict:
     """What the UI may offer: only implemented regions and languages."""
     return {

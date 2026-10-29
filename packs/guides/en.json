@@ -1,0 +1,416 @@
+{
+  "meta": {
+    "language": "en",
+    "review": "adapted_unreviewed",
+    "review_note": "Written in plain words by the AuraHealth developer from the IFRC 2020 guidelines. Not yet reviewed by a clinician.",
+    "source": {
+      "title": "International first aid, resuscitation and education guidelines 2020",
+      "publisher": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
+      "url": "https://www.ifrc.org/document/international-first-aid-resuscitation-and-education-guidelines",
+      "terms": "The IFRC allows copies of all or part of the guidelines for non-commercial use, providing the source is acknowledged.",
+      "checked": "2026-10-29"
+    },
+    "scope_note": "For teenagers and adults. Babies and young children need different steps: tell the 112 operator the age.",
+    "left_out": "Medicine doses are left out on purpose (for example aspirin for chest pain). Ask the 112 operator."
+  },
+  "guides": [
+    {
+      "id": "check",
+      "title": "Someone collapsed: start here",
+      "when": "You are not sure what is wrong.",
+      "source_pages": "128-139",
+      "steps": [
+        {
+          "id": "safe",
+          "kind": "action",
+          "text": "Make sure the place is safe for you, for example from traffic, fire or electricity. Then go to the person.",
+          "log": "Checked the place was safe"
+        },
+        {
+          "id": "respond",
+          "kind": "question",
+          "text": "Shout their name and tap their shoulders. Do they respond?",
+          "log": "Responds to voice or touch",
+          "choices": [
+            { "id": "yes", "label": "Yes, they respond", "goto": "list" },
+            { "id": "no", "label": "No response", "goto": "breathing" }
+          ]
+        },
+        {
+          "id": "breathing",
+          "kind": "question",
+          "text": "Look at their chest and listen. Are they breathing normally? Gasping, noisy or very slow breathing is NOT normal.",
+          "log": "Breathing normally",
+          "choices": [
+            { "id": "yes", "label": "Yes, normally", "goto": "guide:recovery" },
+            { "id": "no", "label": "No, or only gasping", "goto": "guide:cpr" },
+            { "id": "unsure", "label": "I'm not sure", "goto": "guide:cpr" }
+          ]
+        }
+      ],
+      "do_not": [],
+      "notes": ["If you are not sure whether they are breathing normally, start CPR. That is what the Red Cross guidelines advise."]
+    },
+    {
+      "id": "cpr",
+      "title": "Not responding and not breathing normally",
+      "when": "No response to voice or touch, and no breathing or only gasping.",
+      "source_pages": "134-146, 397",
+      "steps": [
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} now, or ask someone nearby to call. Put the phone on speaker so your hands are free.",
+          "log": "Called or asked someone to call {number}"
+        },
+        {
+          "id": "hands",
+          "kind": "action",
+          "text": "Kneel beside them. Put the heel of one hand in the middle of the chest, the other hand on top, fingers locked together.",
+          "log": "Hands placed on the chest"
+        },
+        {
+          "id": "compress",
+          "kind": "cpr",
+          "text": "With straight arms, push straight down about 5 cm, then let the chest come back up. Push on every beat: 100 to 120 times a minute.",
+          "log": "Chest compressions"
+        },
+        {
+          "id": "continue",
+          "kind": "action",
+          "text": "Keep going without stopping until help takes over, or they cough, open their eyes, move on purpose or breathe normally.",
+          "log": "Kept compressions going"
+        }
+      ],
+      "do_not": [
+        "Do not stop to look for a pulse. A pulse check is unreliable and wastes time.",
+        "Do not stop compressions to wait for the ambulance."
+      ],
+      "notes": [
+        "If a defibrillator (AED) is nearby, ask someone to bring it, switch it on and follow its voice.",
+        "If someone else can take over, swap so you don't get too tired, with as little pause as possible.",
+        "If you are carrying the person to hospital, keep CPR going on a firm surface."
+      ],
+      "links": [{ "label": "They started breathing normally", "goto": "guide:recovery" }]
+    },
+    {
+      "id": "recovery",
+      "title": "Not responding but breathing normally",
+      "when": "No response to voice or touch, but normal, regular breathing.",
+      "source_pages": "128-133",
+      "steps": [
+        {
+          "id": "side",
+          "kind": "action",
+          "text": "Roll them onto their side and gently tilt their head back so the airway stays open.",
+          "log": "Put on their side, airway open"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number}. Someone who does not respond needs help, even if they breathe.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "watch",
+          "kind": "action",
+          "text": "Stay with them and keep checking their breathing.",
+          "log": "Watching their breathing"
+        }
+      ],
+      "do_not": ["If you think they hurt their neck or back, do not roll them. Keep the airway open by tilting the head and lifting the chin."],
+      "notes": [],
+      "links": [{ "label": "Breathing stopped or became gasping", "goto": "guide:cpr" }]
+    },
+    {
+      "id": "choking",
+      "title": "Choking",
+      "when": "Something is stuck in the throat.",
+      "source_pages": "170-174, 400",
+      "steps": [
+        {
+          "id": "cough",
+          "kind": "question",
+          "text": "Can they cough, speak or breathe?",
+          "log": "Can cough or speak",
+          "choices": [
+            { "id": "yes", "label": "Yes", "goto": "mild" },
+            { "id": "no", "label": "No", "goto": "back" }
+          ]
+        },
+        {
+          "id": "mild",
+          "kind": "action",
+          "text": "Tell them to keep coughing. Stay with them and watch closely: it can get worse.",
+          "log": "Encouraged coughing",
+          "end": true
+        },
+        {
+          "id": "back",
+          "kind": "action",
+          "text": "Stand behind them, bend them forward, and give up to 5 sharp blows between the shoulder blades with the heel of your hand.",
+          "log": "Back blows given"
+        },
+        {
+          "id": "thrusts",
+          "kind": "action",
+          "text": "Still blocked? Stand behind, put a fist between the belly button and the ribs, hold it with your other hand, and pull sharply in and up, up to 5 times.",
+          "log": "Abdominal thrusts given"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Still blocked? Call {number} now. Keep repeating 5 back blows and 5 abdominal thrusts.",
+          "log": "Called {number}, kept trying"
+        }
+      ],
+      "do_not": ["Do not sweep inside the mouth blindly with your fingers. Only take out something you can see."],
+      "notes": ["Babies under one year need different steps. Tell the 112 operator the age."],
+      "links": [{ "label": "They stopped responding", "goto": "guide:cpr" }]
+    },
+    {
+      "id": "bleeding",
+      "title": "Heavy bleeding",
+      "when": "Blood is flowing fast from a wound.",
+      "source_pages": "187-194",
+      "steps": [
+        {
+          "id": "press",
+          "kind": "action",
+          "text": "Press hard on the wound. Use a cloth, bandage or plastic between your hand and the blood. If they can, they can press it themselves.",
+          "log": "Pressing on the wound"
+        },
+        {
+          "id": "lie",
+          "kind": "action",
+          "text": "Help them lie down.",
+          "log": "Helped them lie down"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number}, or ask someone to call while you keep pressing.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "more",
+          "kind": "action",
+          "text": "If blood soaks through, put another cloth on top and press harder. Do not lift the first cloth.",
+          "log": "Added a second cloth, pressed harder"
+        },
+        {
+          "id": "tourniquet",
+          "kind": "action",
+          "optional": true,
+          "text": "Only if pressing does not stop heavy bleeding from an arm or leg, and you have a tourniquet: put it on above the wound. The time is saved for the doctor.",
+          "log": "Tourniquet put on"
+        },
+        {
+          "id": "warm",
+          "kind": "action",
+          "text": "Keep them lying down and warm, for example covered with clothes or a blanket.",
+          "log": "Kept warm, lying down"
+        }
+      ],
+      "do_not": ["If an object such as a knife is stuck in the wound, do not pull it out. Press around it."],
+      "notes": [],
+      "links": [{ "label": "They stopped responding", "goto": "guide:check" }]
+    },
+    {
+      "id": "chest_pain",
+      "title": "Chest pain",
+      "when": "Pain or pressure in the chest that does not go away.",
+      "source_pages": "264-270",
+      "steps": [
+        {
+          "id": "sit",
+          "kind": "action",
+          "text": "Help them sit down in a comfortable position. If a doctor prescribed them heart medicine for this, help them take it.",
+          "log": "Sitting down, helped with own medicine if any"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} now. Ask someone to bring a defibrillator (AED) if there is one nearby.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "watch",
+          "kind": "action",
+          "text": "Stay with them, keep them calm, and watch their breathing and whether they respond.",
+          "log": "Staying with them, watching breathing"
+        }
+      ],
+      "do_not": [],
+      "notes": [
+        "Women, older people and people with diabetes may have milder or unusual signs. If in doubt, treat it as serious.",
+        "Medicine doses are not given here. Ask the 112 operator what to give."
+      ],
+      "links": [{ "label": "They stopped responding or breathing normally", "goto": "guide:cpr" }]
+    },
+    {
+      "id": "stroke",
+      "title": "Signs of a stroke",
+      "when": "Sudden weak face or arm, or strange speech.",
+      "source_pages": "271-278",
+      "steps": [
+        {
+          "id": "face",
+          "kind": "question",
+          "text": "Ask them to smile. Does one side of the face droop?",
+          "log": "Face droops on one side",
+          "choices": [
+            { "id": "yes", "label": "Yes", "goto": "next" },
+            { "id": "no", "label": "No", "goto": "next" },
+            { "id": "unsure", "label": "Not sure", "goto": "next" }
+          ]
+        },
+        {
+          "id": "arms",
+          "kind": "question",
+          "text": "Ask them to raise both arms. Does one arm drift down or not move?",
+          "log": "One arm weak",
+          "choices": [
+            { "id": "yes", "label": "Yes", "goto": "next" },
+            { "id": "no", "label": "No", "goto": "next" },
+            { "id": "unsure", "label": "Not sure", "goto": "next" }
+          ]
+        },
+        {
+          "id": "speech",
+          "kind": "question",
+          "text": "Ask them to repeat a simple sentence. Is their speech slurred or strange?",
+          "log": "Speech slurred or strange",
+          "choices": [
+            { "id": "yes", "label": "Yes", "goto": "next" },
+            { "id": "no", "label": "No", "goto": "next" },
+            { "id": "unsure", "label": "Not sure", "goto": "next" }
+          ]
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Any of these signs? Call {number} now. Tell them when the signs started, or the last time the person was seen well.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "support",
+          "kind": "action",
+          "text": "Help them into a comfortable position and support them so they don't fall. Keep talking to them and watch their breathing.",
+          "log": "Supported, talking, watching breathing"
+        }
+      ],
+      "do_not": [],
+      "notes": [
+        "Even if the signs go away, they still need a doctor quickly.",
+        "Very high or low blood sugar can look similar. Tell the doctor about diabetes."
+      ],
+      "links": [{ "label": "They stopped responding", "goto": "guide:check" }]
+    },
+    {
+      "id": "snakebite",
+      "title": "Snakebite",
+      "when": "Bitten by a snake, or you think so.",
+      "source_pages": "254-257",
+      "steps": [
+        {
+          "id": "still",
+          "kind": "action",
+          "text": "Help them lie down and keep as still as possible. Moving makes the venom spread faster.",
+          "log": "Lying still"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number}. They need a hospital that has antivenom.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "rings",
+          "kind": "action",
+          "text": "Take off rings, bangles, watches and tight clothes near the bite before it swells. Move the limb as little as possible.",
+          "log": "Removed rings and tight items"
+        },
+        {
+          "id": "splint",
+          "kind": "action",
+          "text": "If help is far away, keep the bitten arm or leg still with a cloth or non-stretchy bandage wrapped around it. Do not wrap it tight.",
+          "log": "Limb kept still with cloth"
+        },
+        {
+          "id": "carry",
+          "kind": "action",
+          "text": "Do not let them walk on a bitten leg. Carry them, for example two people making a chair with their arms.",
+          "log": "Carried, not walking"
+        },
+        {
+          "id": "watch",
+          "kind": "action",
+          "text": "Keep watching their breathing and whether they respond. If it is safe, take a photo of the snake from a distance.",
+          "log": "Watching breathing"
+        }
+      ],
+      "do_not": [
+        "Do not tie a tight band (tourniquet) around the limb.",
+        "Do not cut the bite or suck out the venom.",
+        "Do not put ice on it or rub it.",
+        "Do not try to catch or kill the snake."
+      ],
+      "notes": [],
+      "links": [{ "label": "They stopped responding or breathing normally", "goto": "guide:cpr" }]
+    },
+    {
+      "id": "seizure",
+      "title": "Seizure (fit)",
+      "when": "Shaking, stiffening or not responding with twitching.",
+      "source_pages": "295-298",
+      "steps": [
+        {
+          "id": "start",
+          "kind": "action",
+          "text": "Tap Done now: the seizure start time is saved for the doctor.",
+          "log": "Seizure started"
+        },
+        {
+          "id": "protect",
+          "kind": "action",
+          "text": "Move hard or sharp things away. Do not move them unless they are in danger, for example on a road.",
+          "log": "Moved dangerous things away"
+        },
+        {
+          "id": "head",
+          "kind": "action",
+          "text": "Put something soft under their head. Take off glasses and loosen anything tight around the neck.",
+          "log": "Cushioned head, loosened collar"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} if: it is their first seizure, it lasts more than 5 minutes, they are hurt, they don't wake up after, it happens again, they are pregnant or diabetic, or you are not sure.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "stop",
+          "kind": "action",
+          "text": "When the shaking stops, tap Done: the stop time is saved.",
+          "log": "Seizure stopped"
+        },
+        {
+          "id": "after",
+          "kind": "question",
+          "text": "Now check their breathing. Are they breathing normally?",
+          "log": "Breathing normally after the seizure",
+          "choices": [
+            { "id": "yes", "label": "Yes, normally", "goto": "guide:recovery" },
+            { "id": "no", "label": "No, or only gasping", "goto": "guide:cpr" }
+          ]
+        }
+      ],
+      "do_not": [
+        "Do not hold them down.",
+        "Do not put anything in their mouth or between their teeth."
+      ],
+      "notes": []
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import { EMERGENCY_NUMBER, REGION } from './i18n'
 import type { T } from './i18n'
 import type { Handoff, HandoffItem, Lang, Provenance } from './types'
 
-export const SECTIONS = ['person', 'age', 'what', 'onset', 'details', 'report'] as const
+export const SECTIONS = ['person', 'age', 'what', 'onset', 'firstaid', 'details', 'report'] as const
 export type SectionKey = (typeof SECTIONS)[number]
 
 const SECTION_TITLE: Record<SectionKey, string> = {
@@ -10,6 +10,7 @@ const SECTION_TITLE: Record<SectionKey, string> = {
   age: 'card.age',
   what: 'card.what',
   onset: 'card.onset',
+  firstaid: 'card.firstaid',
   details: 'card.details',
   report: 'card.report',
 }
@@ -36,6 +37,8 @@ export function itemText(t: T, item: HandoffItem): string {
       return `${v.label}: ${v.text}`
     case 'report_current':
       return v.current === 'yes' ? t('card.reportCurrent') : t('card.reportNotCurrent')
+    case 'firstaid':
+      return `${shortTime(v.at)} · ${v.text}`
   }
 }
 
@@ -44,11 +47,15 @@ export function unknownLabel(t: T, key: string): string {
   return sectionTitle(t, key as SectionKey)
 }
 
+export const shortTime = (iso: string | null) =>
+  iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''
+
 const PROV_KEY: Record<Provenance, string> = {
   user: 'prov.user',
   user_split: 'prov.userSplit',
   doc_confirmed: 'prov.doc',
   doc_corrected: 'prov.docCorrected',
+  user_logged: 'prov.logged',
 }
 export const provLabel = (t: T, p: Provenance) => t(PROV_KEY[p])
 export const provClass = (p: Provenance) => (p === 'doc_confirmed' ? 'doc' : p === 'doc_corrected' ? 'corrected' : 'user')
@@ -72,5 +79,6 @@ export function toPlainText(t: T, lang: Lang, h: Handoff, preparedAt: Date): str
     lines.push('', `${t('card.unknown')}: ${h.unknown.map((k) => unknownLabel(t, k)).join(', ')}`)
   }
   lines.push('', t('card.notAssessed'))
+  for (const s of h.sources) lines.push(`First-aid steps adapted from: ${s.publisher}, ${s.title} (${s.url})`)
   return lines.join('\n')
 }

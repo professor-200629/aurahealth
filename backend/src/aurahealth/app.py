@@ -11,7 +11,7 @@ from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
-from . import config, extraction, handoff, ollama, packs, store, structuring
+from . import config, extraction, firstaid, handoff, ollama, packs, store, structuring
 
 app = FastAPI(title="AuraHealth", version=config.APP_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -167,6 +167,43 @@ def _clean_description(desc: dict) -> dict:
     if isinstance(assist, dict):
         assist = {k: assist.get(k) for k in ("status", "model", "dropped") if k in assist}
     return {"text": text, "points": points, "assist": assist}
+
+
+# ---------- first-aid time log ----------
+
+class GuideEvent(BaseModel):
+    id: str
+    kind: str
+    guide: str
+    step: str | None = None
+    choice: str | None = None
+    at: str
+
+
+class EventBatch(BaseModel):
+    events: list[GuideEvent]
+
+
+@app.post("/api/session/events")
+def add_events(body: EventBatch):
+    """The phone may send the same event again after a lost connection; ids make that harmless."""
+    session = _require_session()
+    events = session.setdefault("events", [])
+    known = {e["id"] for e in events}
+    number = packs.regions()[session["region"]]["emergency"]["number"]
+    accepted = rejected = 0
+    for raw in body.events[:50]:
+        if raw.id in known:
+            accepted += 1
+            continue
+        entry = firstaid.describe(raw.model_dump(), packs.guides(), number)
+        if entry is None or len(events) >= firstaid.MAX_EVENTS:
+            rejected += 1
+            continue
+        events.append(entry)
+        known.add(entry["id"])
+        accepted += 1
+    return {"session": store.save(session), "accepted": accepted, "rejected": rejected}
 
 
 # ---------- text helper (Llama 3.2 3B) ----------

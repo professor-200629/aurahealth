@@ -5,10 +5,13 @@ Each item carries its provenance:
 - user_split    the user's exact words, split into a point by the text helper
 - doc_confirmed a report field the user confirmed unchanged
 - doc_corrected a report field the user corrected (the model's reading is kept as evidence)
+- user_logged   a first-aid step the user marked done, with the phone's time (text from the guide pack)
 Missing answers are listed as unknown. Nothing is inferred.
 """
 
 from __future__ import annotations
+
+from . import packs
 
 AGE_KEYS = {"under1", "1to12", "13to17", "18to39", "40to64", "65plus"}
 ONSET_KEYS = {"lt15", "15to60", "1to6h", "gt6h"}
@@ -75,13 +78,22 @@ def build(session: dict) -> dict:
         if confirmed:
             items.append(_item("report_current", {"current": doc.get("current")}, "user"))
 
+    sources = []
+    # "Opened a guide" is kept in the session but is noise for a clinician, so the card shows actions and answers.
+    events = sorted((e for e in session.get("events") or [] if e["kind"] != "guide_open"), key=lambda e: e["at"])
+    for ev in events:
+        items.append(_item("firstaid", {"text": ev["text"], "at": ev["at"]}, "user_logged",
+                           {"guide": ev["guide"], "step": ev["step"], "received": ev["received"]}))
+    if events:
+        sources.append(packs.guides()["meta"]["source"])
+
     return {
         "region": session.get("region"),
         "language": session.get("language"),
         "items": items,
         "unknown": unknown,
         "not_assessed": True,
-        "sources": [],
+        "sources": sources,
         "simulation": True,
     }
 

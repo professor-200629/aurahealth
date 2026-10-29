@@ -1,11 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { JSX } from 'react'
 import { api } from './api'
+import { clearPending, flush, pendingCount, setSessionListener } from './eventlog'
+import { GUIDES } from './guides'
 import { StatusSheet } from './components/StatusSheet'
 import { TopBar } from './components/TopBar'
 import { makeT } from './i18n'
 import { About } from './screens/About'
 import { DocumentStep } from './screens/DocumentStep'
+import { GuidePlayer } from './screens/GuidePlayer'
+import { Help } from './screens/Help'
 import { Home } from './screens/Home'
 import { Review } from './screens/Review'
 import { Age, Details, Onset, What, Who } from './screens/Steps'
@@ -13,7 +17,7 @@ import type { StepProps } from './screens/Steps'
 import type { Health, Lang, Session } from './types'
 import { UiContext } from './ui'
 
-type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about'
+type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide'
 const FLOW: Screen[] = ['who', 'age', 'what', 'onset', 'details', 'doc', 'review']
 const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   who: Who,
@@ -23,26 +27,35 @@ const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   details: Details,
   doc: DocumentStep,
 }
-const SCREENS: Screen[] = ['home', ...FLOW, 'about']
-// The screen lives in the URL hash, so a phone reload or the back button keeps the user's place.
-const fromHash = (): Screen => {
-  const h = window.location.hash.slice(1) as Screen
-  return SCREENS.includes(h) ? h : 'home'
+const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help']
+interface Route {
+  screen: Screen
+  guide: string
 }
-const hashFor = (s: Screen) => (s === 'home' ? window.location.pathname : `#${s}`)
+// The screen lives in the URL hash, so a phone reload or the back button keeps the user's place.
+const fromHash = (): Route => {
+  const h = window.location.hash.slice(1)
+  if (h.startsWith('guide=') && GUIDES[h.slice(6)]) return { screen: 'guide', guide: h.slice(6) }
+  return { screen: SCREENS.includes(h as Screen) ? (h as Screen) : 'home', guide: '' }
+}
+const hashFor = (r: Route) =>
+  r.screen === 'home' ? window.location.pathname : r.screen === 'guide' ? `#guide=${r.guide}` : `#${r.screen}`
 
 export default function App() {
   const [lang, setLang] = useState<Lang>('en')
   const [health, setHealth] = useState<Health | null>(null)
   const [serverDown, setServerDown] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
-  const [screen, setScreen] = useState<Screen>(fromHash)
+  const [route, setRoute] = useState<Route>(fromHash)
+  const screen = route.screen
   const [statusOpen, setStatusOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const t = useMemo(() => makeT(lang), [lang])
   const ui = useMemo(() => ({ lang, t, health, serverDown }), [lang, t, health, serverDown])
+  const latest = useRef({ session, lang })
+  latest.current = { session, lang }
 
   useEffect(() => {
     document.documentElement.lang = lang
@@ -52,7 +65,23 @@ export default function App() {
     let alive = true
     const poll = () =>
       api.health().then(
-        (h) => alive && (setHealth(h), setServerDown(false)),
+        (h) => {
+          if (!alive) return
+          setHealth(h)
+          setServerDown(false)
+          // First-aid steps logged while the laptop was out of reach are sent as soon as it answers again.
+          if (pendingCount() > 0) {
+            if (latest.current.session) void flush()
+            else
+              api.newSession('IN', latest.current.lang).then(
+                (r) => {
+                  setSession(r.session)
+                  void flush()
+                },
+                () => undefined,
+              )
+          }
+        },
         () => alive && setServerDown(true),
       )
     poll()
@@ -77,19 +106,36 @@ export default function App() {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [screen])
+  }, [screen, route.guide])
 
   useEffect(() => {
-    const onPop = () => setScreen(fromHash())
+    const onPop = () => setRoute(fromHash())
     window.addEventListener('popstate', onPop)
     return () => window.removeEventListener('popstate', onPop)
   }, [])
 
-  const go = (s: Screen) => {
+  useEffect(() => setSessionListener(setSession), [])
+
+  const go = (s: Screen, guide = '') => {
     setNotice('')
     setError('')
-    if (s !== screen) window.history.pushState(null, '', hashFor(s))
-    setScreen(s)
+    const next = { screen: s, guide }
+    if (s !== screen || guide !== route.guide) window.history.pushState(null, '', hashFor(next))
+    setRoute(next)
+  }
+
+  // First aid must start instantly and work without the laptop: the guides are bundled, and the session
+  // that receives the time log is created quietly in the background when the laptop is reachable.
+  const openHelp = () => {
+    go('help')
+    if (!session)
+      api.newSession('IN', lang).then(
+        (r) => {
+          setSession(r.session)
+          void flush()
+        },
+        () => undefined,
+      )
   }
 
   const changeLang = async (l: Lang) => {
@@ -113,8 +159,9 @@ export default function App() {
 
   const deleted = () => {
     setSession(null)
-    window.history.replaceState(null, '', hashFor('home'))
-    setScreen('home')
+    clearPending()
+    window.history.replaceState(null, '', hashFor({ screen: 'home', guide: '' }))
+    setRoute({ screen: 'home', guide: '' })
     setNotice(t('privacy.deleted'))
   }
 
@@ -139,6 +186,7 @@ export default function App() {
             error={error}
             notice={notice}
             onStart={start}
+            onHelp={openHelp}
             onResume={() => go('who')}
             onAbout={() => go('about')}
             onLang={changeLang}
@@ -149,6 +197,16 @@ export default function App() {
         )}
         {screen === 'review' && session && <Review session={session} onEdit={() => go('who')} onDeleted={deleted} />}
         {screen === 'about' && <About hasSession={!!session} onBack={() => go('home')} onDeleted={deleted} />}
+        {screen === 'help' && <Help onPick={(id) => go('guide', id)} />}
+        {screen === 'guide' && (
+          <GuidePlayer
+            key={route.guide}
+            guideId={route.guide}
+            onGuide={(id) => go('guide', id)}
+            onList={() => go('help')}
+            onCard={() => go('review')}
+          />
+        )}
       </main>
       {statusOpen && (
         <StatusSheet
