@@ -64,7 +64,7 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
 ## Phase 8: commands and honest report
 
 - [x] Commands in `README.md`
-- [ ] Nothing committed to git yet (repo initialised, no commits); commit only when the developer says so
+- [x] First local commit 11ca51a on 29 Oct (developer's OK). Not pushed; no remote, no license chosen yet
 
 ## Open decisions for the developer
 
