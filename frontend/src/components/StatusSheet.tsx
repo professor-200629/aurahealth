@@ -36,18 +36,22 @@ export function StatusSheet({ onClose, onLang, onAbout }: { onClose: () => void;
     if (!health.models.runtime) return { dot: 'down', text: t('status.down') }
     return ready ? { dot: 'ok', text: t('status.ready') } : { dot: 'warn', text: t('status.missing') }
   }
-  const text = model(health?.models.text)
-  const reader = health?.models.vision && !health.models.vision_runnable
-    ? { dot: 'warn', text: t('status.cannotRun') }
-    : model(health?.models.vision)
+  const online = !!health?.models.ai_online
+  const text = online
+    ? { dot: health?.models.text ? 'ok' : 'warn', text: health?.models.text ? t('status.aiReady') : t('status.aiNoKey') }
+    : model(health?.models.text)
+  const photo = health?.models.glimmer_reader
+    ? { dot: 'ok', text: t('status.photoGlimmer') }
+    : health?.models.ocr_reader
+      ? { dot: 'ok', text: t('status.ready') }
+      : { dot: '', text: t('status.ocrNo') }
 
   return (
     <Sheet title={t('status.title')} onClose={onClose}>
       <div className="status-list" data-testid="status-list">
         <Row label={t('status.server')} dot={serverDown ? 'down' : 'ok'} value={serverDown ? t('status.serverDown') : t('status.serverOk')} />
-        <Row label={t('status.textHelper')} dot={text.dot} value={text.text} />
-        <Row label={t('status.reader')} dot={reader.dot} value={reader.text} />
-        <Row label={t('status.ocr')} dot={health?.models.ocr_reader ? 'ok' : ''} value={health?.models.ocr_reader ? t('status.ready') : t('status.ocrNo')} />
+        <Row label={online ? t('status.ai') : t('status.textHelper')} dot={text.dot} value={text.text} />
+        <Row label={t('status.photo')} dot={photo.dot} value={photo.text} />
         <Row label={t('status.online')} dot={health?.models.online_reader ? 'ok' : ''} value={health?.models.online_reader ? t('status.onlineYes') : t('status.onlineNo')} />
         <Row label={t('status.mode')} dot="" value={health?.lan ? t('status.lanOn') : t('status.lanOff')} />
         <div className="status-item">

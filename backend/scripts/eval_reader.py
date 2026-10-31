@@ -2,7 +2,8 @@
 
 Local (Llama 3.2 Vision in Ollama; needs an Ollama that can run it):  uv run python scripts/eval_reader.py
 Online (Meta Muse Spark; needs MODEL_API_KEY, costs a few cents):    uv run python scripts/eval_reader.py --online
-Free offline (Windows text reader + Llama 3.2 3B):                    uv run python scripts/eval_reader.py --ocr
+Windows text reader + the AI helper:                                  uv run python scripts/eval_reader.py --ocr
+Meta Muse Glimmer reads the photo (NVIDIA, free, needs a key):         uv run python scripts/eval_reader.py --glimmer
 Compares every proposed field with SAMPLE_DATA/answer_keys.json, records latency and the model's
 memory size reported by Ollama, and writes EVAL_RESULTS/reader_<timestamp>.json.
 """
@@ -19,7 +20,7 @@ from pathlib import Path
 
 import httpx
 
-from aurahealth import config, extraction, meta_api, ocr, ollama
+from aurahealth import ai, config, extraction, meta_api, ocr, ollama
 
 
 def norm(s: str) -> str:
@@ -75,9 +76,13 @@ def unload_other_models() -> None:
 def main() -> int:
     online = "--online" in sys.argv
     use_ocr = "--ocr" in sys.argv
-    engine = "online" if online else "ocr" if use_ocr else "local"
+    use_glimmer = "--glimmer" in sys.argv
+    engine = "online" if online else "ocr" if use_ocr else "glimmer" if use_glimmer else "local"
+    if use_glimmer and not extraction.readers()["glimmer"]:
+        print("Muse Glimmer is not available (no NVIDIA key); nothing measured.")
+        return 1
     model_name = extraction.reader_model(engine)
-    if use_ocr and not (ocr.available() and ollama.status()["text"]):
+    if use_ocr and not (ocr.available() and ai.status()["ready"]):
         print("The Windows text reader or the text helper is not available; nothing measured.")
         return 1
     if online and not meta_api.available():
@@ -105,6 +110,8 @@ def main() -> int:
                 raw, timing = meta_api.read_image(extraction.SYSTEM, extraction.USER, extraction.model_image_b64(doc["id"]))
             elif use_ocr:
                 raw, timing, _ = ocr.read(extraction.image_path(doc["id"]))
+            elif use_glimmer:
+                raw, timing, _ = extraction._glimmer_read(doc["id"])
             else:
                 raw, timing = ollama.chat_json(config.VISION_MODEL, extraction.SYSTEM, extraction.USER, extraction.SCHEMA,
                                                config.VISION_TIMEOUT_S, images_b64=[extraction.model_image_b64(doc["id"])])

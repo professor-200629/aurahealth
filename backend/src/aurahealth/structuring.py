@@ -1,4 +1,4 @@
-"""Split a typed description into points with Llama 3.2 3B, keeping only the user's exact words.
+"""Split a typed description into points with the AI helper (ai.py), keeping only the user's exact words.
 
 The model may only COPY spans of the user's text. Code checks every span is
 really in the text (ignoring case, spacing and punctuation); anything else is
@@ -11,7 +11,7 @@ import json
 import re
 import unicodedata
 
-from . import config, ollama
+from . import ai, config
 
 SCHEMA = {
     "type": "object",
@@ -56,8 +56,10 @@ def supported_text(text: str) -> bool:
 
 def validate(text: str, raw: str) -> tuple[list[str], int]:
     """Keep model quotes that are real spans of `text`, in text order, without duplicates."""
+    from .extraction import _json_object
+
     try:
-        items = json.loads(raw).get("points", [])
+        items = _json_object(raw).get("points", [])
     except (json.JSONDecodeError, AttributeError):
         return [], 0
     norm_text = normalise(text)
@@ -124,20 +126,22 @@ def split(text: str) -> dict:
     if not supported_text(text):
         return {"status": "unsupported_language", "points": [], "dropped": 0}
     try:
-        raw, timing = ollama.chat_json(config.TEXT_MODEL, SYSTEM, f"Person's text:\n<<<\n{text}\n>>>",
-                                       SCHEMA, config.TEXT_TIMEOUT_S)
-    except ollama.ModelUnavailable as exc:
+        raw, timing = ai.chat_json(SYSTEM, f"Person's text:\n<<<\n{text}\n>>>", SCHEMA)
+    except ai.ModelUnavailable as exc:
         return {"status": "model_unavailable", "error": str(exc), "points": [], "dropped": 0}
     points, dropped = validate(text, raw)
     if not points:
         return {"status": "no_valid_points", "points": [], "dropped": dropped, "timing": timing}
     from .extraction import INSTRUCTION_LIKE  # same check as for documents
 
+    leftover = uncovered(text, points)
     return {
         "status": "ok",
         "points": [{"text": p, "flag_instruction": bool(INSTRUCTION_LIKE.search(p))} for p in points],
         "dropped": dropped,
-        "uncovered": uncovered(text, points),
+        "uncovered": leftover,
+        # Words the helper left out are kept as the person's own; instruction-like ones are flagged the same way.
+        "uncovered_flags": [bool(INSTRUCTION_LIKE.search(piece)) for piece in leftover],
         "timing": timing,
-        "model": config.TEXT_MODEL,
+        "model": ai.model_name(),
     }

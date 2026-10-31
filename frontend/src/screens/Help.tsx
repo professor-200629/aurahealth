@@ -46,12 +46,13 @@ export function Help({ onPick }: { onPick: (guideId: string) => void }) {
 
 /** Type what you see; Llama 3.2 3B points to guides and shows the words it matched. Nothing opens by itself. */
 function GuideFinder({ onPick }: { onPick: (guideId: string) => void }) {
-  const { t } = useUi()
+  const { t, health } = useUi()
   const [open, setOpen] = useState(false)
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
   const [matches, setMatches] = useState<{ guide: string; quote: string }[] | null>(null)
   const [message, setMessage] = useState('')
+  const unavailable = health?.models.ai_online ? t('finder.unavailableOnline') : t('finder.unavailable')
 
   const find = async () => {
     setBusy(true)
@@ -62,9 +63,9 @@ function GuideFinder({ onPick }: { onPick: (guideId: string) => void }) {
       if (r.status === 'ok') setMatches(r.matches.filter((m) => GUIDES[m.guide]))
       else if (r.status === 'no_match') setMessage(t('finder.none'))
       else if (r.status === 'unsupported_language') setMessage(t('finder.language'))
-      else if (r.status !== 'empty') setMessage(t('finder.unavailable'))
+      else if (r.status !== 'empty') setMessage(unavailable)
     } catch {
-      setMessage(t('finder.unavailable'))
+      setMessage(unavailable)
     } finally {
       setBusy(false)
     }
@@ -98,7 +99,7 @@ function GuideFinder({ onPick }: { onPick: (guideId: string) => void }) {
         {busy ? t('finder.busy') : t('finder.go')}
       </button>
       <p className="small muted" style={{ margin: 0 }}>
-        {t('finder.note')}
+        {health?.models.ai_online ? t('finder.noteOnline') : t('finder.note')}
       </p>
       {matches && matches.length > 0 && (
         <div className="stack" data-testid="finder-matches">

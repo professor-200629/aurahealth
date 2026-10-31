@@ -1,4 +1,4 @@
-"""Point to a first-aid guide from what the person typed, with Llama 3.2 3B.
+"""Point to a first-aid guide from what the person typed, with the AI helper (Muse Glimmer, see ai.py).
 
 The model may only name guides from a fixed list and must copy the words that point to each one. Code drops any
 guide that is not on the list and any quote that is not really in the person's text. It never writes advice,
@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import json
 
-from . import config, ollama, packs
+from . import ai, config, packs
 from .extraction import INSTRUCTION_LIKE
 from .structuring import _on_word_boundary, _original_span, normalise, supported_text
 
@@ -67,8 +67,10 @@ RETRY_NOTE = ("\nYour last answer copied words that are not in the person's text
 
 def validate(text: str, raw: str) -> tuple[list[dict], int]:
     """Keep matches whose guide is on the list and whose quote is really in `text`. Fixed guide order, no repeats."""
+    from .extraction import _json_object
+
     try:
-        items = json.loads(raw).get("matches", [])
+        items = _json_object(raw).get("matches", [])
     except (json.JSONDecodeError, AttributeError):
         return [], 0
     norm_text = normalise(text)
@@ -100,19 +102,19 @@ def find(text: str) -> dict:
         return {"status": "unsupported_language", "matches": [], "dropped": 0}
     try:
         user = f"Person's text:\n<<<\n{text}\n>>>"
-        raw, timing = ollama.chat_json(config.TEXT_MODEL, SYSTEM, user, SCHEMA, config.TEXT_TIMEOUT_S)
-    except ollama.ModelUnavailable as exc:
+        raw, timing = ai.chat_json(SYSTEM, user, SCHEMA)
+    except ai.ModelUnavailable as exc:
         return {"status": "model_unavailable", "error": str(exc), "matches": [], "dropped": 0}
     matches, dropped = validate(text, raw)
     retried = False
     if not matches and dropped:  # it named a guide but quoted words that are not there: ask once more
         retried = True
         try:
-            raw, again = ollama.chat_json(config.TEXT_MODEL, SYSTEM + RETRY_NOTE, user, SCHEMA, config.TEXT_TIMEOUT_S)
+            raw, again = ai.chat_json(SYSTEM + RETRY_NOTE, user, SCHEMA)
             timing = {**again, "wall_s": round(timing["wall_s"] + again["wall_s"], 2)}
             matches, more = validate(text, raw)
             dropped += more
-        except ollama.ModelUnavailable:
+        except ai.ModelUnavailable:
             pass
     return {"status": "ok" if matches else "no_match", "matches": matches, "dropped": dropped, "retried": retried,
-            "timing": timing, "model": config.TEXT_MODEL}
+            "timing": timing, "model": ai.model_name()}

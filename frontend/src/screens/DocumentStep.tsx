@@ -84,8 +84,9 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
   }
   const online = !!health?.models.online_reader
   const local = !!health?.models.vision_runnable
-  const ocrReady = !!health?.models.ocr_reader
-  const read = (engine: 'local' | 'online' | 'ocr') =>
+  const glimmer = !!health?.models.glimmer_reader
+  const ocrReady = !!health?.models.ocr_reader && !health?.models.ai_online  // offline OCR only with the laptop model
+  const read = (engine: 'local' | 'online' | 'ocr' | 'glimmer') =>
     run(async () => {
       const r = await api.extract(engine)
       if (r.session) return r
@@ -159,6 +160,16 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
           <div className="stack">
             {status === 'not_started' && !manual && fields.length === 0 && (
               <div className="stack">
+                {glimmer && (
+                  <>
+                    <button className="btn primary block" onClick={() => read('glimmer')} disabled={busy} data-testid="read-glimmer">
+                      {t('doc.readGlimmer')}
+                    </button>
+                    <p className="small muted" style={{ margin: 0 }}>
+                      {t('doc.glimmerNote')}
+                    </p>
+                  </>
+                )}
                 {ocrReady && (
                   <>
                     <button className="btn primary block" onClick={() => read('ocr')} disabled={busy} data-testid="read-ocr">
@@ -171,7 +182,7 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
                 )}
                 {online && (
                   <>
-                    <button className={`btn ${ocrReady ? 'secondary' : 'primary'} block`} onClick={() => read('online')} disabled={busy} data-testid="read-online">
+                    <button className={`btn ${ocrReady || glimmer ? 'secondary' : 'primary'} block`} onClick={() => read('online')} disabled={busy} data-testid="read-online">
                       {t('doc.readOnline')}
                     </button>
                     <p className="small muted" style={{ margin: 0 }}>
@@ -184,7 +195,7 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
                     {t('doc.readLocal')}
                   </button>
                 )}
-                {!online && !local && !ocrReady && <Banner kind="info" text={t('doc.noReader')} />}
+                {!online && !local && !ocrReady && !glimmer && <Banner kind="info" text={t('doc.noReader')} />}
                 <button className="btn secondary block" onClick={() => setManual(true)} disabled={busy}>
                   {t('doc.manual')}
                 </button>

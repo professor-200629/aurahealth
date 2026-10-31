@@ -13,7 +13,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from aurahealth import config, ollama, structuring
+from aurahealth import ai, config, structuring
 
 CASES = [
     ("fainted", "My father fainted in the bathroom five minutes ago. He is breathing but not answering me. "
@@ -36,8 +36,8 @@ def coverage(text: str, points: list[str]) -> float:
 
 
 def main() -> int:
-    if not ollama.status()["text"]:
-        print(f"{config.TEXT_MODEL} is not available in Ollama; nothing measured.")
+    if not ai.status()["ready"]:
+        print(f"{ai.model_name()} is not available (no key, or the laptop model is missing); nothing measured.")
         return 1
     rows = []
     for name, text in CASES:
@@ -59,8 +59,8 @@ def main() -> int:
     out_dir = config.ROOT / "EVAL_RESULTS"
     out_dir.mkdir(exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    path = out_dir / f"splitter_{stamp}.json"
-    path.write_text(json.dumps({"model": config.TEXT_MODEL, "run_at": stamp, "machine_note": "developer laptop, CPU",
+    path = out_dir / f"splitter_{ai.provider()}_{stamp}.json"
+    path.write_text(json.dumps({"model": ai.model_name(), "run_at": stamp, "machine_note": ai.provider(),
                                 "cases": rows}, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nWrote {path}")
     return 0

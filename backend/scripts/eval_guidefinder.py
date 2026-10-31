@@ -19,7 +19,7 @@ import sys
 import time
 from datetime import datetime
 
-from aurahealth import config, guidefinder, ollama
+from aurahealth import ai, config, guidefinder
 
 DEV = [
     ("fainted", "dad fainted and is lying on the floor", ["check"], []),
@@ -102,8 +102,8 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--set", choices=["dev", "heldout", "heldout2"], default="heldout2")
     args = parser.parse_args()
-    if not ollama.status()["text"]:
-        print(f"{config.TEXT_MODEL} is not available in Ollama; nothing measured.")
+    if not ai.status()["ready"]:
+        print(f"{ai.model_name()} is not available (no key, or the laptop model is missing); nothing measured.")
         return 1
     cases = {"dev": DEV, "heldout": HELDOUT, "heldout2": HELDOUT2}[args.set]
     rows = []
@@ -130,9 +130,9 @@ def main() -> int:
     out_dir = config.ROOT / "EVAL_RESULTS"
     out_dir.mkdir(exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    path = out_dir / f"guidefinder_{args.set}_{stamp}.json"
-    path.write_text(json.dumps({"model": config.TEXT_MODEL, "set": args.set, "run_at": stamp,
-                                "machine_note": "developer laptop, CPU", "summary": summary, "cases": rows},
+    path = out_dir / f"guidefinder_{ai.provider()}_{args.set}_{stamp}.json"
+    path.write_text(json.dumps({"model": ai.model_name(), "set": args.set, "run_at": stamp,
+                                "machine_note": f"{ai.provider()}: " + ("NVIDIA hosted API" if ai.status()["online"] else "developer laptop, CPU"), "summary": summary, "cases": rows},
                                indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"Wrote {path}")
     return 0

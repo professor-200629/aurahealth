@@ -30,7 +30,7 @@ export interface DocumentState {
     model?: string
     error?: string
     timing?: { wall_s: number; load_s: number; output_tokens?: number; cost_usd?: number; ocr_s?: number }
-    engine?: 'local' | 'online' | 'ocr'
+    engine?: 'local' | 'online' | 'ocr' | 'glimmer'
     ocr_text?: string | null
   }
   fields: DocField[]
@@ -104,5 +104,8 @@ export interface Health {
     online_reader?: boolean
     online_model?: string
     ocr_reader?: boolean
+    glimmer_reader?: boolean
+    ai_provider?: 'glimmer' | 'llama'
+    ai_online?: boolean
   }
 }

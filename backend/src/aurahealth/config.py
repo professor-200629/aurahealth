@@ -31,6 +31,14 @@ META_CALL_RESERVE_USD = 0.02
 PRICE_META_INPUT_PER_M = 1.25
 PRICE_META_OUTPUT_PER_M = 4.25
 
+# The AI helper. "glimmer" (default): Meta Muse Glimmer 30B (open weights), hosted free by NVIDIA; needs internet
+# and NVIDIA_API_KEY (scripts/set-nvidia-key.ps1). "llama": Llama 3.2 3B on this laptop through Ollama, offline.
+# The hackathon organizers said on 31 Oct that Llama does not count as a Meta model for judging, so it is opt-in.
+AI_PROVIDER = os.environ.get("AURA_AI", "glimmer")
+GLIMMER_MODEL = os.environ.get("AURA_GLIMMER_MODEL", "meta/muse-glimmer-30b")
+NVIDIA_API_BASE = os.environ.get("AURA_NVIDIA_API_BASE", "https://integrate.api.nvidia.com/v1")
+GLIMMER_TIMEOUT_S = float(os.environ.get("AURA_GLIMMER_TIMEOUT_S", "90"))
+
 TEXT_TIMEOUT_S = float(os.environ.get("AURA_TEXT_TIMEOUT_S", "90"))
 VISION_TIMEOUT_S = float(os.environ.get("AURA_VISION_TIMEOUT_S", "900"))
 

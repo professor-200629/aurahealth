@@ -45,7 +45,7 @@ export const api = {
   patchSession: (patch: Record<string, unknown>) => call<{ session: Session }>('/api/session', json('PUT', patch)),
   deleteSession: () => call<{ deleted: boolean }>('/api/session', { method: 'DELETE' }),
   structure: (text: string) =>
-    call<{ status: string; points: { text: string; flag_instruction: boolean }[]; dropped: number; uncovered?: string[]; model?: string; error?: string }>(
+    call<{ status: string; points: { text: string; flag_instruction: boolean }[]; dropped: number; uncovered?: string[]; uncovered_flags?: boolean[]; model?: string; error?: string }>(
       '/api/structure',
       json('POST', { text }),
       120000,
@@ -54,7 +54,7 @@ export const api = {
     call<{ status: string; matches: { guide: string; quote: string }[]; dropped: number; model?: string }>(
       '/api/guide-finder',
       json('POST', { text }),
-      60000,
+      100000,
     ),
   samples: () => call<{ samples: string[] }>('/api/samples'),
   useSample: (name: string) => call<{ session: Session }>(`/api/document/sample/${encodeURIComponent(name)}`, { method: 'POST' }),
@@ -64,7 +64,7 @@ export const api = {
     return call<{ session: Session }>('/api/document', { method: 'POST', body: form }, 60000)
   },
   removeDocument: () => call<{ session: Session }>('/api/document', { method: 'DELETE' }),
-  extract: (engine: 'local' | 'online' | 'ocr') =>
+  extract: (engine: 'local' | 'online' | 'ocr' | 'glimmer') =>
     call<{ job: string | null; status: string; session?: Session }>('/api/document/extract', json('POST', { engine })),
   extractStatus: (job: string) => call<{ status: string; session: Session }>(`/api/document/extract/${job}`),
   saveFields: (fields: unknown[], current: string | null) =>

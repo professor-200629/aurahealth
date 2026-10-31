@@ -164,7 +164,7 @@ export function Age({ session, onSaved, onNext, onBack }: StepProps) {
 // ---------- 3. what ----------
 
 export function What({ session, onSaved, onNext, onBack }: StepProps) {
-  const { t } = useUi()
+  const { t, health } = useUi()
   const d = session.description
   const [text, setText] = useState(d.text)
   const [points, setPoints] = useState<Point[]>(d.points)
@@ -194,7 +194,7 @@ export function What({ session, onSaved, onNext, onBack }: StepProps) {
         const leftover = r.uncovered ?? []
         const fresh: Point[] = [
           ...r.points.map((p) => ({ id: rid(), text: p.text, source: 'user_split' as const, kept: true, flag_instruction: p.flag_instruction })),
-          ...leftover.map((text) => ({ id: rid(), text, source: 'user' as const, kept: true })),
+          ...leftover.map((text, i) => ({ id: rid(), text, source: 'user' as const, kept: true, flag_instruction: !!r.uncovered_flags?.[i] })),
         ]
         const at = (p: Point) => text.toLowerCase().indexOf(p.text.toLowerCase())
         fresh.sort((a, b) => at(a) - at(b))
@@ -234,7 +234,7 @@ export function What({ session, onSaved, onNext, onBack }: StepProps) {
             {splitting ? t('common.loading') : t('what.assist')}
           </button>
           <p className="small muted" style={{ margin: 0 }}>
-            {t('what.assistNote')}
+            {health?.models.ai_online ? t('what.assistNoteOnline') : t('what.assistNote')}
           </p>
         </div>
       )}

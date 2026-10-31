@@ -25,7 +25,7 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-from . import config, meta_api, ocr, ollama
+from . import ai, config, meta_api, ocr, ollama
 
 SCHEMA = {
     "type": "object",
@@ -155,15 +155,17 @@ _JOBS_LOCK = threading.Lock()
 
 
 def readers() -> dict:
-    """Which readers can be used now. "local" needs an Ollama that can still run Llama 3.2 Vision; "ocr" is
-    Windows' built-in text reader plus Llama 3.2 3B, free and offline."""
-    status = ollama.status()
-    return {"local": config.USE_LOCAL_VISION and status["vision"], "online": meta_api.available(),
-            "ocr": ocr.available() and status["text"]}
+    """Which readers can be used now. "glimmer": Meta Muse Glimmer reads the photo (online, via NVIDIA); "ocr":
+    Windows' built-in text reader plus the AI helper; "local" needs an Ollama that can still run Llama 3.2 Vision;
+    "online": Meta Muse Spark with a Meta key."""
+    helper = ai.status()
+    return {"local": config.USE_LOCAL_VISION and ollama.status()["vision"], "online": meta_api.available(),
+            "ocr": ocr.available() and helper["ready"], "glimmer": helper["ready"] and helper["images"]}
 
 
 def reader_model(engine: str) -> str:
-    return {"online": config.META_MODEL, "ocr": f"Windows OCR + {config.TEXT_MODEL}"}.get(engine, config.VISION_MODEL)
+    return {"online": config.META_MODEL, "ocr": f"Windows OCR + {ai.model_name()}",
+            "glimmer": ai.model_name()}.get(engine, config.VISION_MODEL)
 
 
 def start_job(doc_id: str, engine: str) -> str:
@@ -187,6 +189,8 @@ def _run_job(job_id: str, doc_id: str, engine: str) -> None:
             raw, timing = meta_api.read_image(SYSTEM, USER, model_image_b64(doc_id))
         elif engine == "ocr":
             raw, timing, ocr_text = ocr.read(image_path(doc_id))
+        elif engine == "glimmer":
+            raw, timing, ocr_text = _glimmer_read(doc_id)
         else:
             raw, timing = ollama.chat_json(config.VISION_MODEL, SYSTEM, USER, SCHEMA, config.VISION_TIMEOUT_S,
                                            images_b64=[model_image_b64(doc_id)])
@@ -201,3 +205,20 @@ def _run_job(job_id: str, doc_id: str, engine: str) -> None:
         result = {"status": "failed", "error": type(exc).__name__, "fields": []}
     with _JOBS_LOCK:
         _JOBS[job_id].update(result, finished=time.time())
+
+
+def _glimmer_read(doc_id: str) -> tuple[str, dict, str | None]:
+    """Muse Glimmer reads the photo itself. When Windows' text reader is there, its lines go along as a hint for
+    small print (they can be wrong; the image wins). Values are not limited to the OCR text, so the model can read
+    148/92 where the OCR saw 48/9; the person still confirms every field."""
+    hint = None
+    if ocr.available():
+        try:
+            hint = "\n".join(ocr.rows(ocr.read_lines(image_path(doc_id))[0])) or None
+        except ocr.OcrUnavailable:
+            hint = None
+    user = USER if not hint else (
+        f"{USER}\nA text reader found these lines on the photo; they may contain mistakes, trust the image:\n"
+        f"<<<\n{hint}\n>>>")
+    raw, timing = ai.chat_json(SYSTEM, user, SCHEMA, images_b64=[model_image_b64(doc_id)])
+    return raw, timing, hint

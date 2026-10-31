@@ -11,7 +11,7 @@ from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
-from . import config, extraction, firstaid, guidefinder, handoff, ollama, packs, store, structuring
+from . import ai, config, extraction, firstaid, guidefinder, handoff, ollama, packs, store, structuring
 
 app = FastAPI(title="AuraHealth", version=config.APP_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -55,9 +55,12 @@ async def guard(request: Request, call_next):
 @app.get("/api/health")
 def health():
     models = ollama.status()
+    helper = ai.status()
     ready = extraction.readers()
-    models.update({"vision_runnable": ready["local"], "online_reader": ready["online"], "online_model": config.META_MODEL,
-                   "ocr_reader": ready["ocr"]})
+    models.update({"text": helper["ready"], "text_model": helper["model"], "ai_provider": helper["provider"],
+                   "ai_online": helper["online"],
+                   "vision_runnable": ready["local"], "online_reader": ready["online"], "online_model": config.META_MODEL,
+                   "ocr_reader": ready["ocr"], "glimmer_reader": ready["glimmer"]})
     return {"ok": True, "version": config.APP_VERSION, "models": models, "lan": STATE["lan"]}
 
 

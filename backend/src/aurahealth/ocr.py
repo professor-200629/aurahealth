@@ -1,7 +1,7 @@
-"""Free offline photo reader: Windows' built-in text recognition, then Llama 3.2 3B picks the fields.
+"""Photo reader: Windows' built-in text recognition, then the AI helper (ai.py) picks the fields.
 
 Used when the Meta online reader and Llama 3.2 Vision are not available. The OCR finds the printed lines and
-where they are; code joins lines on the same row ("Haemoglobin:" + "11.2 g/dL"); Llama 3.2 3B names the fields
+where they are; code joins lines on the same row ("Haemoglobin:" + "11.2 g/dL"); the AI helper names the fields
 and must copy every value exactly from the OCR text. Code drops any value that is not there. OCR can misread
 (for example "48/9" for "148/92"), so every field stays a proposal until the person checks it against the photo.
 """
@@ -14,7 +14,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from . import config, ollama
+from . import ai, config
 from .structuring import _on_word_boundary, normalise
 
 SCRIPT = Path(__file__).with_name("winocr.ps1")
@@ -131,13 +131,12 @@ def validate(text: str, raw: str) -> tuple[list[dict], int]:
 
 
 def read(image: Path) -> tuple[str, dict, str]:
-    """OCR + Llama 3.2 3B. Returns (raw JSON of the kept fields, timing, the OCR text shown as evidence)."""
+    """OCR + the AI helper. Returns (raw JSON of the kept fields, timing, the OCR text shown as evidence)."""
     lines, ocr_s = read_lines(image)
     text = "\n".join(rows(lines))
     if not text.strip():
         return json.dumps({"fields": []}), {"ocr_s": ocr_s, "wall_s": ocr_s, "dropped": 0}, ""
-    raw, timing = ollama.chat_json(config.TEXT_MODEL, SYSTEM, f"Text found on the photo:\n<<<\n{text}\n>>>",
-                                   SCHEMA, config.TEXT_TIMEOUT_S)
+    raw, timing = ai.chat_json(SYSTEM, f"Text found on the photo:\n<<<\n{text}\n>>>", SCHEMA)
     fields, dropped = validate(text, raw)
     timing = {**timing, "ocr_s": ocr_s, "wall_s": round(ocr_s + timing["wall_s"], 2), "dropped": dropped}
     return json.dumps({"fields": fields}), timing, text

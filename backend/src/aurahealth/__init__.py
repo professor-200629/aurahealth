@@ -65,17 +65,17 @@ def main() -> None:
         print("  The code stays the same after restarts; delete data/pair_code.txt to make a new one.")
     else:
         print("  Local only. Add --lan to let your phone connect over Wi-Fi.")
-    print(f"  Model runtime (Ollama): {'running' if status['runtime'] else 'NOT running'}")
-    print(f"    text helper  {status['text_model']}: {'installed' if status['text'] else 'missing'}")
-    from . import config, meta_api
+    from . import ai, config, meta_api, ocr
 
-    local = "missing" if not status["vision"] else (
-        "installed" if config.USE_LOCAL_VISION else "downloaded, but Ollama 0.30+ cannot run it")
-    print(f"    report reader {status['vision_model']}: {local}")
-    from . import ocr
-
-    free_reader = "ready" if ocr.available() and status["text"] else "not available (needs Windows + the text helper)"
-    print(f"  Free offline photo reader (Windows OCR + {status['text_model']}): {free_reader}")
+    helper = ai.status()
+    if helper["provider"] == "glimmer":
+        state = "key set (needs internet)" if helper["ready"] else "NO KEY: run scripts/set-nvidia-key.ps1"
+        print(f"  AI helper: Meta Muse Glimmer ({helper['model']}, hosted free by NVIDIA): {state}")
+    else:
+        print(f"  AI helper: {helper['model']} on this laptop (Ollama {'running' if status['runtime'] else 'NOT running'}): "
+              f"{'ready' if helper['ready'] else 'missing'}")
+    reader = "ready" if helper["ready"] else "needs the AI helper"
+    print(f"  Photo reader ({'Muse Glimmer reads the photo' if helper['images'] else 'Windows OCR + ' + helper['model']}): {reader}")
     online = "key set, needs internet" if meta_api.available() else "no key (run scripts/set-meta-key.ps1)"
     print(f"  Meta online reader ({config.META_MODEL}): {online}\n", flush=True)
     uvicorn.run(app_module.app, host=host, port=args.port, access_log=False, log_level="warning")

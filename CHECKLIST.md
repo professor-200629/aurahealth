@@ -95,8 +95,12 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       samples (EVALUATION 2c); 38 API tests pass
 - [~] 31 Oct: morning check (no "Good morning" by 09:00 while the guard is on → same alert chain); APK built,
       **not yet tested on the phone**
-- [ ] Ask organizers whether Llama 3.2 run locally meets the "Meta model" requirement (unofficial rubric copy
-      names only the Meta API, Muse Spark Open or Muse Glimmer)
+- [x] Asked organizers (31 Oct, #questions): their bot answered "Llama is not part of this hackathon and does not
+      count as a Meta model". AI helpers switched to **Meta Muse Glimmer** via NVIDIA's free hosted API
+      (`backend/src/aurahealth/ai.py`, `scripts/set-nvidia-key.ps1`); Llama kept as an opt-in offline backup.
+      Key saved by the developer; 42 API + 7 browser tests pass with Glimmer live
+- [x] DEMO_SCRIPT.md rewritten: stroke at night (knock) → auto-call + SMS → guide finder → card; morning check;
+      opening line "built during the hackathon"
 
 ## Open decisions for the developer
 

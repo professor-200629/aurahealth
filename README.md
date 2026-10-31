@@ -1,14 +1,46 @@
-# AuraHealth: the Offline Emergency Bridge
+# AuraHealth: the first hour at home
 
 > **Research prototype. Simulation only. Not a medical device.** Use only fictional people and the synthetic
 > sample reports. No real patient use until independent clinical, language, privacy, security and relevant
 > legal/regulatory review.
 
-AuraHealth helps a worried person turn "what happened" into a clear **handoff card** they can read out or show
-to an emergency operator or a doctor. It works **without internet**: the phone talks only to a laptop on the
-same Wi-Fi, and the Meta Llama models run on that laptop.
+When someone collapses or cannot get up at home, help is often far away. AuraHealth turns the nearest person into
+a first responder: the phone **alerts a neighbour and family by itself**, **speaks Red Cross first-aid steps** one
+at a time, and hands over a **timed record** of what happened and what was done.
 
-**Setup: Phone interface + local laptop server.** The phone does not run a model.
+**The emergency path works with no internet and no laptop:** the 112 button, the first-aid steps, the night
+guard (3 knocks, or no "Good morning"), the automatic call and text, and the time log all run on the phone.
+
+**The AI helpers use Meta Muse Glimmer** (Meta's open-weight 30B model, Apache 2.0), hosted free by NVIDIA
+(`meta/muse-glimmer-30b` on build.nvidia.com). They need internet and an NVIDIA key, and they only ever suggest:
+a person confirms. Where each model runs is listed under "Meta models" below.
+
+**Setup:** Android app (or any phone browser) + a laptop server on the same Wi-Fi for the AI helpers and the card.
+
+## Why the first hour matters (sources)
+
+- Most cardiac arrests outside hospital happen at home: 68% in Ireland's 2024 registry
+  ([HSE](https://about.hse.ie/news/press-release-ohcar-annual-report-2024/)).
+- CPR started before the ambulance more than doubled 30-day survival in Sweden: 10.5% vs 4.0% across 30,381
+  arrests ([NEJM 2015, via Healio](https://cm.healio.com/news/cardiology/20150625/cpr-before-ems-arrival-beneficial-cellphone-dispatch-of-laypersons-effective)).
+- In Indian studies, bystanders started CPR in only 1.3% (Delhi) to 9.8% (Manipal) of cases
+  ([review, Indian Heart J 2023](https://pmc.ncbi.nlm.nih.gov/articles/PMC10568059/)), against 84% in Ireland.
+- Spoken step-by-step guidance works: telephone CPR instructions double bystander CPR (RR 2.00,
+  [ILCOR](https://costr.ilcor.org/document/emergency-care-dispatcher-instruction-in-cpr)).
+- Alerting someone nearby works: in London, survival was 18% vs 10% when a GoodSAM responder accepted the alert
+  ([NIHR](https://evidence.nihr.ac.uk/alert/more-people-survived-cardiac-arrest-first-aiders-goodsam-alert/)).
+- Ambulances are often late: Karnataka's 108 service reached cardiac and stroke calls later than its 10-minute
+  target in over 60% of cases, says the state auditor (CAG, 2014–19,
+  [News Minute](https://www.thenewsminute.com/article/108-ambulances-failed-reach-50-patients-within-time-karnataka-cag-139331)).
+- In a stroke, about 1.9 million neurons die every minute ([Saver 2006](https://pubmed.ncbi.nlm.nih.gov/16339467/)),
+  and treatment depends on when the person was **last known well**.
+- Snakebite kills about 58,000 people a year in India, mostly in rural homes
+  ([eLife 2020](https://elifesciences.org/articles/54076)).
+- Long lies after falls: among people over 90 who fell, 80% could not get up and 30% lay on the floor for an
+  hour or more ([BMJ 2008](https://www.bmj.com/content/337/bmj.a2227.abstract)).
+
+AuraHealth does not replace emergency services or a clinician. It helps the nearest person act and hand over a
+clear, timed record.
 
 ## What it does
 
@@ -18,24 +50,30 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
   chest compressions. **Every step tapped is saved with the phone's time** and appears on the handoff card,
   so the doctor sees what was done and when. It works with the laptop out of reach; the log is sent later.
   Not yet reviewed by a clinician; medicine doses are left out on purpose.
-- **Guide finder (Meta Llama 3.2 3B, local).** "Not sure which one? Describe what you see": the model points to
+- **Guide finder (Meta Muse Glimmer).** "Not sure which one? Describe what you see": the model points to
   one or two of the guides and shows the person's own words it matched; nothing opens until the person taps.
   It can only name guides from a fixed list, code drops any quote that is not the person's words, and CPR or the
-  recovery position are reached only through "start here" and its two questions. Measured on 24 unseen fictional
-  texts: 20 right, 0 wrong guides, 4 with no or only part of a suggestion; one wrong guide in a re-run of an
-  earlier set (`EVALUATION.md` section 2b). Needs the laptop; the words are not saved.
+  recovery position are reached only through "start here" and its two questions. **Measured on 56 fictional
+  descriptions: 56 right, 0 wrong guides**, median 6–9 s per answer (`EVALUATION.md` section 2d). Needs the
+  laptop and internet; the words go to NVIDIA for the answer and are not saved by AuraHealth. The guide list
+  always works without it.
 - **Emergency call button on every screen.** It is a plain `tel:112` link (India), so it opens the phone's dialer
   even if the laptop or the models are down. It never places a call by itself. A call still needs mobile network.
 - **Short guided questions** (who, approximate age, what happened, when it started, details), each with
   "I don't know". Missing answers become **Unknown** on the card, never guessed.
-- **Text helper (Meta Llama 3.2 3B, local).** Splits the user's own description into points. Code checks that
+- **Text helper (Meta Muse Glimmer).** Splits the user's own description into points. Code checks that
   every point is the user's exact words; anything else is dropped and counted. Words the helper leaves out are
   kept as written. English (Latin script) only; Telugu text is refused, not "translated".
-- **Free offline photo reader (Windows' built-in text reader + Meta Llama 3.2 3B, on the laptop).** Reads a
-  photo of a medicine strip or report into proposed fields: the OCR finds the printed words, Llama 3.2 3B sorts
-  them into fields and may only copy them exactly. No download, no internet, no cost. The OCR misreads some
-  numbers (for example 148/92 as 48/9), so the person confirms every field next to the photo. Measured: 28/45
-  fields exactly right on the 6 synthetic images (`EVALUATION.md` section 2c).
+- **Photo reader (Meta Muse Glimmer reads the photo).** Reads a photo of a medicine strip or report into
+  proposed fields, with Windows' built-in text reader's lines as a hint for small print. The photo goes to
+  NVIDIA for this; use synthetic samples in this prototype. Every field stays a proposal until the person
+  confirms it next to the photo. **Measured: 39/39 fields exactly right on the 5 synthetic reports** (including a
+  blurry photo); on the medicine strip every value was read correctly but under the strip's own labels
+  (`EVALUATION.md` section 2d). A fake "ignore your instructions" note on a report was copied as text and flagged.
+- **Offline backup (optional, not the judged model):** the same helpers can run on the laptop with Llama 3.2 3B
+  (`AURA_AI=llama`) and Windows OCR, with no internet. Measured in `EVALUATION.md` sections 2, 2b, 2c. The
+  hackathon organizers said on 31 Oct that Llama does not count as a Meta model for this hackathon, so the
+  default is Muse Glimmer.
 - **Online reader (Meta Muse Spark via the Meta Model API, optional, not measured).** Not used in the demo: the
   Meta account's card check was not completed, so it was never run with a real key. Reads a photo of a synthetic report or
   medicine strip when a key is set (`scripts/set-meta-key.ps1`, run by you; the key is never shown or stored in the
@@ -51,13 +89,15 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
 - **"AuraHealth can't assess this situation."** No diagnosis, no triage, no "safe to wait", no medicine doses; only the fixed Red Cross first-aid steps.
   The card always says it has not been assessed, next to the call button.
 - **Privacy.** Answers are stored only on the laptop (`data/sessions.sqlite3`, **not encrypted**). Report images
-  are re-encoded (metadata removed). One tap deletes the session and its images. No accounts, no analytics,
-  no third-party requests. The internet check runs only when the user taps "Check now".
+  are re-encoded (metadata removed). One tap deletes the session and its images. No accounts, no analytics.
+  The only third-party requests are the AI helper calls to NVIDIA (the typed words, or the photo), made only
+  when the person taps the helper; phone numbers never leave the phone. The internet check runs only when the
+  user taps "Check now".
 
 ## What it does not do
 
-It does not diagnose, triage, rank urgency, recommend medicine doses, call 112 by itself, send data anywhere, or
-work as a phone-only app (yet). The first-aid steps are fixed text adapted from the Red Cross (IFRC) 2020
+It does not diagnose, triage, rank urgency, recommend medicine doses, or call 112 by itself. It sends nothing
+anywhere except the AI helper calls described above. The first-aid steps are fixed text adapted from the Red Cross (IFRC) 2020
 guidelines; no model writes them (see `packs/sources/README.md`).
 
 ## Android app and night guard (`android/`)
@@ -66,7 +106,7 @@ A native Android app (Java, no extra libraries) wraps the same web app:
 
 - **Works with no laptop and no internet:** the web app is bundled inside the APK, so first aid, the night
   guard, check-ins and the time log work on the phone alone. When the laptop is reachable (Status → Laptop AI
-  helper), its copy is used instead, with the Llama helpers, and the phone's saved log is sent to it.
+  helper), its copy is used instead, with the AI helpers, and the phone's saved log is sent to it.
 - **Night guard:** a foreground service listens for **3 knocks** (sharp sounds, each 0.12–1.5 s apart, all within
   3 s; speech and music are ignored). Audio is processed in memory, never recorded or sent; only loudness numbers
   go to the Android debug log. Then a loud alarm and a full-screen **"Are you OK?"** countdown (30 s). If nobody
@@ -89,14 +129,14 @@ Knock detector check on the laptop (made-up sounds): see `android/tools/KnockDet
 ## How it fits together
 
 ```
- Phone browser (any modern phone)            Laptop (Windows, no internet needed after setup)
- ┌──────────────────────────────┐  Wi-Fi   ┌──────────────────────────────────────────────┐
- │ React web app                │ ───────► │ FastAPI server (Python)                      │
- │  - tel:112 always visible    │  pairing │  - session store: SQLite file                │
- │  - packs bundled in the app  │  cookie  │  - deterministic handoff builder (no model)  │
- └──────────────────────────────┘          │  - Ollama ──► Llama 3.2 3B   (text helper)   │
-                                           │          └──► Llama 3.2 Vision 11B (reader)  │
-                                           └──────────────────────────────────────────────┘
+ Android app / phone browser                 Laptop server (Windows)                     Internet (AI helpers only)
+ ┌──────────────────────────────┐  Wi-Fi   ┌─────────────────────────────────────┐   ┌──────────────────────────┐
+ │ React web app (bundled)      │ ───────► │ FastAPI server (Python)             │──►│ NVIDIA hosted API        │
+ │  - tel:112 always visible    │  pairing │  - session store: SQLite file       │   │ Meta Muse Glimmer 30B    │
+ │  - first-aid steps + log     │  cookie  │  - handoff card built by code       │   │ (open weights)           │
+ │  - night guard, auto-call,   │          │  - checks every model answer        │   └──────────────────────────┘
+ │    SMS (Android, no network) │          │  - Windows OCR (offline)            │
+ └──────────────────────────────┘          └─────────────────────────────────────┘
 ```
 
 The handoff card is built by plain code from what the user typed, chose or confirmed. No model decides what
@@ -104,22 +144,29 @@ goes on the card or whether emergency help is shown.
 
 ## Meta models
 
-| Role | Model (Ollama tag) | Download | Status on the developer laptop (29 Oct 2026) |
+| Role | Model | Where it runs | Status (31 Oct 2026) |
 | --- | --- | --- | --- |
-| Text helper and guide finder | Llama 3.2 3B (`llama3.2:3b`) | ~2.0 GB | Installed, measured (see `EVALUATION.md`) |
-| Report reader | Llama 3.2 Vision 11B (`llama3.2-vision:11b`) | ~7.8 GB | Downloaded, but **cannot run on Ollama 0.30+** (needs 0.24.0); not measured |
+| Guide finder, text helper, photo reader | **Meta Muse Glimmer 30B** (`meta/muse-glimmer-30b`, Meta open weights, Apache 2.0) | NVIDIA's free hosted API (build.nvidia.com), called by the laptop server; needs internet and `NVIDIA_API_KEY` (`scripts/set-nvidia-key.ps1`) | Default. Measured: `EVALUATION.md` section 2d |
+| Offline backup (optional) | Llama 3.2 3B (`llama3.2:3b`, Ollama) + Windows OCR | The laptop, no internet (`AURA_AI=llama`) | Measured: sections 2, 2b, 2c. Organizers said Llama does not count as a Meta model for this hackathon |
+| Online reader (optional) | Meta Muse Spark (`muse-spark-1.3`, Meta Model API) | Meta's API; needs `MODEL_API_KEY` | Built, never run with a real key |
+| Report reader (optional) | Llama 3.2 Vision 11B | The laptop | Cannot run on Ollama 0.30+; not measured |
 
-Llama 3.2 Vision supports English only for image+text tasks. On a laptop CPU it may take minutes per image;
-measure it with `backend/scripts/eval_reader.py` before saying anything about speed or accuracy.
+Muse Glimmer was chosen because the hackathon counts Meta's open-weight models (Muse Glimmer, Muse Spark Open)
+and the Meta Model API. Muse Glimmer (about 18 GB) does not fit this laptop's 15.5 GB of memory, so it runs on
+NVIDIA's hosted copy of the same open weights.
 
 ## Run it on Windows
 
-Prerequisites (setup needs internet once): [uv](https://docs.astral.sh/uv/), Node.js 22 or newer (only to build
-the web app), and [Ollama](https://ollama.com). Developed with uv 0.12.9, Node 24.14, Ollama 0.32.3.
+Prerequisites: [uv](https://docs.astral.sh/uv/), Node.js 22 or newer (only to build the web app), and a free
+NVIDIA API key for Muse Glimmer (sign in at [build.nvidia.com](https://build.nvidia.com), open Muse Glimmer,
+"Get API Key"). Developed with uv 0.12.9, Node 24.14. [Ollama](https://ollama.com) is only needed for the
+optional offline backup.
 
 ```powershell
-ollama pull llama3.2:3b                 # ~2.0 GB, text helper
-ollama pull llama3.2-vision:11b         # ~7.8 GB, optional report reader (close other apps; needs RAM)
+# Save the NVIDIA key as NVIDIA_API_KEY without showing it (run it yourself; it makes one tiny test call)
+powershell -ExecutionPolicy Bypass -File .\scripts\set-nvidia-key.ps1
+
+# Optional offline backup instead of Muse Glimmer: ollama pull llama3.2:3b, then set AURA_AI=llama
 
 cd C:\Users\Balu\Documents\aurahealth\frontend
 npm install
@@ -155,11 +202,11 @@ Then tap **Status → Check now**: it should say the internet is not reachable w
 
 ```powershell
 cd C:\Users\Balu\Documents\aurahealth\backend
-uv run pytest -q                                          # 34 API and safety-rule tests (no model calls)
+uv run pytest -q                                          # 43 API and safety-rule tests (no model calls)
 $env:AURA_E2E = "1"; uv run pytest tests/test_e2e.py -v   # 7 browser tests in Microsoft Edge, phone size
-uv run python scripts/eval_splitter.py                    # real Llama 3.2 3B calls on fictional text
-uv run python scripts/eval_guidefinder.py                 # guide finder, real Llama 3.2 3B calls (held-out set 2)
-uv run python scripts/eval_reader.py                      # real Llama 3.2 Vision calls (needs the model)
+uv run python scripts/eval_splitter.py                    # text helper, real calls to the active AI helper
+uv run python scripts/eval_guidefinder.py --set heldout2  # guide finder, real calls (also: dev, heldout)
+uv run python scripts/eval_reader.py --glimmer            # photo reader with Muse Glimmer (also: --ocr)
 ```
 
 Results and what was *not* tested are in [`EVALUATION.md`](EVALUATION.md).
@@ -171,8 +218,9 @@ Results and what was *not* tested are in [`EVALUATION.md`](EVALUATION.md).
 | English | Baseline, written by the developer. Not clinically reviewed. |
 | Telugu (తెలుగు) | **Unreviewed draft**, written with AI help. Not checked by a native-speaker translator or a clinician. The app labels it, and shows the English line under every safety-critical sentence. |
 
-The text helper and the report reader work in English only. Voice input and read-aloud are not included,
-because browser speech features are not guaranteed to work offline.
+The AI helpers (text helper, guide finder, photo reader) are used in English only; Telugu text is refused before
+any model call. The first-aid steps are read aloud with the phone's own text-to-speech (in the Android app, or the
+browser's when available). Voice input is not included.
 
 ## Project layout
 
