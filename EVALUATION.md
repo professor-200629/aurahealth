@@ -126,6 +126,36 @@ A case is correct when every needed guide is suggested and nothing else (some ca
 - 56 different fictional English texts is a small check, not clinical validation. Real people describe
   emergencies differently; not tested with real users.
 
+## 2c. Free offline photo reader (Windows OCR + Meta Llama 3.2 3B), real runs, 31 Oct 2026
+
+Built because the Meta online reader could not be used (the account's card check was not completed), and Llama
+3.2 Vision cannot run on this Ollama. Windows' built-in text recognition (`Windows.Media.Ocr`, no download, offline) finds the printed
+lines and their positions; code joins lines on the same row; Llama 3.2 3B names the fields and must copy each
+value exactly from the OCR text (code drops anything else). Every field stays "proposed" until the person
+confirms it next to the photo.
+
+`uv run python scripts/eval_reader.py --ocr`, the 6 synthetic images in `SAMPLE_DATA`, strict match against
+`SAMPLE_DATA/answer_keys.json`. Only about 0.7 GB of memory was free (many apps open).
+
+| Run | clear | blurry | missing date | instruction | phone photo | medicine strip | Total | Time per image |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| First prompt (`reader_ocr_20261031-180709.json`) | 5/8 | 0/8 | 4/7 | 5/8 | 5/8 | 3/6 | **22/45** | 7–23 s |
+| After one prompt fix (`reader_ocr_20261031-180924.json`) | 7/8 | 0/8 | 6/7 | 7/8 | 7/8 | 1/6 | **28/45** | 6–33 s |
+
+- The prompt fix ("copy everything after the label on that row") was made by looking at these same 6 images, so
+  the second row is **not an unseen test**.
+- **Wrong values come from the OCR, not the model:** "48/9 mmHg" for 148/92 (twice), "112 g/dL" for 11.2 (first
+  run), "enicillin". The model could not fix them, by design: it may only copy. This is why every field is
+  checked by the person against the photo, and why the app says so next to the button.
+- The blurry photo gave nothing usable (correct behaviour: no guess).
+- Medicine strip, second run: 1/6 by strict match, but 4 of the 5 misses carry the right text with the printed
+  prefix kept ("EXP. 09/2027", "B.No. GN24A17", "Tablets IP 500 mg"); no value was wrong.
+- The report with an embedded "ignore your instructions … safe to wait" note: no field contained it, and nothing
+  in the app changed.
+- In the app on 31 Oct: the medicine strip was read into 8 proposed fields in 18 s, with a "What the text reader
+  saw" box.
+- Windows only; the OCR language must include English (it did on this laptop).
+
 ## 3. Report reader (Meta Llama 3.2 Vision 11B)
 
 **Not measured: the model cannot run on this laptop's Ollama.** It was downloaded on 29 Oct (7.8 GB), but every

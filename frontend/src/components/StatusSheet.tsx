@@ -47,6 +47,7 @@ export function StatusSheet({ onClose, onLang, onAbout }: { onClose: () => void;
         <Row label={t('status.server')} dot={serverDown ? 'down' : 'ok'} value={serverDown ? t('status.serverDown') : t('status.serverOk')} />
         <Row label={t('status.textHelper')} dot={text.dot} value={text.text} />
         <Row label={t('status.reader')} dot={reader.dot} value={reader.text} />
+        <Row label={t('status.ocr')} dot={health?.models.ocr_reader ? 'ok' : ''} value={health?.models.ocr_reader ? t('status.ready') : t('status.ocrNo')} />
         <Row label={t('status.online')} dot={health?.models.online_reader ? 'ok' : ''} value={health?.models.online_reader ? t('status.onlineYes') : t('status.onlineNo')} />
         <Row label={t('status.mode')} dot="" value={health?.lan ? t('status.lanOn') : t('status.lanOff')} />
         <div className="status-item">

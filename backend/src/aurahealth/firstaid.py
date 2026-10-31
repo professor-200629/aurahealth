@@ -15,6 +15,7 @@ SYSTEM_EVENTS = {
     "guard_on": "Night guard switched on",
     "guard_off": "Night guard switched off",
     "guard_knock": "Knock signal heard (3 knocks)",
+    "guard_silence": "No \"Good morning\" by the morning check time",
     "guard_test": "Alert test started (no call)",
     "guard_cancel": "\"I'm OK\" tapped, alert cancelled",
     "guard_call": "Phoned {role} automatically",
@@ -23,6 +24,7 @@ SYSTEM_EVENTS = {
 }
 EVENT_KINDS = GUIDE_KINDS | set(SYSTEM_EVENTS)
 LAST_SEEN_WELL = {"checkin_night", "checkin_morning", "guard_cancel"}
+ALERTS = {"guard_knock", "guard_silence"}
 MAX_EVENTS = 300
 MAX_CLOCK_SKEW = timedelta(days=2)
 
@@ -91,6 +93,6 @@ def describe(event: dict, pack: dict, number: str) -> dict | None:
 def last_seen_well(events: list[dict]) -> str | None:
     """The latest sign the person was fine before the first alert: a check-in or an "I'm OK" tap."""
     ordered = sorted(events, key=lambda e: e["at"])
-    first_alert = next((e["at"] for e in ordered if e["kind"] == "guard_knock"), None)
+    first_alert = next((e["at"] for e in ordered if e["kind"] in ALERTS), None)
     candidates = [e["at"] for e in ordered if e["kind"] in LAST_SEEN_WELL and (first_alert is None or e["at"] < first_alert)]
     return candidates[-1] if candidates else None

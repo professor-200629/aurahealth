@@ -2,6 +2,7 @@
 
 Local (Llama 3.2 Vision in Ollama; needs an Ollama that can run it):  uv run python scripts/eval_reader.py
 Online (Meta Muse Spark; needs MODEL_API_KEY, costs a few cents):    uv run python scripts/eval_reader.py --online
+Free offline (Windows text reader + Llama 3.2 3B):                    uv run python scripts/eval_reader.py --ocr
 Compares every proposed field with SAMPLE_DATA/answer_keys.json, records latency and the model's
 memory size reported by Ollama, and writes EVAL_RESULTS/reader_<timestamp>.json.
 """
@@ -18,7 +19,7 @@ from pathlib import Path
 
 import httpx
 
-from aurahealth import config, extraction, meta_api, ollama
+from aurahealth import config, extraction, meta_api, ocr, ollama
 
 
 def norm(s: str) -> str:
@@ -73,14 +74,19 @@ def unload_other_models() -> None:
 
 def main() -> int:
     online = "--online" in sys.argv
-    model_name = config.META_MODEL if online else config.VISION_MODEL
+    use_ocr = "--ocr" in sys.argv
+    engine = "online" if online else "ocr" if use_ocr else "local"
+    model_name = extraction.reader_model(engine)
+    if use_ocr and not (ocr.available() and ollama.status()["text"]):
+        print("The Windows text reader or the text helper is not available; nothing measured.")
+        return 1
     if online and not meta_api.available():
         print("No MODEL_API_KEY is set (run scripts/set-meta-key.ps1); nothing measured.")
         return 1
-    if not online and not ollama.status()["vision"]:
+    if engine == "local" and not ollama.status()["vision"]:
         print(f"{config.VISION_MODEL} is not installed in Ollama; nothing measured.")
         return 1
-    if not online:
+    if engine == "local":
         unload_other_models()
     ram_before = available_ram_gb()
     print(f"Available RAM before loading the reader: {ram_before} GB")
@@ -89,7 +95,7 @@ def main() -> int:
     out_dir = config.ROOT / "EVAL_RESULTS"
     out_dir.mkdir(exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    path = out_dir / f"reader_{'online' if online else 'local'}_{stamp}.json"
+    path = out_dir / f"reader_{engine}_{stamp}.json"
     rows = []
     for name, key in keys.items():
         doc = extraction.save_upload((config.SAMPLE_DIR / "reports" / f"{name}.png").read_bytes(), f"{name}.png")
@@ -97,12 +103,14 @@ def main() -> int:
         try:
             if online:
                 raw, timing = meta_api.read_image(extraction.SYSTEM, extraction.USER, extraction.model_image_b64(doc["id"]))
+            elif use_ocr:
+                raw, timing, _ = ocr.read(extraction.image_path(doc["id"]))
             else:
                 raw, timing = ollama.chat_json(config.VISION_MODEL, extraction.SYSTEM, extraction.USER, extraction.SCHEMA,
                                                config.VISION_TIMEOUT_S, images_b64=[extraction.model_image_b64(doc["id"])])
             fields = extraction.parse_fields(raw)
             error = None
-        except (ollama.ModelUnavailable, meta_api.MetaUnavailable, meta_api.BudgetExceeded) as exc:
+        except (ollama.ModelUnavailable, meta_api.MetaUnavailable, meta_api.BudgetExceeded, ocr.OcrUnavailable) as exc:
             fields, timing, error = [], {}, str(exc)
         wall = round(time.perf_counter() - started, 1)
         checks = []

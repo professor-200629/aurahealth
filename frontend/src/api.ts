@@ -64,7 +64,7 @@ export const api = {
     return call<{ session: Session }>('/api/document', { method: 'POST', body: form }, 60000)
   },
   removeDocument: () => call<{ session: Session }>('/api/document', { method: 'DELETE' }),
-  extract: (engine: 'local' | 'online') =>
+  extract: (engine: 'local' | 'online' | 'ocr') =>
     call<{ job: string | null; status: string; session?: Session }>('/api/document/extract', json('POST', { engine })),
   extractStatus: (job: string) => call<{ status: string; session: Session }>(`/api/document/extract/${job}`),
   saveFields: (fields: unknown[], current: string | null) =>

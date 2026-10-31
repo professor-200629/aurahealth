@@ -29,8 +29,9 @@ export interface DocumentState {
     job?: string
     model?: string
     error?: string
-    timing?: { wall_s: number; load_s: number; output_tokens?: number; cost_usd?: number }
-    engine?: 'local' | 'online'
+    timing?: { wall_s: number; load_s: number; output_tokens?: number; cost_usd?: number; ocr_s?: number }
+    engine?: 'local' | 'online' | 'ocr'
+    ocr_text?: string | null
   }
   fields: DocField[]
   current: 'yes' | 'no' | null
@@ -102,5 +103,6 @@ export interface Health {
     vision_runnable?: boolean
     online_reader?: boolean
     online_model?: string
+    ocr_reader?: boolean
   }
 }

@@ -31,7 +31,13 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
 - **Text helper (Meta Llama 3.2 3B, local).** Splits the user's own description into points. Code checks that
   every point is the user's exact words; anything else is dropped and counted. Words the helper leaves out are
   kept as written. English (Latin script) only; Telugu text is refused, not "translated".
-- **Online reader (Meta Muse Spark via the Meta Model API, optional).** Reads a photo of a synthetic report or
+- **Free offline photo reader (Windows' built-in text reader + Meta Llama 3.2 3B, on the laptop).** Reads a
+  photo of a medicine strip or report into proposed fields: the OCR finds the printed words, Llama 3.2 3B sorts
+  them into fields and may only copy them exactly. No download, no internet, no cost. The OCR misreads some
+  numbers (for example 148/92 as 48/9), so the person confirms every field next to the photo. Measured: 28/45
+  fields exactly right on the 6 synthetic images (`EVALUATION.md` section 2c).
+- **Online reader (Meta Muse Spark via the Meta Model API, optional, not measured).** Not used in the demo: the
+  Meta account's card check was not completed, so it was never run with a real key. Reads a photo of a synthetic report or
   medicine strip when a key is set (`scripts/set-meta-key.ps1`, run by you; the key is never shown or stored in the
   project) and only when the person taps "Read it with Meta AI (online)", which says the photo goes to Meta.
   Spending is capped at $2 by default (`AURA_MAX_META_SPEND_USD`). Every field is still confirmed by the person.
@@ -67,6 +73,9 @@ A native Android app (Java, no extra libraries) wraps the same web app:
   taps "I'm OK", it **phones the neighbour** and **texts the family** (numbers stay on the phone). It cannot call
   112 by itself: Android does not allow apps to; the big button opens the dialer.
 - **Check-ins:** "Good night" / "Good morning" give the card a **last seen well** time.
+- **Morning check:** someone who had a stroke or a fall in the night may not be able to knock. While the guard
+  is on, if there is no "Good morning" by a set time (default 09:00), the same countdown → call → text runs, and
+  the card says "No "Good morning" by the morning check time". (Built 31 Oct; not yet tested on the real phone.)
 - **Voice:** steps are read with the phone's own text-to-speech.
 
 Build and install (phone on USB with USB debugging on):

@@ -56,7 +56,8 @@ async def guard(request: Request, call_next):
 def health():
     models = ollama.status()
     ready = extraction.readers()
-    models.update({"vision_runnable": ready["local"], "online_reader": ready["online"], "online_model": config.META_MODEL})
+    models.update({"vision_runnable": ready["local"], "online_reader": ready["online"], "online_model": config.META_MODEL,
+                   "ocr_reader": ready["ocr"]})
     return {"ok": True, "version": config.APP_VERSION, "models": models, "lan": STATE["lan"]}
 
 
@@ -282,6 +283,7 @@ def document_image(doc_id: str):
 
 class ExtractRequest(BaseModel):
     engine: str = "local"   # "online" sends the photo to Meta's servers: only when the person chose it
+    # "ocr" = Windows' built-in text reader + Llama 3.2 3B, on this laptop
 
 
 @app.post("/api/document/extract")
@@ -292,7 +294,7 @@ def extract_document(body: ExtractRequest | None = None):
         raise HTTPException(409, "no document")
     engine = body.engine if body else "local"
     ready = extraction.readers()
-    model = config.META_MODEL if engine == "online" else config.VISION_MODEL
+    model = extraction.reader_model(engine)
     if not ready.get(engine):
         doc["extraction"] = {"status": "reader_missing", "model": model, "engine": engine}
         store.save(session)
@@ -316,7 +318,7 @@ def extract_status(job_id: str):
         doc["fields"] = job.get("fields", []) + user_fields
         doc["extraction"] = {"status": job["status"], "job": job_id,
                              "model": job.get("model") or doc["extraction"].get("model"), "engine": job.get("engine"),
-                             "timing": job.get("timing"), "error": job.get("error")}
+                             "timing": job.get("timing"), "error": job.get("error"), "ocr_text": job.get("ocr_text")}
         session = store.save(session)
     return {"status": job["status"], "session": session}
 

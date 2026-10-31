@@ -19,6 +19,7 @@ export type EventKind =
   | 'guard_on'
   | 'guard_off'
   | 'guard_knock'
+  | 'guard_silence'
   | 'guard_test'
   | 'guard_cancel'
   | 'guard_call'

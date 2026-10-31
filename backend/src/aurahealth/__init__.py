@@ -72,6 +72,10 @@ def main() -> None:
     local = "missing" if not status["vision"] else (
         "installed" if config.USE_LOCAL_VISION else "downloaded, but Ollama 0.30+ cannot run it")
     print(f"    report reader {status['vision_model']}: {local}")
+    from . import ocr
+
+    free_reader = "ready" if ocr.available() and status["text"] else "not available (needs Windows + the text helper)"
+    print(f"  Free offline photo reader (Windows OCR + {status['text_model']}): {free_reader}")
     online = "key set, needs internet" if meta_api.available() else "no key (run scripts/set-meta-key.ps1)"
     print(f"  Meta online reader ({config.META_MODEL}): {online}\n", flush=True)
     uvicorn.run(app_module.app, host=host, port=args.port, access_log=False, log_level="warning")

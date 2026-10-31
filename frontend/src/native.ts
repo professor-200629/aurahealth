@@ -34,10 +34,15 @@ interface Bridge {
   drainEvents?: () => string
   getHub?: () => string
   setHub?: (url: string, code: string) => void
+  getMorning?: () => string
+  setMorning?: (on: boolean, hhmm: string) => void
+  checkIn?: (kind: string) => void
 }
 
+export type AlertReason = 'knock' | 'silence' | 'test'
+
 export type NativeEvent =
-  | { type: 'alert'; stage: 'countdown' | 'calling' | 'done' | 'cancelled'; seconds?: number; test?: boolean }
+  | { type: 'alert'; stage: 'countdown' | 'calling' | 'done' | 'cancelled'; seconds?: number; test?: boolean; reason?: AlertReason }
   | { type: 'guard'; on: boolean }
   | { type: 'knock'; count: number }
   | { type: 'level'; value: number }
@@ -82,6 +87,29 @@ export function saveContacts(c: Contacts) {
     else window.localStorage.setItem(CONTACTS_KEY, json)
   } catch {
     /* storage blocked */
+  }
+}
+
+export interface MorningCheck {
+  on: boolean
+  time: string
+}
+
+/** The morning check lives in the Android app: no "Good morning" by this time while the guard is on → alert. */
+export function loadMorning(): MorningCheck | null {
+  try {
+    const raw = native()?.getMorning?.()
+    return raw ? (JSON.parse(raw) as MorningCheck) : null
+  } catch {
+    return null
+  }
+}
+
+export function saveMorning(m: MorningCheck) {
+  try {
+    native()?.setMorning?.(m.on, m.time)
+  } catch {
+    /* not in the app */
   }
 }
 

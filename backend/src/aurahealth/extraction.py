@@ -1,7 +1,8 @@
 """Read visible text fields from a report or medicine-strip photo, as untrusted proposals.
 
-Readers: Meta Muse Spark online (when a key is set and the person chooses it) or Llama 3.2 Vision on this
-laptop (only with an Ollama version that can still run it).
+Readers: Meta Muse Spark online (when a key is set and the person chooses it), Windows' built-in text reader
+plus Llama 3.2 3B on this laptop (free, offline; see ocr.py), or Llama 3.2 Vision on this laptop (only with an
+Ollama version that can still run it).
 
 - The image is re-encoded on upload (metadata such as GPS is dropped).
 - The model only transcribes. Its JSON is schema-checked, size-limited and cleaned.
@@ -24,7 +25,7 @@ from pathlib import Path
 
 from PIL import Image, UnidentifiedImageError
 
-from . import config, meta_api, ollama
+from . import config, meta_api, ocr, ollama
 
 SCHEMA = {
     "type": "object",
@@ -154,8 +155,15 @@ _JOBS_LOCK = threading.Lock()
 
 
 def readers() -> dict:
-    """Which readers can be used now. "local" needs an Ollama that can still run Llama 3.2 Vision."""
-    return {"local": config.USE_LOCAL_VISION and ollama.status()["vision"], "online": meta_api.available()}
+    """Which readers can be used now. "local" needs an Ollama that can still run Llama 3.2 Vision; "ocr" is
+    Windows' built-in text reader plus Llama 3.2 3B, free and offline."""
+    status = ollama.status()
+    return {"local": config.USE_LOCAL_VISION and status["vision"], "online": meta_api.available(),
+            "ocr": ocr.available() and status["text"]}
+
+
+def reader_model(engine: str) -> str:
+    return {"online": config.META_MODEL, "ocr": f"Windows OCR + {config.TEXT_MODEL}"}.get(engine, config.VISION_MODEL)
 
 
 def start_job(doc_id: str, engine: str) -> str:
@@ -173,17 +181,21 @@ def job(job_id: str) -> dict | None:
 
 def _run_job(job_id: str, doc_id: str, engine: str) -> None:
     result: dict
+    ocr_text = None
     try:
         if engine == "online":
             raw, timing = meta_api.read_image(SYSTEM, USER, model_image_b64(doc_id))
-            model = config.META_MODEL
+        elif engine == "ocr":
+            raw, timing, ocr_text = ocr.read(image_path(doc_id))
         else:
             raw, timing = ollama.chat_json(config.VISION_MODEL, SYSTEM, USER, SCHEMA, config.VISION_TIMEOUT_S,
                                            images_b64=[model_image_b64(doc_id)])
-            model = config.VISION_MODEL
         fields = parse_fields(raw)
-        result = {"status": "done" if fields else "no_fields", "fields": fields, "timing": timing, "model": model}
-    except (ollama.ModelUnavailable, meta_api.MetaUnavailable, meta_api.BudgetExceeded) as exc:
+        result = {"status": "done" if fields else "no_fields", "fields": fields, "timing": timing,
+                  "model": reader_model(engine)}
+        if ocr_text is not None:
+            result["ocr_text"] = ocr_text[:4000]
+    except (ollama.ModelUnavailable, meta_api.MetaUnavailable, meta_api.BudgetExceeded, ocr.OcrUnavailable) as exc:
         result = {"status": "failed", "error": str(exc), "fields": []}
     except Exception as exc:  # never crash the server; never log document contents
         result = {"status": "failed", "error": type(exc).__name__, "fields": []}

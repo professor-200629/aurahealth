@@ -54,6 +54,27 @@ final class Store {
         prefs(c).edit().putBoolean("guard_on", on).apply();
     }
 
+    /** Morning check: if there is no "Good morning" by this time (minutes after midnight), the alert runs. */
+    static boolean morningOn(Context c) {
+        return prefs(c).getBoolean("morning_on", true);
+    }
+
+    static int morningMinutes(Context c) {
+        return prefs(c).getInt("morning_minutes", 9 * 60);
+    }
+
+    static void setMorning(Context c, boolean on, int minutes) {
+        prefs(c).edit().putBoolean("morning_on", on).putInt("morning_minutes", Math.max(0, Math.min(minutes, 24 * 60 - 1))).apply();
+    }
+
+    static long lastMorningAt(Context c) {
+        return prefs(c).getLong("last_morning_at", 0);
+    }
+
+    static void setLastMorningAt(Context c, long when) {
+        prefs(c).edit().putLong("last_morning_at", when).apply();
+    }
+
     static String hubUrl(Context c) {
         return prefs(c).getString("hub_url", "");
     }

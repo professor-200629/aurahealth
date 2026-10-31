@@ -38,6 +38,9 @@ import java.util.Locale;
  * The night guard. Listens for 3 knocks; then sounds an alarm and counts down 30 seconds. If nobody taps
  * "I'm OK", it phones the neighbour and texts the family. It never calls 112: Android does not allow apps to.
  * Audio is processed in memory frame by frame and never recorded or sent.
+ *
+ * Morning check: someone who had a stroke or a fall in the night may not be able to knock. While the guard is on,
+ * if there is no "Good morning" by the set time, the same alert runs.
  */
 public class GuardService extends Service {
     static final String START = "start";
@@ -45,6 +48,10 @@ public class GuardService extends Service {
     static final String TEST = "test";
     static final String CANCEL = "cancel";
     static final int COUNTDOWN_SECONDS = 30;
+    static final String REASON_KNOCK = "knock";
+    static final String REASON_SILENCE = "silence";
+    static final String REASON_TEST = "test";
+    private static final long MORNING_WINDOW_MS = 12 * 60 * 60 * 1000L;  // a "Good morning" up to 12 h before counts
     private static final String CH_GUARD = "guard";
     private static final String CH_ALERT = "alert";
     private static final int ID_GUARD = 1;
@@ -58,6 +65,8 @@ public class GuardService extends Service {
     private PowerManager.WakeLock wakeLock;
     private volatile boolean alertActive = false;
     private boolean alertTest = false;
+    private String alertReason = REASON_KNOCK;
+    private long morningDeadline = 0;
     private int secondsLeft = 0;
     private MediaPlayer alarm;
     private int savedAlarmVolume = -1;
@@ -89,7 +98,7 @@ public class GuardService extends Service {
                 stopGuard();
                 break;
             case TEST:
-                startAlert(true);
+                startAlert(REASON_TEST);
                 break;
             case CANCEL:
                 cancelAlert();
@@ -118,8 +127,9 @@ public class GuardService extends Service {
             startListening();
             PowerManager pm = getSystemService(PowerManager.class);
             wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "aura:guard");
-            wakeLock.acquire(12 * 60 * 60 * 1000L);
+            wakeLock.acquire(18 * 60 * 60 * 1000L);
         }
+        armMorning();
         MainActivity.sendToWeb("{\"type\":\"guard\",\"on\":true}");
         MainActivity.sendToWeb("{\"type\":\"queue\"}");
     }
@@ -127,6 +137,7 @@ public class GuardService extends Service {
     private void stopGuard() {
         if (listening) Store.addEvent(this, "guard_off", null);
         listening = false;
+        main.removeCallbacks(morningWatch);
         Store.setGuardOn(this, false);
         if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
         if (!alertActive) {
@@ -174,7 +185,7 @@ public class GuardService extends Service {
                     peakEnergy = 0;
                 }
                 if (r == KnockDetector.PATTERN) {
-                    main.post(() -> startAlert(false));
+                    main.post(() -> startAlert(REASON_KNOCK));
                 }
                 int pending = r == KnockDetector.PATTERN ? 3 : detector.pendingKnocks();
                 if (pending != lastKnocks) {
@@ -192,14 +203,46 @@ public class GuardService extends Service {
         listener.start();
     }
 
+    // ---------- morning check ----------
+
+    /** Set the next morning-check time after now (today or tomorrow), and watch for it while the guard is on. */
+    void armMorning() {
+        main.removeCallbacks(morningWatch);
+        if (!listening || !Store.morningOn(this)) return;
+        java.util.Calendar cal = java.util.Calendar.getInstance();
+        int minutes = Store.morningMinutes(this);
+        cal.set(java.util.Calendar.HOUR_OF_DAY, minutes / 60);
+        cal.set(java.util.Calendar.MINUTE, minutes % 60);
+        cal.set(java.util.Calendar.SECOND, 0);
+        cal.set(java.util.Calendar.MILLISECOND, 0);
+        if (cal.getTimeInMillis() <= System.currentTimeMillis()) cal.add(java.util.Calendar.DAY_OF_MONTH, 1);
+        morningDeadline = cal.getTimeInMillis();
+        main.postDelayed(morningWatch, 30_000);
+    }
+
+    private final Runnable morningWatch = new Runnable() {
+        @Override
+        public void run() {
+            if (!listening) return;
+            if (System.currentTimeMillis() >= morningDeadline) {
+                boolean saidGoodMorning = Store.lastMorningAt(GuardService.this) >= morningDeadline - MORNING_WINDOW_MS;
+                if (!saidGoodMorning && !alertActive && Store.morningOn(GuardService.this)) startAlert(REASON_SILENCE);
+                morningDeadline += 24 * 60 * 60 * 1000L;
+            }
+            main.postDelayed(this, 30_000);
+        }
+    };
+
     // ---------- the alert ----------
 
-    void startAlert(boolean test) {
+    void startAlert(String reason) {
         if (alertActive) return;
+        boolean test = REASON_TEST.equals(reason);
         alertActive = true;
         alertTest = test;
+        alertReason = reason;
         secondsLeft = COUNTDOWN_SECONDS;
-        Store.addEvent(this, test ? "guard_test" : "guard_knock", null);
+        Store.addEvent(this, test ? "guard_test" : REASON_SILENCE.equals(reason) ? "guard_silence" : "guard_knock", null);
         MainActivity.sendToWeb("{\"type\":\"queue\"}");
         playAlarm();
         vibrate();
@@ -211,7 +254,8 @@ public class GuardService extends Service {
 
     private void tick() {
         if (!alertActive) return;
-        MainActivity.sendToWeb("{\"type\":\"alert\",\"stage\":\"countdown\",\"seconds\":" + secondsLeft + ",\"test\":" + alertTest + "}");
+        MainActivity.sendToWeb("{\"type\":\"alert\",\"stage\":\"countdown\",\"seconds\":" + secondsLeft + ",\"test\":" + alertTest
+                + ",\"reason\":\"" + alertReason + "\"}");
         if (secondsLeft <= 0) {
             finishAlert();
             return;
@@ -240,7 +284,7 @@ public class GuardService extends Service {
             callNeighbour();
             textFamily();
         }
-        MainActivity.sendToWeb("{\"type\":\"alert\",\"stage\":\"calling\",\"test\":" + alertTest + "}");
+        MainActivity.sendToWeb("{\"type\":\"alert\",\"stage\":\"calling\",\"test\":" + alertTest + ",\"reason\":\"" + alertReason + "\"}");
         MainActivity.sendToWeb("{\"type\":\"queue\"}");
         if (!listening) stopSelf();
     }
@@ -269,8 +313,11 @@ public class GuardService extends Service {
         }
         String time = new SimpleDateFormat("HH:mm", Locale.US).format(new Date());
         String who = neighbour[0].isEmpty() ? "the neighbour" : neighbour[0];
-        String msg = "AuraHealth alert: 3 knocks for help were heard at " + time
-                + " and nobody tapped \"I'm OK\". " + who + " was phoned. Please check now or call 112. (Prototype)";
+        String what = REASON_SILENCE.equals(alertReason)
+                ? "there was no \"Good morning\" check-in by " + time
+                : "3 knocks for help were heard at " + time;
+        String msg = "AuraHealth alert: " + what + " and nobody tapped \"I'm OK\". " + who
+                + " was phoned. Please check now or call 112. (Prototype)";
         try {
             SmsManager sms = Build.VERSION.SDK_INT >= 31 ? getSystemService(SmsManager.class) : SmsManager.getDefault();
             sms.sendMultipartTextMessage(family[1], null, sms.divideMessage(msg), null, null);
@@ -332,7 +379,9 @@ public class GuardService extends Service {
         Notification n = new Notification.Builder(this, CH_ALERT)
                 .setSmallIcon(R.drawable.ic_stat_aura)
                 .setContentTitle("Are you OK?")
-                .setContentText(alertTest ? "Test alert: nobody will be called" : "Tap \"I'm OK\", or the neighbour will be phoned in 30 seconds")
+                .setContentText(alertTest ? "Test alert: nobody will be called"
+                        : REASON_SILENCE.equals(alertReason) ? "No \"Good morning\" yet. Tap \"I'm OK\", or the neighbour will be phoned in 30 seconds"
+                        : "Tap \"I'm OK\", or the neighbour will be phoned in 30 seconds")
                 .setCategory(Notification.CATEGORY_ALARM)
                 .setFullScreenIntent(full, true)
                 .setContentIntent(full)
@@ -368,6 +417,7 @@ public class GuardService extends Service {
     public void onDestroy() {
         listening = false;
         main.removeCallbacks(ticker);
+        main.removeCallbacks(morningWatch);
         stopAlarm();
         if (wakeLock != null && wakeLock.isHeld()) wakeLock.release();
         instance = null;

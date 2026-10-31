@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { logEvent, pendingEvents, subscribe } from '../eventlog'
-import { guardStatus, isNativeApp, loadContacts, native, onNativeEvent, saveContacts } from '../native'
-import type { Contacts, GuardStatus } from '../native'
+import { guardStatus, isNativeApp, loadContacts, loadMorning, native, onNativeEvent, saveContacts, saveMorning } from '../native'
+import type { Contacts, GuardStatus, MorningCheck } from '../native'
 import { Dual, Icon, useUi } from '../ui'
 
 const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -23,6 +23,7 @@ export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
   const [level, setLevel] = useState(0)
   const [knocks, setKnocks] = useState(0)
   const [checkin, setCheckin] = useState<string | null>(lastCheckin ?? latestLocalCheckin())
+  const [morning, setMorning] = useState<MorningCheck | null>(loadMorning)
 
   useEffect(
     () =>
@@ -54,7 +55,14 @@ export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
   }
   const setField = (role: keyof Contacts, field: 'name' | 'number', value: string) =>
     setContacts((c) => ({ ...c, [role]: { ...c[role], [field]: value } }))
-  const check = (kind: 'checkin_night' | 'checkin_morning') => setCheckin(logEvent({ kind }).at)
+  const check = (kind: 'checkin_night' | 'checkin_morning') => {
+    native()?.checkIn?.(kind)
+    setCheckin(logEvent({ kind }).at)
+  }
+  const changeMorning = (m: MorningCheck) => {
+    setMorning(m)
+    saveMorning(m)
+  }
 
   return (
     <div className="stack">
@@ -89,6 +97,25 @@ export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
                 </div>
                 <p className="small" style={{ margin: 0 }}>
                   {t('guard.knocks', { count: knocks })}
+                </p>
+              </div>
+            )}
+            {morning && (
+              <div className="morning-check" data-testid="morning-check">
+                <label className="row" style={{ gap: 10 }}>
+                  <input type="checkbox" checked={morning.on} onChange={(e) => changeMorning({ ...morning, on: e.target.checked })} />
+                  <span>{t('guard.morning')}</span>
+                  <input
+                    type="time"
+                    className="input time-input"
+                    value={morning.time}
+                    disabled={!morning.on}
+                    aria-label={t('guard.morningTime')}
+                    onChange={(e) => e.target.value && changeMorning({ ...morning, time: e.target.value })}
+                  />
+                </label>
+                <p className="small" style={{ margin: '6px 0 0' }}>
+                  {t('guard.morningNote')}
                 </p>
               </div>
             )}

@@ -7,6 +7,7 @@ interface AlertState {
   stage: 'countdown' | 'calling' | 'done' | 'cancelled'
   seconds: number
   test: boolean
+  silence: boolean
 }
 
 /** The "Are you OK?" screen. The Android night-guard service runs the countdown and makes the call; this only
@@ -20,7 +21,7 @@ export function AlertOverlay({ onHelp }: { onHelp: () => void }) {
       onNativeEvent((e) => {
         if (e.type !== 'alert') return
         if (e.stage === 'cancelled') setAlert(null)
-        else setAlert({ stage: e.stage, seconds: e.seconds ?? 0, test: !!e.test })
+        else setAlert({ stage: e.stage, seconds: e.seconds ?? 0, test: !!e.test, silence: e.reason === 'silence' })
       }),
     [],
   )
@@ -35,6 +36,7 @@ export function AlertOverlay({ onHelp }: { onHelp: () => void }) {
       <div className="alert-inner">
         {alert.stage === 'countdown' ? (
           <>
+            {alert.silence && <p className="alert-test">{t('alert.silence')}</p>}
             <h1 id="alert-title">{t('alert.title')}</h1>
             <div className="alert-count" aria-live="assertive">
               {alert.seconds}

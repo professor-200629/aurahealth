@@ -90,6 +90,13 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       person taps). Held-out set 2: 20/24 right, 0 wrong guides; 34 API + 7 browser tests pass. Not yet in the APK
       (needs the laptop anyway); not yet tried on the real phone
 - [ ] Make the repository public on GitHub before submitting (organizers, 31 Oct: must be public at submit time)
+- [x] 31 Oct: Meta API dropped (card check needs a ₹1,198 hold; developer's choice). Free offline photo reader
+      built instead: Windows OCR + Llama 3.2 3B, values copied exactly, person confirms; 28/45 fields on the 6
+      samples (EVALUATION 2c); 38 API tests pass
+- [~] 31 Oct: morning check (no "Good morning" by 09:00 while the guard is on → same alert chain); APK built,
+      **not yet tested on the phone**
+- [ ] Ask organizers whether Llama 3.2 run locally meets the "Meta model" requirement (unofficial rubric copy
+      names only the Meta API, Muse Spark Open or Muse Glimmer)
 
 ## Open decisions for the developer
 

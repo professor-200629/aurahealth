@@ -81,6 +81,35 @@ final class AuraBridge {
     }
 
     @JavascriptInterface
+    public String getMorning() {
+        int m = Store.morningMinutes(activity);
+        try {
+            return new JSONObject().put("on", Store.morningOn(activity))
+                    .put("time", String.format(java.util.Locale.US, "%02d:%02d", m / 60, m % 60)).toString();
+        } catch (JSONException e) {
+            return "{}";
+        }
+    }
+
+    @JavascriptInterface
+    public void setMorning(boolean on, String hhmm) {
+        try {
+            String[] p = hhmm.split(":");
+            Store.setMorning(activity, on, Integer.parseInt(p[0]) * 60 + Integer.parseInt(p[1]));
+        } catch (RuntimeException ignored) {
+            return;
+        }
+        GuardService s = GuardService.instance;
+        if (s != null) activity.runOnUiThread(s::armMorning);
+    }
+
+    /** A check-in tapped on the page. "Good morning" stops the morning check for today. */
+    @JavascriptInterface
+    public void checkIn(String kind) {
+        if ("checkin_morning".equals(kind)) Store.setLastMorningAt(activity, System.currentTimeMillis());
+    }
+
+    @JavascriptInterface
     public void cancelAlert() {
         activity.runOnUiThread(() -> GuardService.send(activity, GuardService.CANCEL));
     }

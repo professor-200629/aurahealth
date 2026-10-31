@@ -84,7 +84,8 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
   }
   const online = !!health?.models.online_reader
   const local = !!health?.models.vision_runnable
-  const read = (engine: 'local' | 'online') =>
+  const ocrReady = !!health?.models.ocr_reader
+  const read = (engine: 'local' | 'online' | 'ocr') =>
     run(async () => {
       const r = await api.extract(engine)
       if (r.session) return r
@@ -158,9 +159,19 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
           <div className="stack">
             {status === 'not_started' && !manual && fields.length === 0 && (
               <div className="stack">
+                {ocrReady && (
+                  <>
+                    <button className="btn primary block" onClick={() => read('ocr')} disabled={busy} data-testid="read-ocr">
+                      {t('doc.readOcr')}
+                    </button>
+                    <p className="small muted" style={{ margin: 0 }}>
+                      {t('doc.ocrNote')}
+                    </p>
+                  </>
+                )}
                 {online && (
                   <>
-                    <button className="btn primary block" onClick={() => read('online')} disabled={busy} data-testid="read-online">
+                    <button className={`btn ${ocrReady ? 'secondary' : 'primary'} block`} onClick={() => read('online')} disabled={busy} data-testid="read-online">
                       {t('doc.readOnline')}
                     </button>
                     <p className="small muted" style={{ margin: 0 }}>
@@ -169,11 +180,11 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
                   </>
                 )}
                 {local && (
-                  <button className={`btn ${online ? 'secondary' : 'primary'} block`} onClick={() => read('local')} disabled={busy} data-testid="read">
+                  <button className={`btn ${online || ocrReady ? 'secondary' : 'primary'} block`} onClick={() => read('local')} disabled={busy} data-testid="read">
                     {t('doc.readLocal')}
                   </button>
                 )}
-                {!online && !local && <Banner kind="info" text={t('doc.noReader')} />}
+                {!online && !local && !ocrReady && <Banner kind="info" text={t('doc.noReader')} />}
                 <button className="btn secondary block" onClick={() => setManual(true)} disabled={busy}>
                   {t('doc.manual')}
                 </button>
@@ -197,6 +208,12 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
                 {t('doc.timing', { seconds: timing.wall_s, model: doc.extraction.model ?? '' })}
                 {timing.cost_usd != null && ` ${t('doc.cost', { cost: timing.cost_usd.toFixed(4) })}`}
               </p>
+            )}
+            {doc.extraction.ocr_text && (
+              <details className="card flat small" data-testid="ocr-text">
+                <summary>{t('doc.ocrText')}</summary>
+                <pre style={{ whiteSpace: 'pre-wrap', margin: '8px 0 0', fontFamily: 'inherit' }}>{doc.extraction.ocr_text}</pre>
+              </details>
             )}
 
             {showFields && (

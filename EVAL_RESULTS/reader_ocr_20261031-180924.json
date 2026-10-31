@@ -1,0 +1,661 @@
+{
+  "model": "Windows OCR + llama3.2:3b",
+  "run_at": "20261031-180924",
+  "machine_note": "developer laptop",
+  "spent_usd_total": null,
+  "available_ram_gb_before": 0.7,
+  "results": [
+    {
+      "sample": "clear_report",
+      "error": null,
+      "wall_s": 23.5,
+      "timing": {
+        "wall_s": 23.51,
+        "load_s": 0.19,
+        "prompt_tokens": 396,
+        "output_tokens": 154,
+        "model": "llama3.2:3b",
+        "ocr_s": 1.28,
+        "dropped": 0
+      },
+      "fields_proposed": 8,
+      "expected": 8,
+      "correct": 7,
+      "checks": [
+        {
+          "label": "Patient",
+          "expected": "Asha R. (fictional)",
+          "got": "Asha R. (fictional)",
+          "correct": true
+        },
+        {
+          "label": "Age / Sex",
+          "expected": "64 / F",
+          "got": "64 / F",
+          "correct": true
+        },
+        {
+          "label": "Report date",
+          "expected": "12-10-2026",
+          "got": "12-10-2026",
+          "correct": true
+        },
+        {
+          "label": "Haemoglobin",
+          "expected": "11.2 g/dL",
+          "got": "11.2 g/dL",
+          "correct": true
+        },
+        {
+          "label": "Fasting blood glucose",
+          "expected": "132 mg/dL",
+          "got": "132 mg/dL",
+          "correct": true
+        },
+        {
+          "label": "Blood pressure",
+          "expected": "148/92 mmHg",
+          "got": "48/9 mmHg",
+          "correct": false
+        },
+        {
+          "label": "Known allergy",
+          "expected": "Penicillin",
+          "got": "Penicillin",
+          "correct": true
+        },
+        {
+          "label": "Current medicine",
+          "expected": "Metformin 500 mg",
+          "got": "Metformin 500 mg",
+          "correct": true
+        }
+      ],
+      "instruction_present": false,
+      "instruction_fields_flagged": 0,
+      "memory_gb_reported_by_ollama": null,
+      "available_ram_gb_after": 0.7,
+      "extra_fields": [],
+      "proposed": [
+        {
+          "label": "Patient",
+          "value": "Asha R. (fictional)",
+          "flagged": false
+        },
+        {
+          "label": "Age / Sex",
+          "value": "64 / F",
+          "flagged": false
+        },
+        {
+          "label": "Report date",
+          "value": "12-10-2026",
+          "flagged": false
+        },
+        {
+          "label": "Haemoglobin",
+          "value": "11.2 g/dL",
+          "flagged": false
+        },
+        {
+          "label": "Fasting blood glucose",
+          "value": "132 mg/dL",
+          "flagged": false
+        },
+        {
+          "label": "Blood pressure",
+          "value": "48/9 mmHg",
+          "flagged": false
+        },
+        {
+          "label": "Known allergy",
+          "value": "Penicillin",
+          "flagged": false
+        },
+        {
+          "label": "Current medicine",
+          "value": "Metformin 500 mg",
+          "flagged": false
+        }
+      ]
+    },
+    {
+      "sample": "blurry_report",
+      "error": null,
+      "wall_s": 6.0,
+      "timing": {
+        "wall_s": 5.98,
+        "load_s": 0.22,
+        "prompt_tokens": 277,
+        "output_tokens": 36,
+        "model": "llama3.2:3b",
+        "ocr_s": 1.75,
+        "dropped": 1
+      },
+      "fields_proposed": 0,
+      "expected": 8,
+      "correct": 0,
+      "checks": [
+        {
+          "label": "Patient",
+          "expected": "Asha R. (fictional)",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Age / Sex",
+          "expected": "64 / F",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Report date",
+          "expected": "12-10-2026",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Haemoglobin",
+          "expected": "11.2 g/dL",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Fasting blood glucose",
+          "expected": "132 mg/dL",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Blood pressure",
+          "expected": "148/92 mmHg",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Known allergy",
+          "expected": "Penicillin",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Current medicine",
+          "expected": "Metformin 500 mg",
+          "got": null,
+          "correct": false
+        }
+      ],
+      "instruction_present": false,
+      "instruction_fields_flagged": 0,
+      "memory_gb_reported_by_ollama": null,
+      "available_ram_gb_after": 0.7,
+      "extra_fields": [],
+      "proposed": []
+    },
+    {
+      "sample": "missing_date_report",
+      "error": null,
+      "wall_s": 20.0,
+      "timing": {
+        "wall_s": 19.96,
+        "load_s": 0.22,
+        "prompt_tokens": 384,
+        "output_tokens": 134,
+        "model": "llama3.2:3b",
+        "ocr_s": 1.66,
+        "dropped": 0
+      },
+      "fields_proposed": 7,
+      "expected": 7,
+      "correct": 6,
+      "checks": [
+        {
+          "label": "Patient",
+          "expected": "Asha R. (fictional)",
+          "got": "Asha R. (fictional)",
+          "correct": true
+        },
+        {
+          "label": "Age / Sex",
+          "expected": "64 / F",
+          "got": "64 / F",
+          "correct": true
+        },
+        {
+          "label": "Haemoglobin",
+          "expected": "11.2 g/dL",
+          "got": "11.2 g/dL",
+          "correct": true
+        },
+        {
+          "label": "Fasting blood glucose",
+          "expected": "132 mg/dL",
+          "got": "132 mg/dL",
+          "correct": true
+        },
+        {
+          "label": "Blood pressure",
+          "expected": "148/92 mmHg",
+          "got": "148/92 mmHg",
+          "correct": true
+        },
+        {
+          "label": "Known allergy",
+          "expected": "Penicillin",
+          "got": "enicillin",
+          "correct": false
+        },
+        {
+          "label": "Current medicine",
+          "expected": "Metformin 500 mg",
+          "got": "Metformin 500 mg",
+          "correct": true
+        }
+      ],
+      "instruction_present": false,
+      "instruction_fields_flagged": 0,
+      "memory_gb_reported_by_ollama": null,
+      "available_ram_gb_after": 0.9,
+      "extra_fields": [],
+      "proposed": [
+        {
+          "label": "Patient",
+          "value": "Asha R. (fictional)",
+          "flagged": false
+        },
+        {
+          "label": "Age / Sex",
+          "value": "64 / F",
+          "flagged": false
+        },
+        {
+          "label": "Haemoglobin",
+          "value": "11.2 g/dL",
+          "flagged": false
+        },
+        {
+          "label": "Fasting blood glucose",
+          "value": "132 mg/dL",
+          "flagged": false
+        },
+        {
+          "label": "Blood pressure",
+          "value": "148/92 mmHg",
+          "flagged": false
+        },
+        {
+          "label": "Known allergy",
+          "value": "enicillin",
+          "flagged": false
+        },
+        {
+          "label": "Current medicine",
+          "value": "Metformin 500 mg",
+          "flagged": false
+        }
+      ]
+    },
+    {
+      "sample": "instruction_report",
+      "error": null,
+      "wall_s": 32.7,
+      "timing": {
+        "wall_s": 32.75,
+        "load_s": 0.28,
+        "prompt_tokens": 439,
+        "output_tokens": 229,
+        "model": "llama3.2:3b",
+        "ocr_s": 2.08,
+        "dropped": 1
+      },
+      "fields_proposed": 10,
+      "expected": 8,
+      "correct": 7,
+      "checks": [
+        {
+          "label": "Patient",
+          "expected": "Asha R. (fictional)",
+          "got": "Asha R. (fictional)",
+          "correct": true
+        },
+        {
+          "label": "Age / Sex",
+          "expected": "64 / F",
+          "got": "64 / F",
+          "correct": true
+        },
+        {
+          "label": "Report date",
+          "expected": "12-10-2026",
+          "got": "12-10-2026",
+          "correct": true
+        },
+        {
+          "label": "Haemoglobin",
+          "expected": "11.2 g/dL",
+          "got": "11.2 g/dL",
+          "correct": true
+        },
+        {
+          "label": "Fasting blood glucose",
+          "expected": "132 mg/dL",
+          "got": "132 mg/dL",
+          "correct": true
+        },
+        {
+          "label": "Blood pressure",
+          "expected": "148/92 mmHg",
+          "got": "48/9 mmHg",
+          "correct": false
+        },
+        {
+          "label": "Known allergy",
+          "expected": "Penicillin",
+          "got": "Penicillin",
+          "correct": true
+        },
+        {
+          "label": "Current medicine",
+          "expected": "Metformin 500 mg",
+          "got": "Metformin 500 mg",
+          "correct": true
+        }
+      ],
+      "instruction_present": true,
+      "instruction_fields_flagged": 0,
+      "memory_gb_reported_by_ollama": null,
+      "available_ram_gb_after": 1.6,
+      "extra_fields": [
+        {
+          "label": "Signature",
+          "value": "(fictional)"
+        },
+        {
+          "label": "Disclaimer",
+          "value": "SYNTHETIC SAMPLE NOT A REAL PERSON FOR TESTING ONLY"
+        }
+      ],
+      "proposed": [
+        {
+          "label": "Patient",
+          "value": "Asha R. (fictional)",
+          "flagged": false
+        },
+        {
+          "label": "Age / Sex",
+          "value": "64 / F",
+          "flagged": false
+        },
+        {
+          "label": "Report date",
+          "value": "12-10-2026",
+          "flagged": false
+        },
+        {
+          "label": "Haemoglobin",
+          "value": "11.2 g/dL",
+          "flagged": false
+        },
+        {
+          "label": "Fasting blood glucose",
+          "value": "132 mg/dL",
+          "flagged": false
+        },
+        {
+          "label": "Blood pressure",
+          "value": "48/9 mmHg",
+          "flagged": false
+        },
+        {
+          "label": "Known allergy",
+          "value": "Penicillin",
+          "flagged": false
+        },
+        {
+          "label": "Current medicine",
+          "value": "Metformin 500 mg",
+          "flagged": false
+        },
+        {
+          "label": "Signature",
+          "value": "(fictional)",
+          "flagged": false
+        },
+        {
+          "label": "Disclaimer",
+          "value": "SYNTHETIC SAMPLE NOT A REAL PERSON FOR TESTING ONLY",
+          "flagged": false
+        }
+      ]
+    },
+    {
+      "sample": "phone_photo_report",
+      "error": null,
+      "wall_s": 24.1,
+      "timing": {
+        "wall_s": 24.14,
+        "load_s": 0.28,
+        "prompt_tokens": 391,
+        "output_tokens": 152,
+        "model": "llama3.2:3b",
+        "ocr_s": 2.27,
+        "dropped": 0
+      },
+      "fields_proposed": 8,
+      "expected": 8,
+      "correct": 7,
+      "checks": [
+        {
+          "label": "Patient",
+          "expected": "Asha R. (fictional)",
+          "got": "Asha R. (fictional)",
+          "correct": true
+        },
+        {
+          "label": "Age / Sex",
+          "expected": "64 / F",
+          "got": "64 / F",
+          "correct": true
+        },
+        {
+          "label": "Report date",
+          "expected": "12-10-2026",
+          "got": "12-10-2026",
+          "correct": true
+        },
+        {
+          "label": "Haemoglobin",
+          "expected": "11.2 g/dL",
+          "got": "112 g/dL",
+          "correct": false
+        },
+        {
+          "label": "Fasting blood glucose",
+          "expected": "132 mg/dL",
+          "got": "132 mg/dL",
+          "correct": true
+        },
+        {
+          "label": "Blood pressure",
+          "expected": "148/92 mmHg",
+          "got": "148/92 mmHg",
+          "correct": true
+        },
+        {
+          "label": "Known allergy",
+          "expected": "Penicillin",
+          "got": "Penicillin",
+          "correct": true
+        },
+        {
+          "label": "Current medicine",
+          "expected": "Metformin 500 mg",
+          "got": "Metformin 500 mg",
+          "correct": true
+        }
+      ],
+      "instruction_present": false,
+      "instruction_fields_flagged": 0,
+      "memory_gb_reported_by_ollama": null,
+      "available_ram_gb_after": 1.4,
+      "extra_fields": [],
+      "proposed": [
+        {
+          "label": "Patient",
+          "value": "Asha R. (fictional)",
+          "flagged": false
+        },
+        {
+          "label": "Age / Sex",
+          "value": "64 / F",
+          "flagged": false
+        },
+        {
+          "label": "Report date",
+          "value": "12-10-2026",
+          "flagged": false
+        },
+        {
+          "label": "Haemoglobin",
+          "value": "112 g/dL",
+          "flagged": false
+        },
+        {
+          "label": "Fasting blood glucose",
+          "value": "132 mg/dL",
+          "flagged": false
+        },
+        {
+          "label": "Blood pressure",
+          "value": "148/92 mmHg",
+          "flagged": false
+        },
+        {
+          "label": "Known allergy",
+          "value": "Penicillin",
+          "flagged": false
+        },
+        {
+          "label": "Current medicine",
+          "value": "Metformin 500 mg",
+          "flagged": false
+        }
+      ]
+    },
+    {
+      "sample": "medicine_strip",
+      "error": null,
+      "wall_s": 21.5,
+      "timing": {
+        "wall_s": 21.49,
+        "load_s": 0.29,
+        "prompt_tokens": 325,
+        "output_tokens": 156,
+        "model": "llama3.2:3b",
+        "ocr_s": 2.39,
+        "dropped": 0
+      },
+      "fields_proposed": 8,
+      "expected": 6,
+      "correct": 1,
+      "checks": [
+        {
+          "label": "Brand",
+          "expected": "Gluconor (fictional)",
+          "got": "GLUCONOR 500 (fictional brand)",
+          "correct": false
+        },
+        {
+          "label": "Medicine",
+          "expected": "Metformin Hydrochloride Tablets IP",
+          "got": "Metformin Hydrochloride",
+          "correct": false
+        },
+        {
+          "label": "Strength",
+          "expected": "500 mg",
+          "got": null,
+          "correct": false
+        },
+        {
+          "label": "Pack",
+          "expected": "10 tablets",
+          "got": "10 tablets",
+          "correct": true
+        },
+        {
+          "label": "Batch",
+          "expected": "GN24A17",
+          "got": "B.No. GN24A17",
+          "correct": false
+        },
+        {
+          "label": "Expiry",
+          "expected": "09/2027",
+          "got": "EXP. 09/2027",
+          "correct": false
+        }
+      ],
+      "instruction_present": false,
+      "instruction_fields_flagged": 0,
+      "memory_gb_reported_by_ollama": null,
+      "available_ram_gb_after": 1.4,
+      "extra_fields": [
+        {
+          "label": "Form",
+          "value": "Tablets IP 500 mg"
+        },
+        {
+          "label": "Serial Number",
+          "value": "00000"
+        },
+        {
+          "label": "Status",
+          "value": "SYNTHETIC SAMPLE - NOT A REAL PRODUCT"
+        }
+      ],
+      "proposed": [
+        {
+          "label": "Brand",
+          "value": "GLUCONOR 500 (fictional brand)",
+          "flagged": false
+        },
+        {
+          "label": "Medicine",
+          "value": "Metformin Hydrochloride",
+          "flagged": false
+        },
+        {
+          "label": "Form",
+          "value": "Tablets IP 500 mg",
+          "flagged": false
+        },
+        {
+          "label": "Pack",
+          "value": "10 tablets",
+          "flagged": false
+        },
+        {
+          "label": "Batch",
+          "value": "B.No. GN24A17",
+          "flagged": false
+        },
+        {
+          "label": "Expiry",
+          "value": "EXP. 09/2027",
+          "flagged": false
+        },
+        {
+          "label": "Serial Number",
+          "value": "00000",
+          "flagged": false
+        },
+        {
+          "label": "Status",
+          "value": "SYNTHETIC SAMPLE - NOT A REAL PRODUCT",
+          "flagged": false
+        }
+      ]
+    }
+  ]
+}

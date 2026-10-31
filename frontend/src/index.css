@@ -324,6 +324,9 @@ mark { background: #ffe9a8; border-radius: 4px; padding: 0 2px; }
 .night-on { background: #ffd98a; color: #1b1405; min-height: 60px; }
 .night-off { background: rgba(255, 255, 255, 0.12); color: #fff; border: 1px solid rgba(255, 255, 255, 0.25); }
 .btn.night-ghost { color: #ffd98a; margin-top: 8px; }
+.morning-check { background: rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 12px 14px; color: #dfe6f5; margin-top: 12px; }
+.morning-check input[type="checkbox"] { width: 22px; height: 22px; accent-color: #ffd98a; }
+.input.time-input { width: auto; min-height: 44px; padding: 6px 10px; background: #fff; color: #10233f; }
 .night-note { background: rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 12px 14px; color: #dfe6f5; }
 .night-fine { color: #a9b7d3; margin-top: 12px; }
 .night .baseline { color: #8f9cb8; }
