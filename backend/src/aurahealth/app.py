@@ -11,7 +11,7 @@ from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
-from . import config, extraction, firstaid, handoff, ollama, packs, store, structuring
+from . import config, extraction, firstaid, guidefinder, handoff, ollama, packs, store, structuring
 
 app = FastAPI(title="AuraHealth", version=config.APP_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -54,7 +54,10 @@ async def guard(request: Request, call_next):
 
 @app.get("/api/health")
 def health():
-    return {"ok": True, "version": config.APP_VERSION, "models": ollama.status(), "lan": STATE["lan"]}
+    models = ollama.status()
+    ready = extraction.readers()
+    models.update({"vision_runnable": ready["local"], "online_reader": ready["online"], "online_model": config.META_MODEL})
+    return {"ok": True, "version": config.APP_VERSION, "models": models, "lan": STATE["lan"]}
 
 
 @app.get("/api/packs")
@@ -218,6 +221,12 @@ def structure(body: SplitRequest):
     return structuring.split(body.text)
 
 
+@app.post("/api/guide-finder")
+def guide_finder(body: SplitRequest):
+    """Suggests which first-aid guide to open. The words are not saved; no session is needed."""
+    return guidefinder.find(body.text)
+
+
 # ---------- report image + reader (Llama 3.2 Vision) ----------
 
 @app.post("/api/document")
@@ -271,18 +280,25 @@ def document_image(doc_id: str):
     return FileResponse(path, media_type="image/jpeg")
 
 
+class ExtractRequest(BaseModel):
+    engine: str = "local"   # "online" sends the photo to Meta's servers: only when the person chose it
+
+
 @app.post("/api/document/extract")
-def extract_document():
+def extract_document(body: ExtractRequest | None = None):
     session = _require_session()
     doc = session.get("document")
     if not doc:
         raise HTTPException(409, "no document")
-    if not ollama.status()["vision"]:
-        doc["extraction"] = {"status": "reader_missing", "model": config.VISION_MODEL}
+    engine = body.engine if body else "local"
+    ready = extraction.readers()
+    model = config.META_MODEL if engine == "online" else config.VISION_MODEL
+    if not ready.get(engine):
+        doc["extraction"] = {"status": "reader_missing", "model": model, "engine": engine}
         store.save(session)
         return {"job": None, "status": "reader_missing", "session": session}
-    job_id = extraction.start_job(doc["id"])
-    doc["extraction"] = {"status": "running", "job": job_id, "model": config.VISION_MODEL}
+    job_id = extraction.start_job(doc["id"], engine)
+    doc["extraction"] = {"status": "running", "job": job_id, "model": model, "engine": engine}
     store.save(session)
     return {"job": job_id, "status": "running"}
 
@@ -298,7 +314,8 @@ def extract_status(job_id: str):
             (doc.get("extraction") or {}).get("job") == job_id and doc["extraction"].get("status") == "running":
         user_fields = [f for f in doc.get("fields", []) if f.get("origin") == "user"]
         doc["fields"] = job.get("fields", []) + user_fields
-        doc["extraction"] = {"status": job["status"], "job": job_id, "model": config.VISION_MODEL,
+        doc["extraction"] = {"status": job["status"], "job": job_id,
+                             "model": job.get("model") or doc["extraction"].get("model"), "engine": job.get("engine"),
                              "timing": job.get("timing"), "error": job.get("error")}
         session = store.save(session)
     return {"status": job["status"], "session": session}

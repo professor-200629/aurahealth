@@ -50,6 +50,12 @@ export const api = {
       json('POST', { text }),
       120000,
     ),
+  guideFinder: (text: string) =>
+    call<{ status: string; matches: { guide: string; quote: string }[]; dropped: number; model?: string }>(
+      '/api/guide-finder',
+      json('POST', { text }),
+      60000,
+    ),
   samples: () => call<{ samples: string[] }>('/api/samples'),
   useSample: (name: string) => call<{ session: Session }>(`/api/document/sample/${encodeURIComponent(name)}`, { method: 'POST' }),
   upload: (file: File) => {
@@ -58,7 +64,8 @@ export const api = {
     return call<{ session: Session }>('/api/document', { method: 'POST', body: form }, 60000)
   },
   removeDocument: () => call<{ session: Session }>('/api/document', { method: 'DELETE' }),
-  extract: () => call<{ job: string | null; status: string; session?: Session }>('/api/document/extract', { method: 'POST' }),
+  extract: (engine: 'local' | 'online') =>
+    call<{ job: string | null; status: string; session?: Session }>('/api/document/extract', json('POST', { engine })),
   extractStatus: (job: string) => call<{ status: string; session: Session }>(`/api/document/extract/${job}`),
   saveFields: (fields: unknown[], current: string | null) =>
     call<{ session: Session }>('/api/document/fields', json('PUT', { fields, current })),

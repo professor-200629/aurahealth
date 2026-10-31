@@ -121,7 +121,7 @@ def test_full_handoff_keeps_emergency_reachable_and_stays_local(phone):
     page.get_by_label("Known allergies").fill("Penicillin")
     _next(page)
 
-    expect(page.get_by_role("heading", name="Add a report (optional)")).to_be_visible()
+    expect(page.get_by_role("heading", name="Add a report or medicine strip (optional)")).to_be_visible()
     _check_sos(page)
     page.get_by_test_id("sample-clear_report").click()
     page.get_by_role("button", name="Type the details myself").click()
@@ -164,7 +164,7 @@ def test_full_handoff_keeps_emergency_reachable_and_stays_local(phone):
 def test_emergency_still_works_when_the_laptop_is_unreachable(phone):
     page, _, base = phone
     page.goto(base + "/")
-    expect(page.get_by_test_id("start")).to_be_visible()
+    expect(page.get_by_test_id("help-now")).to_be_visible()
     page.context.set_offline(True)  # the phone loses its Wi-Fi link to the laptop
     expect(page.get_by_test_id("server-down")).to_be_visible(timeout=20_000)
     _check_sos(page)
@@ -217,6 +217,29 @@ def test_first_aid_guide_logs_each_step_with_its_time(phone):
         assert any(expected in t for t in texts), (expected, texts)
     assert all(":" in t.split(" ")[0] or ":" in t[:6] for t in texts)  # every line starts with a time
     expect(page.get_by_test_id("handoff")).to_contain_text("First-aid steps adapted from")
+    hosts = {urlparse(u).netloc for u in requests}
+    assert hosts == {urlparse(base).netloc}
+
+
+def test_guide_finder_suggests_with_the_persons_words_and_opens_nothing_by_itself(phone):
+    page, requests, base = phone
+    page.goto(base + "/")
+    page.get_by_test_id("help-now").click()
+    expect(page.get_by_role("heading", name="What is happening?")).to_be_visible()
+    if not httpx.get(base + "/api/health").json()["models"]["text"]:
+        expect(page.get_by_test_id("finder-open")).to_have_count(0)  # no laptop helper: guide list only
+        return
+    page.get_by_test_id("finder-open").click()
+    page.locator("#finder-text").fill("kid choking on a grape")
+    page.get_by_test_id("finder-go").click()
+    expect(page.get_by_test_id("finder-matches").or_(page.get_by_test_id("finder-message"))).to_be_visible(timeout=60_000)
+    _check_sos(page)
+    expect(page.locator("#guide-title")).to_have_count(0)  # a suggestion never opens a guide by itself
+    suggestion = page.get_by_test_id("finder-choking")
+    if suggestion.count():  # real model call: report what it did rather than require it
+        expect(suggestion).to_contain_text("choking on a grape")
+        suggestion.click()
+        expect(page.locator("#guide-title")).to_have_text("Choking")
     hosts = {urlparse(u).netloc for u in requests}
     assert hosts == {urlparse(base).netloc}
 

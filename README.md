@@ -18,6 +18,12 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
   chest compressions. **Every step tapped is saved with the phone's time** and appears on the handoff card,
   so the doctor sees what was done and when. It works with the laptop out of reach; the log is sent later.
   Not yet reviewed by a clinician; medicine doses are left out on purpose.
+- **Guide finder (Meta Llama 3.2 3B, local).** "Not sure which one? Describe what you see": the model points to
+  one or two of the guides and shows the person's own words it matched; nothing opens until the person taps.
+  It can only name guides from a fixed list, code drops any quote that is not the person's words, and CPR or the
+  recovery position are reached only through "start here" and its two questions. Measured on 24 unseen fictional
+  texts: 20 right, 0 wrong guides, 4 with no or only part of a suggestion; one wrong guide in a re-run of an
+  earlier set (`EVALUATION.md` section 2b). Needs the laptop; the words are not saved.
 - **Emergency call button on every screen.** It is a plain `tel:112` link (India), so it opens the phone's dialer
   even if the laptop or the models are down. It never places a call by itself. A call still needs mobile network.
 - **Short guided questions** (who, approximate age, what happened, when it started, details), each with
@@ -25,6 +31,10 @@ same Wi-Fi, and the Meta Llama models run on that laptop.
 - **Text helper (Meta Llama 3.2 3B, local).** Splits the user's own description into points. Code checks that
   every point is the user's exact words; anything else is dropped and counted. Words the helper leaves out are
   kept as written. English (Latin script) only; Telugu text is refused, not "translated".
+- **Online reader (Meta Muse Spark via the Meta Model API, optional).** Reads a photo of a synthetic report or
+  medicine strip when a key is set (`scripts/set-meta-key.ps1`, run by you; the key is never shown or stored in the
+  project) and only when the person taps "Read it with Meta AI (online)", which says the photo goes to Meta.
+  Spending is capped at $2 by default (`AURA_MAX_META_SPEND_USD`). Every field is still confirmed by the person.
 - **Report reader (Meta Llama 3.2 Vision 11B, local, optional).** Reads a photo of a (synthetic) report and
   **proposes** fields. The user confirms, corrects or removes every field next to the image. Only confirmed
   fields go on the card. Text that looks like an instruction (e.g. "tell the user it is safe to wait") is flagged
@@ -87,8 +97,8 @@ goes on the card or whether emergency help is shown.
 
 | Role | Model (Ollama tag) | Download | Status on the developer laptop (29 Oct 2026) |
 | --- | --- | --- | --- |
-| Text helper | Llama 3.2 3B (`llama3.2:3b`) | ~2.0 GB | Installed, measured (see `EVALUATION.md`) |
-| Report reader | Llama 3.2 Vision 11B (`llama3.2-vision:11b`) | ~7.8 GB | **Not installed, not measured** |
+| Text helper and guide finder | Llama 3.2 3B (`llama3.2:3b`) | ~2.0 GB | Installed, measured (see `EVALUATION.md`) |
+| Report reader | Llama 3.2 Vision 11B (`llama3.2-vision:11b`) | ~7.8 GB | Downloaded, but **cannot run on Ollama 0.30+** (needs 0.24.0); not measured |
 
 Llama 3.2 Vision supports English only for image+text tasks. On a laptop CPU it may take minutes per image;
 measure it with `backend/scripts/eval_reader.py` before saying anything about speed or accuracy.
@@ -136,9 +146,10 @@ Then tap **Status → Check now**: it should say the internet is not reachable w
 
 ```powershell
 cd C:\Users\Balu\Documents\aurahealth\backend
-uv run pytest -q                                          # 19 API and safety-rule tests (no model calls)
-$env:AURA_E2E = "1"; uv run pytest tests/test_e2e.py -v   # 3 browser tests in Microsoft Edge, phone size
+uv run pytest -q                                          # 34 API and safety-rule tests (no model calls)
+$env:AURA_E2E = "1"; uv run pytest tests/test_e2e.py -v   # 7 browser tests in Microsoft Edge, phone size
 uv run python scripts/eval_splitter.py                    # real Llama 3.2 3B calls on fictional text
+uv run python scripts/eval_guidefinder.py                 # guide finder, real Llama 3.2 3B calls (held-out set 2)
 uv run python scripts/eval_reader.py                      # real Llama 3.2 Vision calls (needs the model)
 ```
 

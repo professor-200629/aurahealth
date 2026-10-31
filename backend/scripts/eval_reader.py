@@ -1,6 +1,7 @@
-"""Measure the report reader (Llama 3.2 Vision 11B) on the synthetic reports. Real model calls, no mocks.
+"""Measure the report reader on the synthetic reports and medicine strip. Real model calls, no mocks.
 
-Run from backend/ AFTER `ollama pull llama3.2-vision:11b`:  uv run python scripts/eval_reader.py
+Local (Llama 3.2 Vision in Ollama; needs an Ollama that can run it):  uv run python scripts/eval_reader.py
+Online (Meta Muse Spark; needs MODEL_API_KEY, costs a few cents):    uv run python scripts/eval_reader.py --online
 Compares every proposed field with SAMPLE_DATA/answer_keys.json, records latency and the model's
 memory size reported by Ollama, and writes EVAL_RESULTS/reader_<timestamp>.json.
 """
@@ -17,7 +18,7 @@ from pathlib import Path
 
 import httpx
 
-from aurahealth import config, extraction, ollama
+from aurahealth import config, extraction, meta_api, ollama
 
 
 def norm(s: str) -> str:
@@ -71,10 +72,16 @@ def unload_other_models() -> None:
 
 
 def main() -> int:
-    if not ollama.status()["vision"]:
+    online = "--online" in sys.argv
+    model_name = config.META_MODEL if online else config.VISION_MODEL
+    if online and not meta_api.available():
+        print("No MODEL_API_KEY is set (run scripts/set-meta-key.ps1); nothing measured.")
+        return 1
+    if not online and not ollama.status()["vision"]:
         print(f"{config.VISION_MODEL} is not installed in Ollama; nothing measured.")
         return 1
-    unload_other_models()
+    if not online:
+        unload_other_models()
     ram_before = available_ram_gb()
     print(f"Available RAM before loading the reader: {ram_before} GB")
     keys = json.loads((config.SAMPLE_DIR / "answer_keys.json").read_text(encoding="utf-8"))
@@ -82,17 +89,20 @@ def main() -> int:
     out_dir = config.ROOT / "EVAL_RESULTS"
     out_dir.mkdir(exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
-    path = out_dir / f"reader_{stamp}.json"
+    path = out_dir / f"reader_{'online' if online else 'local'}_{stamp}.json"
     rows = []
     for name, key in keys.items():
         doc = extraction.save_upload((config.SAMPLE_DIR / "reports" / f"{name}.png").read_bytes(), f"{name}.png")
         started = time.perf_counter()
         try:
-            raw, timing = ollama.chat_json(config.VISION_MODEL, extraction.SYSTEM, extraction.USER, extraction.SCHEMA,
-                                           config.VISION_TIMEOUT_S, images_b64=[extraction.model_image_b64(doc["id"])])
+            if online:
+                raw, timing = meta_api.read_image(extraction.SYSTEM, extraction.USER, extraction.model_image_b64(doc["id"]))
+            else:
+                raw, timing = ollama.chat_json(config.VISION_MODEL, extraction.SYSTEM, extraction.USER, extraction.SCHEMA,
+                                               config.VISION_TIMEOUT_S, images_b64=[extraction.model_image_b64(doc["id"])])
             fields = extraction.parse_fields(raw)
             error = None
-        except ollama.ModelUnavailable as exc:
+        except (ollama.ModelUnavailable, meta_api.MetaUnavailable, meta_api.BudgetExceeded) as exc:
             fields, timing, error = [], {}, str(exc)
         wall = round(time.perf_counter() - started, 1)
         checks = []
@@ -116,7 +126,8 @@ def main() -> int:
         print(f"{name:22} correct {r['correct']}/{r['expected']}  proposed {r['fields_proposed']}  "
               f"flagged {r['instruction_fields_flagged']}  {wall}s  {error or ''}", flush=True)
         # Save after every image, so a crash or timeout later still leaves real results.
-        path.write_text(json.dumps({"model": config.VISION_MODEL, "run_at": stamp, "machine_note": "developer laptop",
+        path.write_text(json.dumps({"model": model_name, "run_at": stamp, "machine_note": "developer laptop",
+                                    "spent_usd_total": round(meta_api.spent(), 5) if online else None,
                                     "available_ram_gb_before": ram_before, "results": rows},
                                    indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"\nWrote {path}")

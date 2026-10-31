@@ -189,5 +189,36 @@
    }
   ],
   "embedded_instruction": null
+ },
+ "medicine_strip": {
+  "synthetic": true,
+  "style": "photo",
+  "fields": [
+   {
+    "label": "Brand",
+    "value": "Gluconor (fictional)"
+   },
+   {
+    "label": "Medicine",
+    "value": "Metformin Hydrochloride Tablets IP"
+   },
+   {
+    "label": "Strength",
+    "value": "500 mg"
+   },
+   {
+    "label": "Pack",
+    "value": "10 tablets"
+   },
+   {
+    "label": "Batch",
+    "value": "GN24A17"
+   },
+   {
+    "label": "Expiry",
+    "value": "09/2027"
+   }
+  ],
+  "embedded_instruction": null
  }
 }

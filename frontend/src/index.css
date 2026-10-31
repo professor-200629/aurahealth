@@ -127,6 +127,8 @@ p { margin: 0 0 10px; }
 .guide-pick .title { font-weight: 750; font-size: 18px; }
 .guide-pick .when { font-size: 15px; color: var(--muted); }
 .guide-pick.start { background: var(--accent-soft); border-color: var(--accent); }
+.guide-pick.suggested { border-color: var(--accent); border-style: dashed; }
+textarea.input.finder-input { min-height: 88px; }
 .guide-title { font-size: 26px; }
 .step-card { border-width: 2px; }
 .step-text { font-size: 23px; line-height: 1.4; font-weight: 600; margin: 0 0 16px; }

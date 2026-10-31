@@ -11,10 +11,11 @@ const SAMPLE_LABELS: Record<string, string> = {
   missing_date_report: 'Missing date',
   instruction_report: 'Hidden instruction',
   phone_photo_report: 'Phone photo',
+  medicine_strip: 'Medicine strip',
 }
 
 export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
-  const { t } = useUi()
+  const { t, health } = useUi()
   const doc = session.document
   const status = doc?.extraction.status ?? 'not_started'
   const [samples, setSamples] = useState<string[]>([])
@@ -81,9 +82,11 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
     setManual(false)
     run(() => api.removeDocument())
   }
-  const read = () =>
+  const online = !!health?.models.online_reader
+  const local = !!health?.models.vision_runnable
+  const read = (engine: 'local' | 'online') =>
     run(async () => {
-      const r = await api.extract()
+      const r = await api.extract(engine)
       if (r.session) return r
       return api.getSession().then((s) => ({ session: s.session ?? undefined }))
     })
@@ -155,9 +158,22 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
           <div className="stack">
             {status === 'not_started' && !manual && fields.length === 0 && (
               <div className="stack">
-                <button className="btn primary block" onClick={read} disabled={busy} data-testid="read">
-                  {t('doc.read')}
-                </button>
+                {online && (
+                  <>
+                    <button className="btn primary block" onClick={() => read('online')} disabled={busy} data-testid="read-online">
+                      {t('doc.readOnline')}
+                    </button>
+                    <p className="small muted" style={{ margin: 0 }}>
+                      {t('doc.onlineNote')}
+                    </p>
+                  </>
+                )}
+                {local && (
+                  <button className={`btn ${online ? 'secondary' : 'primary'} block`} onClick={() => read('local')} disabled={busy} data-testid="read">
+                    {t('doc.readLocal')}
+                  </button>
+                )}
+                {!online && !local && <Banner kind="info" text={t('doc.noReader')} />}
                 <button className="btn secondary block" onClick={() => setManual(true)} disabled={busy}>
                   {t('doc.manual')}
                 </button>
@@ -176,7 +192,12 @@ export function DocumentStep({ session, onSaved, onNext, onBack }: StepProps) {
 
             {status === 'reader_missing' && <Banner kind="warn" text={t('doc.readerMissing')} />}
             {(status === 'failed' || status === 'no_fields') && <Banner kind="warn" text={t('doc.readFailed')} />}
-            {status === 'done' && timing && <p className="small muted">{t('doc.timing', { seconds: timing.wall_s, model: doc.extraction.model ?? '' })}</p>}
+            {status === 'done' && timing && (
+              <p className="small muted">
+                {t('doc.timing', { seconds: timing.wall_s, model: doc.extraction.model ?? '' })}
+                {timing.cost_usd != null && ` ${t('doc.cost', { cost: timing.cost_usd.toFixed(4) })}`}
+              </p>
+            )}
 
             {showFields && (
               <section className="stack" data-testid="fields">

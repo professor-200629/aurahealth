@@ -78,9 +78,18 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       alarm, full-screen countdown, auto-call neighbour, SMS family), check-ins, premium home and guard design;
       tested on the real phone with played sounds (see EVALUATION.md section 6)
 - [x] Real auto-call + SMS to the developer's 2 numbers after 3 played knocks (29 Oct 20:40 IST)
-- [ ] Real knock by a person on a bed or table; a whole night with the screen off
-- [ ] Medicine list + strip reading + daily ticks (needs the vision model)
+- [ ] A whole night with the screen off and battery saving on
+- [~] Vision model downloaded 29 Oct but Ollama 0.32.3 cannot load it (mllama dropped in 0.30). Developer chose
+      Meta online (Muse Spark): reader built with a spend cap and a "sends photo to Meta" notice, medicine-strip
+      sample, `scripts/set-meta-key.ps1`, `eval_reader.py --online`; 29 API + 6 browser tests pass.
+      Waiting: the developer runs the key script; then a real measured run
+- [x] Doctor review sheet: docs/AuraHealth_first_aid_guides_for_review.pdf (made by docs/make_review_pdf.py)
+- [x] Real knock by the developer: heard at 20:48 IST, he tapped I'm OK
 - [x] IFRC email sent to first.aid@ifrc.org from the developer's Gmail on 29 Oct (his approval)
+- [x] 31 Oct: guide finder (Llama 3.2 3B points to a guide with the person's own words; never CPR/recovery directly;
+      person taps). Held-out set 2: 20/24 right, 0 wrong guides; 34 API + 7 browser tests pass. Not yet in the APK
+      (needs the laptop anyway); not yet tried on the real phone
+- [ ] Make the repository public on GitHub before submitting (organizers, 31 Oct: must be public at submit time)
 
 ## Open decisions for the developer
 

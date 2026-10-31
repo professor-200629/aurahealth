@@ -67,5 +67,11 @@ def main() -> None:
         print("  Local only. Add --lan to let your phone connect over Wi-Fi.")
     print(f"  Model runtime (Ollama): {'running' if status['runtime'] else 'NOT running'}")
     print(f"    text helper  {status['text_model']}: {'installed' if status['text'] else 'missing'}")
-    print(f"    report reader {status['vision_model']}: {'installed' if status['vision'] else 'missing'}\n", flush=True)
+    from . import config, meta_api
+
+    local = "missing" if not status["vision"] else (
+        "installed" if config.USE_LOCAL_VISION else "downloaded, but Ollama 0.30+ cannot run it")
+    print(f"    report reader {status['vision_model']}: {local}")
+    online = "key set, needs internet" if meta_api.available() else "no key (run scripts/set-meta-key.ps1)"
+    print(f"  Meta online reader ({config.META_MODEL}): {online}\n", flush=True)
     uvicorn.run(app_module.app, host=host, port=args.port, access_log=False, log_level="warning")

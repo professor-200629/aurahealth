@@ -37,7 +37,9 @@ export function StatusSheet({ onClose, onLang, onAbout }: { onClose: () => void;
     return ready ? { dot: 'ok', text: t('status.ready') } : { dot: 'warn', text: t('status.missing') }
   }
   const text = model(health?.models.text)
-  const reader = model(health?.models.vision)
+  const reader = health?.models.vision && !health.models.vision_runnable
+    ? { dot: 'warn', text: t('status.cannotRun') }
+    : model(health?.models.vision)
 
   return (
     <Sheet title={t('status.title')} onClose={onClose}>
@@ -45,6 +47,7 @@ export function StatusSheet({ onClose, onLang, onAbout }: { onClose: () => void;
         <Row label={t('status.server')} dot={serverDown ? 'down' : 'ok'} value={serverDown ? t('status.serverDown') : t('status.serverOk')} />
         <Row label={t('status.textHelper')} dot={text.dot} value={text.text} />
         <Row label={t('status.reader')} dot={reader.dot} value={reader.text} />
+        <Row label={t('status.online')} dot={health?.models.online_reader ? 'ok' : ''} value={health?.models.online_reader ? t('status.onlineYes') : t('status.onlineNo')} />
         <Row label={t('status.mode')} dot="" value={health?.lan ? t('status.lanOn') : t('status.lanOff')} />
         <div className="status-item">
           <span className="k">

@@ -1,0 +1,181 @@
+{
+  "model": "llama3.2:3b",
+  "set": "dev",
+  "run_at": "20261031-152220",
+  "machine_note": "developer laptop, CPU",
+  "summary": {
+    "cases": 8,
+    "fully_correct": 8,
+    "with_wrong_guide": 0,
+    "with_missed_guide": 0,
+    "median_wall_s": 3.1,
+    "max_wall_s": 5.62,
+    "all_quotes_in_text": true
+  },
+  "cases": [
+    {
+      "case": "fainted",
+      "text": "dad fainted and is lying on the floor",
+      "need": [
+        "check"
+      ],
+      "ok": [],
+      "status": "ok",
+      "got": [
+        "check"
+      ],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [
+        "fainted and is lying on the floor"
+      ],
+      "dropped": 0,
+      "wall_s": 5.62,
+      "all_quotes_in_text": true
+    },
+    {
+      "case": "grape",
+      "text": "kid choking on a grape",
+      "need": [
+        "choking"
+      ],
+      "ok": [],
+      "status": "ok",
+      "got": [
+        "choking"
+      ],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [
+        "kid choking on a grape"
+      ],
+      "dropped": 0,
+      "wall_s": 3.65,
+      "all_quotes_in_text": true
+    },
+    {
+      "case": "arm_blood",
+      "text": "lots of blood from her arm",
+      "need": [
+        "bleeding"
+      ],
+      "ok": [],
+      "status": "ok",
+      "got": [
+        "bleeding"
+      ],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [
+        "lots of blood from her arm"
+      ],
+      "dropped": 0,
+      "wall_s": 4.06,
+      "all_quotes_in_text": true
+    },
+    {
+      "case": "chest",
+      "text": "my chest hurts",
+      "need": [
+        "chest_pain"
+      ],
+      "ok": [],
+      "status": "ok",
+      "got": [
+        "chest_pain"
+      ],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [
+        "my chest hurts"
+      ],
+      "dropped": 0,
+      "wall_s": 2.93,
+      "all_quotes_in_text": true
+    },
+    {
+      "case": "neg_seizure",
+      "text": "she isn't bleeding but is having a seizure",
+      "need": [
+        "seizure"
+      ],
+      "ok": [
+        "check"
+      ],
+      "status": "ok",
+      "got": [
+        "seizure"
+      ],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [
+        "is having a seizure"
+      ],
+      "dropped": 0,
+      "wall_s": 3.27,
+      "all_quotes_in_text": true
+    },
+    {
+      "case": "itch",
+      "text": "My leg itches",
+      "need": [],
+      "ok": [],
+      "status": "no_match",
+      "got": [],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [],
+      "dropped": 0,
+      "wall_s": 1.5,
+      "all_quotes_in_text": true
+    },
+    {
+      "case": "snake_hand",
+      "text": "snake bite on hand",
+      "need": [
+        "snakebite"
+      ],
+      "ok": [],
+      "status": "ok",
+      "got": [
+        "snakebite"
+      ],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [
+        "snake bite on hand"
+      ],
+      "dropped": 0,
+      "wall_s": 2.84,
+      "all_quotes_in_text": true
+    },
+    {
+      "case": "droop",
+      "text": "face drooping",
+      "need": [
+        "stroke"
+      ],
+      "ok": [],
+      "status": "ok",
+      "got": [
+        "stroke"
+      ],
+      "missed": [],
+      "wrong": [],
+      "correct": true,
+      "quotes": [
+        "face drooping"
+      ],
+      "dropped": 0,
+      "wall_s": 2.79,
+      "all_quotes_in_text": true
+    }
+  ]
+}
