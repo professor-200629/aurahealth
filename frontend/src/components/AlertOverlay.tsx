@@ -49,7 +49,7 @@ export function AlertOverlay({ onHelp }: { onHelp: () => void }) {
           </>
         ) : (
           <>
-            <h1 id="alert-title">{t('alert.calling', { neighbour, family })}</h1>
+            <h1 id="alert-title">{t(alert.test ? 'alert.callingTest' : 'alert.calling', { neighbour, family })}</h1>
             {alert.test && <p className="alert-test">{t('alert.test')}</p>}
             <button
               className="btn alert-ok block"

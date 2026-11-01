@@ -63,6 +63,16 @@ export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
     setMorning(m)
     saveMorning(m)
   }
+  const [morningTry, setMorningTry] = useState(false)
+  const tryMorning = () => {
+    try {
+      const r = JSON.parse(native()?.testMorning?.() ?? '{}') as { ok?: boolean }
+      setMorningTry(!!r.ok)
+      if (r.ok) window.setTimeout(() => setMorningTry(false), 120000)
+    } catch {
+      setMorningTry(false)
+    }
+  }
 
   return (
     <div className="stack">
@@ -117,6 +127,11 @@ export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
                 <p className="small" style={{ margin: '6px 0 0' }}>
                   {t('guard.morningNote')}
                 </p>
+                {on && morning.on && (
+                  <button className="btn ghost night-ghost" onClick={tryMorning} data-testid="morning-try">
+                    {morningTry ? t('guard.morningTryStarted') : t('guard.morningTry')}
+                  </button>
+                )}
               </div>
             )}
             <button className="btn ghost night-ghost" onClick={() => native()?.testAlert?.()} data-testid="guard-test">

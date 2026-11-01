@@ -119,6 +119,14 @@ final class AuraBridge {
         activity.runOnUiThread(() -> GuardService.send(activity, GuardService.TEST));
     }
 
+    /** Runs the morning check about a minute from now, as a test: the real timing, the alarm, no call or text. */
+    @JavascriptInterface
+    public String testMorning() {
+        if (GuardService.instance == null || !Store.guardOn(activity)) return "{\"ok\":false,\"reason\":\"guard_off\"}";
+        activity.runOnUiThread(() -> GuardService.send(activity, GuardService.TEST_MORNING));
+        return "{\"ok\":true}";
+    }
+
     @JavascriptInterface
     public void requestPermissions() {
         activity.runOnUiThread(activity::askPermissions);

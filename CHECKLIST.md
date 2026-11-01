@@ -93,8 +93,9 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
 - [x] 31 Oct: Meta API dropped (card check needs a ₹1,198 hold; developer's choice). Free offline photo reader
       built instead: Windows OCR + Llama 3.2 3B, values copied exactly, person confirms; 28/45 fields on the 6
       samples (EVALUATION 2c); 38 API tests pass
-- [~] 31 Oct: morning check (no "Good morning" by 09:00 while the guard is on → same alert chain); APK built,
-      **not yet tested on the phone**
+- [x] Morning check (no "Good morning" by 09:00 while the guard is on → same alert chain). Tested on the
+      phone 1 Nov with the new "Try it in 1 minute (no call)" button: fired on time, no call/SMS (EVALUATION 6b).
+      Found and fixed a crash when the guard is started while the app is not on screen
 - [x] Asked organizers (31 Oct, #questions): their bot answered "Llama is not part of this hackathon and does not
       count as a Meta model". AI helpers switched to **Meta Muse Glimmer** via NVIDIA's free hosted API
       (`backend/src/aurahealth/ai.py`, `scripts/set-nvidia-key.ps1`); Llama kept as an opt-in offline backup.

@@ -47,6 +47,7 @@ public class GuardService extends Service {
     static final String STOP = "stop";
     static final String TEST = "test";
     static final String CANCEL = "cancel";
+    static final String TEST_MORNING = "test_morning";
     static final int COUNTDOWN_SECONDS = 30;
     static final String REASON_KNOCK = "knock";
     static final String REASON_SILENCE = "silence";
@@ -67,6 +68,7 @@ public class GuardService extends Service {
     private boolean alertTest = false;
     private String alertReason = REASON_KNOCK;
     private long morningDeadline = 0;
+    private boolean morningTestOnce = false;
     private int secondsLeft = 0;
     private MediaPlayer alarm;
     private int savedAlarmVolume = -1;
@@ -98,7 +100,10 @@ public class GuardService extends Service {
                 stopGuard();
                 break;
             case TEST:
-                startAlert(REASON_TEST);
+                startAlert(REASON_TEST, true);
+                break;
+            case TEST_MORNING:
+                testMorning();
                 break;
             case CANCEL:
                 cancelAlert();
@@ -119,8 +124,15 @@ public class GuardService extends Service {
             return;
         }
         Notification n = guardNotification("Night guard is on: knock 3 times if you need help");
-        if (Build.VERSION.SDK_INT >= 30) startForeground(ID_GUARD, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
-        else startForeground(ID_GUARD, n);
+        try {
+            if (Build.VERSION.SDK_INT >= 30) startForeground(ID_GUARD, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
+            else startForeground(ID_GUARD, n);
+        } catch (RuntimeException e) {  // Android may refuse when the app is not on screen: stay off, don't crash
+            Log.w("AuraGuard", "could not start the guard: " + e.getClass().getSimpleName());
+            stopSelf();
+            MainActivity.sendToWeb("{\"type\":\"guard\",\"on\":false}");
+            return;
+        }
         if (!listening) {
             Store.setGuardOn(this, true);
             Store.addEvent(this, "guard_on", null);
@@ -185,7 +197,7 @@ public class GuardService extends Service {
                     peakEnergy = 0;
                 }
                 if (r == KnockDetector.PATTERN) {
-                    main.post(() -> startAlert(REASON_KNOCK));
+                    main.post(() -> startAlert(REASON_KNOCK, false));
                 }
                 int pending = r == KnockDetector.PATTERN ? 3 : detector.pendingKnocks();
                 if (pending != lastKnocks) {
@@ -226,18 +238,32 @@ public class GuardService extends Service {
             if (!listening) return;
             if (System.currentTimeMillis() >= morningDeadline) {
                 boolean saidGoodMorning = Store.lastMorningAt(GuardService.this) >= morningDeadline - MORNING_WINDOW_MS;
-                if (!saidGoodMorning && !alertActive && Store.morningOn(GuardService.this)) startAlert(REASON_SILENCE);
+                if (morningTestOnce) {
+                    morningTestOnce = false;
+                    if (!alertActive) startAlert(REASON_SILENCE, true);  // the "try it" button: real timing, no call
+                    armMorning();
+                    return;
+                }
+                if (!saidGoodMorning && !alertActive && Store.morningOn(GuardService.this)) startAlert(REASON_SILENCE, false);
                 morningDeadline += 24 * 60 * 60 * 1000L;
             }
             main.postDelayed(this, 30_000);
         }
     };
 
+    /** "Try the morning check": it fires about a minute from now through the same watch, as a test (no call). */
+    private void testMorning() {
+        if (!listening) return;
+        main.removeCallbacks(morningWatch);
+        morningTestOnce = true;
+        morningDeadline = System.currentTimeMillis() + 60_000;
+        main.postDelayed(morningWatch, 30_000);
+    }
+
     // ---------- the alert ----------
 
-    void startAlert(String reason) {
+    void startAlert(String reason, boolean test) {
         if (alertActive) return;
-        boolean test = REASON_TEST.equals(reason);
         alertActive = true;
         alertTest = test;
         alertReason = reason;
@@ -407,10 +433,18 @@ public class GuardService extends Service {
         return s != null && s.alertActive;
     }
 
-    static void send(Context c, String action) {
+    /** Returns false if Android refused (for example, the app was not on screen), instead of crashing. */
+    static boolean send(Context c, String action) {
         Intent i = new Intent(c, GuardService.class).setAction(action);
-        if (START.equals(action)) c.startForegroundService(i);
-        else c.startService(i);
+        try {
+            if (START.equals(action)) c.startForegroundService(i);
+            else c.startService(i);
+            return true;
+        } catch (RuntimeException e) {
+            Log.w("AuraGuard", "Android refused " + action + ": " + e.getClass().getSimpleName());
+            MainActivity.sendToWeb("{\"type\":\"guard\",\"on\":false}");
+            return false;
+        }
     }
 
     @Override

@@ -37,6 +37,7 @@ interface Bridge {
   getMorning?: () => string
   setMorning?: (on: boolean, hhmm: string) => void
   checkIn?: (kind: string) => void
+  testMorning?: () => string
 }
 
 export type AlertReason = 'knock' | 'silence' | 'test'

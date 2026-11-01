@@ -266,6 +266,21 @@ Not checked on the phone: Telugu screens, download .txt, print, the report reade
 - **Not tested:** a real knock by a person on a real bed or table (the knocks were played from a laptop
   speaker), a whole night with the screen off and Samsung battery saving on, other phones.
 
+### 6b. Morning check and a crash fix (1 Nov 2026, 22:40 IST, same phone, new APK)
+
+- **Crash found and fixed:** starting the night guard while the app was not on screen (the phone screen was
+  off) made Android refuse the foreground service (`ForegroundServiceStartNotAllowedException`) and the app
+  **crashed**. Now the refusal is caught: the app stays open and the guard shows "off". Re-tested the same way:
+  same process, guard off, no crash. (Tapping the button yourself always happens with the app on screen.)
+- **Morning check, real timing on the phone, as a test:** guard on at 22:41:56, "Try the morning check in 1
+  minute (no call)" at 22:41:59 → the alert fired at **22:42:59** with "No "Good morning" yet" and the 30-second
+  countdown → at 22:43:29 it ended with the test message. The phone's log shows `guard_on` and `guard_test`, and
+  **no call or text event**. The real (non-test) path uses the same watch; it was not run with real calls.
+- The test's last screen said "Calling … and texting …" above "This is a test": changed to "Test finished. In a
+  real alert, AuraHealth would now phone … and text …".
+- Not tested on the phone this time: the AI helpers (the phone and the laptop were on different networks), a
+  real 09:00 deadline overnight.
+
 ## Not tested
 
 - Real phone: only one phone (above). Other browsers (Samsung Internet, Firefox) and iPhone were not tested.
