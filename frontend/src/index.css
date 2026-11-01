@@ -357,3 +357,46 @@ mark { background: #ffe9a8; border-radius: 4px; padding: 0 2px; }
 .alert-overlay .btn.sos { background: #3a0b08; }
 @media (prefers-reduced-motion: no-preference) { .alert-overlay { animation: pulse-bg 1.2s ease-in-out infinite alternate; } }
 @keyframes pulse-bg { from { background: #8f1d16; } to { background: #b3261e; } }
+
+/* ---------- talk to Aura, family, medicines, nearby (2 Nov) ---------- */
+.btn.talk { background: var(--card); color: var(--accent); border: 2px solid var(--accent); min-height: 60px; font-size: 19px; border-radius: 16px; }
+.chip-btn { border: 1px solid var(--line-2); background: var(--card); border-radius: 999px; padding: 8px 14px; min-height: 44px; font-weight: 650; font-size: 16px; cursor: pointer; }
+.chip-btn.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.saved-people { background: var(--accent-soft); border-radius: var(--radius-sm); padding: 12px 14px; }
+.list-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.list-row:first-of-type { border-top: 0; }
+.list-row.off { opacity: 0.6; }
+.list-row > div:first-child { min-width: 0; overflow-wrap: anywhere; }
+.dose-taken strong::before { content: "✓ "; color: var(--ok); }
+.dose-missed strong { color: var(--sos); }
+.dose-due strong { color: var(--warn); }
+.edit-box { border: 2px solid var(--accent); border-radius: var(--radius-sm); padding: 14px; background: var(--paper); }
+.edit-box input[type="checkbox"], .card input[type="checkbox"] { width: 22px; height: 22px; flex: none; margin-top: 2px; accent-color: var(--accent); }
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.health-card { border: 2px solid var(--sos-soft); background: linear-gradient(180deg, #fff 0%, #fff8f6 100%); }
+.health-name { font-size: 22px; font-weight: 750; margin: 0 0 8px; }
+.health-lines { margin: 0; display: grid; gap: 8px; }
+.health-lines > div { display: grid; grid-template-columns: minmax(110px, 38%) 1fr; gap: 10px; }
+.health-lines dt { color: var(--muted); font-size: 15px; }
+.health-lines dd { margin: 0; font-weight: 600; overflow-wrap: anywhere; }
+.nearby-row { display: grid; gap: 10px; }
+@media (min-width: 640px) { .nearby-row { grid-template-columns: repeat(3, 1fr); } }
+.chat-log { display: flex; flex-direction: column; gap: 10px; }
+.bubble { max-width: 88%; padding: 12px 14px; border-radius: 18px; box-shadow: var(--shadow); }
+.bubble p { margin: 0; }
+.bubble.user { align-self: flex-end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 6px; }
+.bubble.aura { align-self: flex-start; background: var(--card); border: 1px solid var(--line); border-bottom-left-radius: 6px; }
+.bubble-actions { display: grid; gap: 8px; margin-top: 10px; }
+.bubble-actions .btn.sos { min-height: 56px; font-size: 19px; }
+.bubble-source { display: block; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.chat-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chat-input { display: grid; gap: 8px; position: sticky; bottom: 0; background: var(--bg); padding: 8px 0; }
+.chat-input textarea { min-height: 56px; resize: vertical; }
+.chat-buttons { display: flex; gap: 10px; }
+.chat-buttons .btn.primary { flex: 1; }
+.btn.mic { background: var(--accent-soft); color: var(--accent); width: 64px; padding: 0; border: 2px solid var(--accent); }
+.btn.mic.on { background: var(--sos); color: #fff; border-color: var(--sos); animation: mic-pulse 1.2s ease-in-out infinite; }
+@keyframes mic-pulse { 50% { box-shadow: 0 0 0 8px rgba(179, 38, 30, 0.18); } }
+@media (prefers-reduced-motion: reduce) { .btn.mic.on { animation: none; } }
+label.row { flex-wrap: nowrap; }
+label.row > span { min-width: 0; }

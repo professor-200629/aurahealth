@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import { api, ApiError } from '../api'
+import { ageChoice, useHousehold } from '../household'
+import type { Person } from '../household'
 import type { Point, Session } from '../types'
 import { Icon, rid, useUi } from '../ui'
 
@@ -117,10 +119,53 @@ export function Who({ session, onSaved, onNext, onBack }: StepProps) {
   const [choice, setChoice] = useState<string | null>(session.who.choice)
   const [label, setLabel] = useState(session.who.label)
   const { busy, error, save } = useSave(onSaved)
+  const [household] = useHousehold()
+  const [saved, setSaved] = useState<Person | null>(null)
+  const named = household.people.filter((p) => p.name.trim())
   // The label describes someone else ("my father"); for "Me" it was misread as "what's wrong" in phone testing.
-  const next = async () => (await save({ who: { choice, label: choice === 'someone' ? label : '' } })) && onNext()
+  const next = async () => {
+    const patch: Record<string, unknown> = { who: { choice, label: choice === 'someone' ? label : '' } }
+    if (saved && choice === 'someone' && label === saved.name) {
+      // Saved health details fill only the answers that are still empty; the person can change them later.
+      const age = ageChoice(saved.age)
+      if (age && !session.age) patch.age = age
+      const d = session.details
+      const other = [saved.blood && `Blood group ${saved.blood}`, saved.notes.trim()].filter(Boolean).join('. ')
+      patch.details = {
+        allergies: d.allergies || saved.allergies.trim(),
+        medicines: d.medicines || saved.medicines.trim(),
+        conditions: d.conditions || saved.conditions.trim(),
+        other: d.other || other,
+      }
+    }
+    if (await save(patch)) onNext()
+  }
   return (
     <StepFrame n={1} title={t('who.title')} busy={busy} error={error} onBack={onBack} onNext={next}>
+      {named.length > 0 && (
+        <div className="saved-people" data-testid="saved-people">
+          <p className="small muted" style={{ margin: '0 0 6px' }}>
+            {t('who.saved')}
+          </p>
+          <div className="row">
+            {named.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                className={`chip-btn ${saved?.id === p.id && label === p.name ? 'on' : ''}`}
+                onClick={() => {
+                  setChoice('someone')
+                  setLabel(p.name)
+                  setSaved(p)
+                }}
+              >
+                {p.name}
+                {p.age ? ` · ${p.age}` : ''}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       <Choices
         label={t('who.title')}
         unknown={false}

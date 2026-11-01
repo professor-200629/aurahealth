@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ServiceInfo;
+import android.location.Location;
 import android.media.AudioAttributes;
 import android.media.AudioFormat;
 import android.media.AudioManager;
@@ -31,7 +32,10 @@ import android.telephony.SmsManager;
 import android.util.Log;
 
 import java.text.SimpleDateFormat;
+import org.json.JSONObject;
+
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -71,6 +75,7 @@ public class GuardService extends Service {
     private boolean morningTestOnce = false;
     private int secondsLeft = 0;
     private MediaPlayer alarm;
+    private volatile Location alertLocation;
     private int savedAlarmVolume = -1;
 
     @Override
@@ -125,8 +130,7 @@ public class GuardService extends Service {
         }
         Notification n = guardNotification("Night guard is on: knock 3 times if you need help");
         try {
-            if (Build.VERSION.SDK_INT >= 30) startForeground(ID_GUARD, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
-            else startForeground(ID_GUARD, n);
+            startForegroundTyped(n);
         } catch (RuntimeException e) {  // Android may refuse when the app is not on screen: stay off, don't crash
             Log.w("AuraGuard", "could not start the guard: " + e.getClass().getSimpleName());
             stopSelf();
@@ -144,6 +148,23 @@ public class GuardService extends Service {
         armMorning();
         MainActivity.sendToWeb("{\"type\":\"guard\",\"on\":true}");
         MainActivity.sendToWeb("{\"type\":\"queue\"}");
+    }
+
+    /** Microphone always; location too when allowed, so an alert text can say where the phone is. */
+    private void startForegroundTyped(Notification n) {
+        if (Build.VERSION.SDK_INT < 30) {
+            startForeground(ID_GUARD, n);
+            return;
+        }
+        if (Locator.allowed(this)) {
+            try {
+                startForeground(ID_GUARD, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE | ServiceInfo.FOREGROUND_SERVICE_TYPE_LOCATION);
+                return;
+            } catch (RuntimeException e) {
+                Log.w("AuraGuard", "location type refused, microphone only: " + e.getClass().getSimpleName());
+            }
+        }
+        startForeground(ID_GUARD, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE);
     }
 
     private void stopGuard() {
@@ -270,6 +291,10 @@ public class GuardService extends Service {
         secondsLeft = COUNTDOWN_SECONDS;
         Store.addEvent(this, test ? "guard_test" : REASON_SILENCE.equals(reason) ? "guard_silence" : "guard_knock", null);
         MainActivity.sendToWeb("{\"type\":\"queue\"}");
+        alertLocation = null;
+        if (!test && Store.locationInAlerts(this) && Locator.allowed(this)) {
+            Locator.current(this, (COUNTDOWN_SECONDS - 5) * 1000L, l -> alertLocation = l);  // ready before the text goes
+        }
         playAlarm();
         vibrate();
         showAlertNotification();
@@ -315,42 +340,53 @@ public class GuardService extends Service {
         if (!listening) stopSelf();
     }
 
+    /** Phones the first contact marked "phone in an alert" (usually someone nearby, like a neighbour). */
     private void callNeighbour() {
-        String number = Store.contact(this, "neighbour")[1];
-        if (number.isEmpty() || !has(Manifest.permission.CALL_PHONE)) {
+        List<String[]> callers = Store.contactsWith(this, "call");
+        if (callers.isEmpty() || !has(Manifest.permission.CALL_PHONE)) {
             Store.addEvent(this, "guard_failed", "neighbour");
             return;
         }
         try {
             TelecomManager tm = getSystemService(TelecomManager.class);
-            tm.placeCall(Uri.fromParts("tel", number, null), new Bundle());
+            tm.placeCall(Uri.fromParts("tel", callers.get(0)[1], null), new Bundle());
             Store.addEvent(this, "guard_call", "neighbour");
         } catch (SecurityException e) {
             Store.addEvent(this, "guard_failed", "neighbour");
         }
     }
 
+    /** Texts every contact marked "text in an alert": what happened, who was phoned, and where the phone is. */
     private void textFamily() {
-        String[] family = Store.contact(this, "family");
-        String[] neighbour = Store.contact(this, "neighbour");
-        if (family[1].isEmpty() || !has(Manifest.permission.SEND_SMS)) {
+        List<String[]> family = Store.contactsWith(this, "text");
+        List<String[]> callers = Store.contactsWith(this, "call");
+        if (family.isEmpty() || !has(Manifest.permission.SEND_SMS)) {
             Store.addEvent(this, "guard_failed", "family");
             return;
         }
         String time = new SimpleDateFormat("HH:mm", Locale.US).format(new Date());
-        String who = neighbour[0].isEmpty() ? "the neighbour" : neighbour[0];
+        JSONObject person = Store.mainPerson(this);
+        String name = person == null ? "" : person.optString("name", "").trim();
         String what = REASON_SILENCE.equals(alertReason)
                 ? "there was no \"Good morning\" check-in by " + time
                 : "3 knocks for help were heard at " + time;
-        String msg = "AuraHealth alert: " + what + " and nobody tapped \"I'm OK\". " + who
-                + " was phoned. Please check now or call 112. (Prototype)";
+        String msg = "AuraHealth alert" + (name.isEmpty() ? "" : " for " + name) + ": " + what + " and nobody tapped \"I'm OK\". ";
+        if (!callers.isEmpty()) msg += (callers.get(0)[0].isEmpty() ? "The first contact" : callers.get(0)[0]) + " was phoned. ";
+        msg += "Please check now or call 112.";
+        Location where = alertLocation != null ? alertLocation : Store.locationInAlerts(this) ? Locator.last(this) : null;
+        if (where != null) msg += " Phone location: " + Locator.describe(where) + ".";
+        msg += " (Prototype)";
+        boolean any = false;
         try {
             SmsManager sms = Build.VERSION.SDK_INT >= 31 ? getSystemService(SmsManager.class) : SmsManager.getDefault();
-            sms.sendMultipartTextMessage(family[1], null, sms.divideMessage(msg), null, null);
-            Store.addEvent(this, "guard_sms", "family");
+            for (String[] f : family) {
+                sms.sendMultipartTextMessage(f[1], null, sms.divideMessage(msg), null, null);
+                any = true;
+            }
         } catch (RuntimeException e) {
-            Store.addEvent(this, "guard_failed", "family");
+            Log.w("AuraGuard", "text not sent: " + e.getClass().getSimpleName());
         }
+        Store.addEvent(this, any ? "guard_sms" : "guard_failed", "family");
     }
 
     private void playAlarm() {

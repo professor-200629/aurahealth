@@ -1,4 +1,6 @@
 import { EmergencyCard } from '../components/EmergencyCard'
+import { HealthCard } from '../components/HealthCard'
+import { NearbyHelp } from '../components/NearbyHelp'
 import { LanguageToggle } from '../components/StatusSheet'
 import type { Lang } from '../types'
 import { Dual, Icon, useUi } from '../ui'
@@ -14,13 +16,16 @@ interface Props {
   onStart: () => void
   onHelp: () => void
   onGuard: () => void
+  onChat: () => void
+  onMeds: () => void
+  onFamily: () => void
   onResume: () => void
   onAbout: () => void
   onLang: (l: Lang) => void
 }
 
 export function Home(props: Props) {
-  const { hasSession, busy, error, notice, guardOn, inApp, onStart, onHelp, onGuard, onResume, onAbout, onLang } = props
+  const { hasSession, busy, error, notice, guardOn, inApp, onStart, onHelp, onGuard, onChat, onMeds, onFamily, onResume, onAbout, onLang } = props
   const { t } = useUi()
   return (
     <div className="stack">
@@ -49,6 +54,9 @@ export function Home(props: Props) {
         <p className="small muted" style={{ margin: '-6px 0 0' }}>
           {t('home.helpNote')}
         </p>
+        <button className="btn talk block" onClick={onChat} data-testid="talk-aura">
+          <Icon name="mic" size={24} /> {t('home.talk')}
+        </button>
       </section>
 
       <div className="tiles">
@@ -58,6 +66,20 @@ export function Home(props: Props) {
           </span>
           <span className="tile-title">{t('home.guard')}</span>
           <span className="tile-sub">{!inApp ? t('home.guardWeb') : guardOn ? t('home.guardOn') : t('home.guardOff')}</span>
+        </button>
+        <button className="tile" onClick={onMeds} data-testid="tile-meds">
+          <span className="tile-icon">
+            <Icon name="pill" />
+          </span>
+          <span className="tile-title">{t('home.meds')}</span>
+          <span className="tile-sub">{t('home.medsSub')}</span>
+        </button>
+        <button className="tile" onClick={onFamily} data-testid="tile-family">
+          <span className="tile-icon">
+            <Icon name="people" />
+          </span>
+          <span className="tile-title">{t('home.family')}</span>
+          <span className="tile-sub">{t('home.familySub')}</span>
         </button>
         <button className="tile" onClick={hasSession ? onResume : onStart} disabled={busy} data-testid={hasSession ? 'tile-resume' : 'start'}>
           <span className="tile-icon">
@@ -74,6 +96,10 @@ export function Home(props: Props) {
       )}
 
       <EmergencyCard />
+
+      <HealthCard onEdit={onFamily} />
+
+      <NearbyHelp />
 
       <section className="card flat">
         <h2>{t('home.howTitle')}</h2>

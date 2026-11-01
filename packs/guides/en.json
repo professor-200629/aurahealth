@@ -3,6 +3,7 @@
     "language": "en",
     "review": "adapted_unreviewed",
     "review_note": "Written in plain words by the AuraHealth developer from the IFRC 2020 guidelines. Not yet reviewed by a clinician.",
+    "changes": "2 Nov 2026: small wording changes after suggestions from August, a consumer health AI app (not a clinical review); see docs/GUIDE_CHANGES.md.",
     "source": {
       "title": "International first aid, resuscitation and education guidelines 2020",
       "publisher": "International Federation of Red Cross and Red Crescent Societies (IFRC)",
@@ -23,7 +24,7 @@
         {
           "id": "safe",
           "kind": "action",
-          "text": "Make sure the place is safe for you, for example from traffic, fire or electricity. Then go to the person.",
+          "text": "Make sure the place is safe for you, for example from traffic, fire or electricity. Go to the person only when it is safe.",
           "log": "Checked the place was safe"
         },
         {
@@ -72,7 +73,7 @@
         {
           "id": "compress",
           "kind": "cpr",
-          "text": "With straight arms, push straight down about 5 cm, then let the chest come back up. Push on every beat: 100 to 120 times a minute.",
+          "text": "With straight arms, push hard, straight down, about 5 cm, then let the chest come all the way back up. Push on every beat: 100 to 120 times a minute.",
           "log": "Chest compressions"
         },
         {
@@ -102,7 +103,7 @@
         {
           "id": "side",
           "kind": "action",
-          "text": "Roll them onto their side and gently tilt their head back so the airway stays open.",
+          "text": "Roll them onto their side and gently tilt their head back. This keeps the airway open and stops them choking if they vomit.",
           "log": "Put on their side, airway open"
         },
         {
@@ -114,7 +115,7 @@
         {
           "id": "watch",
           "kind": "action",
-          "text": "Stay with them and keep checking their breathing.",
+          "text": "Stay with them and keep checking their breathing. If they stop breathing normally, start CPR.",
           "log": "Watching their breathing"
         }
       ],
@@ -164,7 +165,7 @@
           "log": "Called {number}, kept trying"
         }
       ],
-      "do_not": ["Do not sweep inside the mouth blindly with your fingers. Only take out something you can see."],
+      "do_not": ["Do not sweep inside the mouth blindly with your fingers: it can push the object further down. Only take out something you can see."],
       "notes": ["Babies under one year need different steps. Tell the 112 operator the age."],
       "links": [{ "label": "They stopped responding", "goto": "guide:cpr" }]
     },
@@ -183,7 +184,7 @@
         {
           "id": "lie",
           "kind": "action",
-          "text": "Help them lie down.",
+          "text": "Help them lie down, so they do not faint and fall.",
           "log": "Helped them lie down"
         },
         {
@@ -237,7 +238,7 @@
         {
           "id": "watch",
           "kind": "action",
-          "text": "Stay with them, keep them calm, and watch their breathing and whether they respond.",
+          "text": "Stay with them, keep them calm, and watch their breathing and whether they respond. If they stop responding and are not breathing normally, start CPR.",
           "log": "Staying with them, watching breathing"
         }
       ],
@@ -290,7 +291,7 @@
         {
           "id": "call",
           "kind": "call",
-          "text": "Any of these signs? Call {number} now. Tell them when the signs started, or the last time the person was seen well.",
+          "text": "Any of these signs? Call {number} now. Tell them when the signs started, or the last time the person was seen well. If you don't know, say so.",
           "log": "Called {number}"
         },
         {
@@ -300,7 +301,9 @@
           "log": "Supported, talking, watching breathing"
         }
       ],
-      "do_not": [],
+      "do_not": [
+        "Do not give them anything to eat or drink: swallowing may not be safe."
+      ],
       "notes": [
         "Even if the signs go away, they still need a doctor quickly.",
         "Very high or low blood sugar can look similar. Tell the doctor about diabetes."
@@ -408,7 +411,8 @@
       ],
       "do_not": [
         "Do not hold them down.",
-        "Do not put anything in their mouth or between their teeth."
+        "Do not put anything in their mouth or between their teeth.",
+        "Do not give them food, drink or medicine until they are fully awake."
       ],
       "notes": []
     }

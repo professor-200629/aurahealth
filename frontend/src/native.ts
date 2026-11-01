@@ -1,15 +1,6 @@
 // Bridge to the AuraHealth Android app. In a normal browser none of this exists and the app falls back to what
 // a web page can do (no listening at night, no automatic calls or texts).
 
-export interface Contact {
-  name: string
-  number: string
-}
-export interface Contacts {
-  neighbour: Contact
-  family: Contact
-}
-
 export interface GuardStatus {
   on: boolean
   permissions: Record<string, boolean>
@@ -38,6 +29,21 @@ interface Bridge {
   setMorning?: (on: boolean, hhmm: string) => void
   checkIn?: (kind: string) => void
   testMorning?: () => string
+  getHousehold?: () => string
+  saveHousehold?: (json: string) => boolean
+  getDoseLog?: () => string
+  markTaken?: (key: string) => boolean
+  testMedicine?: (personId: string) => void
+  medStatus?: () => string
+  requestLocation?: () => void
+  locationStatus?: () => string
+  setLocationInAlerts?: (on: boolean) => void
+  shareText?: (text: string) => void
+  openMaps?: (query: string) => void
+  canListen?: () => boolean
+  startVoice?: () => void
+  stopVoice?: () => void
+  takeOpen?: () => string
 }
 
 export type AlertReason = 'knock' | 'silence' | 'test'
@@ -49,6 +55,11 @@ export type NativeEvent =
   | { type: 'level'; value: number }
   | { type: 'queue' }
   | { type: 'permissions' }
+  | { type: 'meds' }
+  | { type: 'open'; screen: string }
+  | { type: 'toast'; key: string }
+  | { type: 'location'; ok: boolean; reason?: 'permission' | 'off' | 'unknown'; lat?: number; lng?: number; accuracy?: number; at?: number; link?: string }
+  | { type: 'voice'; stage: 'listening' | 'partial' | 'final' | 'processing' | 'error'; text: string; error?: string }
 
 export const native = (): Bridge | undefined => (window as unknown as { AuraNative?: Bridge }).AuraNative
 export const isNativeApp = () => {
@@ -65,29 +76,6 @@ export function onNativeEvent(fn: (e: NativeEvent) => void) {
   listeners.add(fn)
   return () => {
     listeners.delete(fn)
-  }
-}
-
-const EMPTY: Contacts = { neighbour: { name: '', number: '' }, family: { name: '', number: '' } }
-const CONTACTS_KEY = 'aura.contacts'
-
-/** Phone numbers stay on the phone: in the app they are kept by Android, never sent to the laptop. */
-export function loadContacts(): Contacts {
-  try {
-    const raw = native()?.getContacts?.() ?? window.localStorage.getItem(CONTACTS_KEY)
-    return raw ? { ...EMPTY, ...(JSON.parse(raw) as Contacts) } : EMPTY
-  } catch {
-    return EMPTY
-  }
-}
-
-export function saveContacts(c: Contacts) {
-  const json = JSON.stringify(c)
-  try {
-    if (native()?.saveContacts) native()!.saveContacts!(json)
-    else window.localStorage.setItem(CONTACTS_KEY, json)
-  } catch {
-    /* storage blocked */
   }
 }
 
@@ -118,6 +106,17 @@ export function guardStatus(): GuardStatus | null {
   try {
     const raw = native()?.guardStatus?.()
     return raw ? (JSON.parse(raw) as GuardStatus) : null
+  } catch {
+    return null
+  }
+}
+
+/** Calls a bridge method that returns JSON, or gives null outside the app. */
+export function nativeJson<T>(get: (b: Bridge) => string | undefined): T | null {
+  try {
+    const b = native()
+    const raw = b ? get(b) : undefined
+    return raw ? (JSON.parse(raw) as T) : null
   } catch {
     return null
   }

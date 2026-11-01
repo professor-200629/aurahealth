@@ -7,8 +7,12 @@ import { AlertOverlay } from './components/AlertOverlay'
 import { StatusSheet } from './components/StatusSheet'
 import { TopBar } from './components/TopBar'
 import { makeT } from './i18n'
-import { guardStatus, isNativeApp, onNativeEvent } from './native'
+import { guardStatus, isNativeApp, native, onNativeEvent } from './native'
 import { About } from './screens/About'
+import { Chat } from './screens/Chat'
+import type { ChatTarget } from './screens/Chat'
+import { Family } from './screens/Family'
+import { Meds } from './screens/Meds'
 import { DocumentStep } from './screens/DocumentStep'
 import { Guard } from './screens/Guard'
 import { GuidePlayer } from './screens/GuidePlayer'
@@ -20,7 +24,7 @@ import type { StepProps } from './screens/Steps'
 import type { Health, Lang, Session } from './types'
 import { UiContext } from './ui'
 
-type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide' | 'guard'
+type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide' | 'guard' | 'family' | 'meds' | 'chat'
 const FLOW: Screen[] = ['who', 'age', 'what', 'onset', 'details', 'doc', 'review']
 const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   who: Who,
@@ -30,7 +34,9 @@ const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   details: Details,
   doc: DocumentStep,
 }
-const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help', 'guard']
+const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help', 'guard', 'family', 'meds', 'chat']
+// Screens a notification may open (for example a medicine reminder opens "meds").
+const OPENABLE: Screen[] = ['meds', 'guard', 'family', 'chat', 'help']
 interface Route {
   screen: Screen
   guide: string
@@ -129,9 +135,18 @@ export default function App() {
     () =>
       onNativeEvent((e) => {
         if (e.type === 'guard') setGuardOn(e.on)
+        if (e.type === 'open' && OPENABLE.includes(e.screen as Screen)) {
+          native()?.takeOpen?.()
+          goRef.current(e.screen as Screen)
+        }
+        if (e.type === 'toast') setNotice(latestT.current(e.key))
       }),
     [],
   )
+  useEffect(() => {
+    const open = native()?.takeOpen?.()
+    if (open && OPENABLE.includes(open as Screen)) goRef.current(open as Screen)
+  }, [])
 
   const go = (s: Screen, guide = '') => {
     setNotice('')
@@ -140,6 +155,10 @@ export default function App() {
     if (s !== screen || guide !== route.guide) window.history.pushState(null, '', hashFor(next))
     setRoute(next)
   }
+  const goRef = useRef(go)
+  goRef.current = go
+  const latestT = useRef(t)
+  latestT.current = t
 
   // First aid must start instantly and work without the laptop: the guides are bundled, and the session
   // that receives the time log is created quietly in the background when the laptop is reachable.
@@ -205,6 +224,9 @@ export default function App() {
             onStart={start}
             onHelp={openHelp}
             onGuard={() => go('guard')}
+            onChat={() => go('chat')}
+            onMeds={() => go('meds')}
+            onFamily={() => go('family')}
             guardOn={guardOn}
             inApp={isNativeApp()}
             onResume={() => go('who')}
@@ -218,7 +240,21 @@ export default function App() {
         {screen === 'review' && session && <Review session={session} onEdit={() => go('who')} onDeleted={deleted} />}
         {screen === 'about' && <About hasSession={!!session} onBack={() => go('home')} onDeleted={deleted} />}
         {screen === 'help' && <Help onPick={(id) => go('guide', id)} />}
-        {screen === 'guard' && <Guard lastCheckin={lastCheckin(session)} />}
+        {screen === 'guard' && <Guard lastCheckin={lastCheckin(session)} onFamily={() => go('family')} />}
+        {screen === 'family' && <Family />}
+        {screen === 'meds' && <Meds onFamily={() => go('family')} />}
+        {screen === 'chat' && (
+          <Chat
+            onGuide={(id) => go('guide', id)}
+            onOpen={(target: ChatTarget) => {
+              if (target === 'help') openHelp()
+              else if (target === 'card') {
+                if (session) go('review')
+                else void start()
+              } else go(target)
+            }}
+          />
+        )}
         {screen === 'guide' && (
           <GuidePlayer
             key={route.guide}

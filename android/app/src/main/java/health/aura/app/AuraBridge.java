@@ -41,6 +41,96 @@ final class AuraBridge {
         Store.saveContacts(activity, json);
     }
 
+    /** People, contacts and medicine reminders (one JSON document, kept on this phone). */
+    @JavascriptInterface
+    public String getHousehold() {
+        return Store.household(activity);
+    }
+
+    @JavascriptInterface
+    public boolean saveHousehold(String json) {
+        boolean ok = Store.saveHousehold(activity, json);
+        if (ok) Meds.run(activity);  // reminders changed: set the alarm again
+        return ok;
+    }
+
+    @JavascriptInterface
+    public String getDoseLog() {
+        return Store.doseLog(activity);
+    }
+
+    @JavascriptInterface
+    public boolean markTaken(String key) {
+        return Meds.markTaken(activity, key);
+    }
+
+    @JavascriptInterface
+    public void testMedicine(String personId) {
+        Meds.test(activity, personId);
+    }
+
+    @JavascriptInterface
+    public String medStatus() {
+        try {
+            return new JSONObject().put("exact", Meds.canExact(activity))
+                    .put("notify", Build.VERSION.SDK_INT < 33 || granted(Manifest.permission.POST_NOTIFICATIONS))
+                    .put("sms", granted(Manifest.permission.SEND_SMS)).toString();
+        } catch (JSONException e) {
+            return "{}";
+        }
+    }
+
+    @JavascriptInterface
+    public void requestLocation() {
+        activity.runOnUiThread(activity::sendLocation);
+    }
+
+    @JavascriptInterface
+    public String locationStatus() {
+        try {
+            return new JSONObject().put("allowed", Locator.allowed(activity)).put("enabled", Locator.enabled(activity))
+                    .put("inAlerts", Store.locationInAlerts(activity)).toString();
+        } catch (JSONException e) {
+            return "{}";
+        }
+    }
+
+    @JavascriptInterface
+    public void setLocationInAlerts(boolean on) {
+        Store.setLocationInAlerts(activity, on);
+        if (on && !Locator.allowed(activity)) activity.runOnUiThread(activity::askLocationPermission);
+    }
+
+    @JavascriptInterface
+    public void shareText(String text) {
+        activity.runOnUiThread(() -> activity.share(text));
+    }
+
+    @JavascriptInterface
+    public void openMaps(String query) {
+        activity.runOnUiThread(() -> activity.openMaps(query));
+    }
+
+    @JavascriptInterface
+    public boolean canListen() {
+        return activity.canListen();
+    }
+
+    @JavascriptInterface
+    public void startVoice() {
+        activity.runOnUiThread(activity::startVoice);
+    }
+
+    @JavascriptInterface
+    public void stopVoice() {
+        activity.runOnUiThread(activity::stopVoice);
+    }
+
+    @JavascriptInterface
+    public String takeOpen() {
+        return Store.takeOpen(activity);
+    }
+
     @JavascriptInterface
     public String startGuard() {
         if (activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -65,6 +155,7 @@ final class AuraBridge {
             perms.put("sms", granted(Manifest.permission.SEND_SMS));
             perms.put("notify", Build.VERSION.SDK_INT < 33 || granted(Manifest.permission.POST_NOTIFICATIONS));
             perms.put("fullscreen", activity.canFullScreen());
+            perms.put("location", Locator.allowed(activity));
             JSONObject o = new JSONObject();
             o.put("on", Store.guardOn(activity) && GuardService.instance != null);
             o.put("alert", GuardService.isAlertActive());

@@ -3,6 +3,7 @@ package health.aura.app;
 import android.Manifest;
 import android.app.Activity;
 import android.app.NotificationManager;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
@@ -11,6 +12,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
+import android.speech.RecognitionListener;
+import android.speech.RecognizerIntent;
+import android.speech.SpeechRecognizer;
 import android.speech.tts.TextToSpeech;
 import android.view.WindowManager;
 import android.webkit.WebChromeClient;
@@ -19,6 +23,9 @@ import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -46,12 +53,15 @@ public class MainActivity extends Activity {
     private boolean ttsReady = false;
     private boolean triedPairing = false;
     private String loadedHub = "";
+    private SpeechRecognizer recognizer;
+    private boolean locationWanted = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         current = this;
         showOverLockScreenIfAlert(getIntent());
+        rememberOpen(getIntent());
         getWindow().setStatusBarColor(Color.parseColor("#f6f4ef"));
 
         web = new WebView(this);
@@ -74,6 +84,7 @@ public class MainActivity extends Activity {
             }
         });
         loadBest();
+        Meds.run(this);  // sets the medicine alarm again, in case Android dropped it
     }
 
     /** Load the laptop's copy if it answers within 2.5 s, otherwise the bundled copy. */
@@ -147,7 +158,7 @@ public class MainActivity extends Activity {
             String host = url.getHost() == null ? "" : url.getHost();
             boolean ours = host.equals(LOCAL_HOST) || (!loadedHub.isEmpty() && loadedHub.contains("//" + host));
             if (!ours) {
-                startActivity(new Intent(Intent.ACTION_VIEW, url));  // other sites open in the normal browser
+                openOutside(url);  // other sites and map links open in the normal browser or Maps
                 return true;
             }
             return false;
@@ -173,6 +184,14 @@ public class MainActivity extends Activity {
         return "application/octet-stream";
     }
 
+    private void openOutside(Uri url) {
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, url));
+        } catch (ActivityNotFoundException e) {
+            sendToWeb("{\"type\":\"toast\",\"key\":\"nearby.noApp\"}");
+        }
+    }
+
     // ---------- called by the bridge ----------
 
     void speak(String text) {
@@ -181,6 +200,131 @@ public class MainActivity extends Activity {
 
     void stopSpeaking() {
         if (ttsReady) tts.stop();
+    }
+
+    // ---------- location, sharing and maps ----------
+
+    /** Ask for a fresh location; the answer comes back to the page as a "location" event. */
+    void sendLocation() {
+        if (!Locator.allowed(this)) {
+            locationWanted = true;
+            requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 8);
+            return;
+        }
+        if (!Locator.enabled(this)) {
+            sendToWeb("{\"type\":\"location\",\"ok\":false,\"reason\":\"off\"}");
+            return;
+        }
+        Locator.current(this, 15_000, l -> {
+            JSONObject o = new JSONObject();
+            try {
+                o.put("type", "location").put("ok", l != null);
+                if (l == null) o.put("reason", "unknown");
+                else o.put("lat", l.getLatitude()).put("lng", l.getLongitude()).put("accuracy", Math.round(l.getAccuracy()))
+                        .put("at", l.getTime()).put("link", Locator.mapsLink(l));
+            } catch (JSONException ignored) {
+            }
+            sendToWeb(o.toString());
+        });
+    }
+
+    void askLocationPermission() {
+        requestPermissions(new String[] {Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION}, 8);
+    }
+
+    void share(String text) {
+        Intent send = new Intent(Intent.ACTION_SEND).setType("text/plain").putExtra(Intent.EXTRA_TEXT, text);
+        try {
+            startActivity(Intent.createChooser(send, "Share"));
+        } catch (ActivityNotFoundException ignored) {
+        }
+    }
+
+    /** Opens the phone's map app searching near here, for example for "hospital" or "pharmacy". Needs internet. */
+    void openMaps(String query) {
+        android.location.Location l = Locator.last(this);
+        String at = l == null ? "0,0" : String.format(Locale.US, "%.6f,%.6f", l.getLatitude(), l.getLongitude());
+        try {
+            startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("geo:" + at + "?q=" + Uri.encode(query))));
+        } catch (ActivityNotFoundException e) {
+            openOutside(Uri.parse("https://www.google.com/maps/search/?api=1&query=" + Uri.encode(query)));
+        }
+    }
+
+    // ---------- voice input ----------
+
+    boolean canListen() {
+        return SpeechRecognizer.isRecognitionAvailable(this);
+    }
+
+    /** Push-to-talk: the phone's own speech recognizer turns speech into text; results go to the page. */
+    void startVoice() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[] {Manifest.permission.RECORD_AUDIO}, 9);
+            voiceEvent("error", "", "permission");
+            return;
+        }
+        if (!canListen()) {
+            voiceEvent("error", "", "unavailable");
+            return;
+        }
+        stopSpeaking();
+        if (recognizer == null) {
+            recognizer = SpeechRecognizer.createSpeechRecognizer(this);
+            recognizer.setRecognitionListener(new VoiceListener());
+        }
+        Intent i = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+                .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+                .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "en-IN")
+                .putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
+                .putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+        recognizer.startListening(i);
+    }
+
+    void stopVoice() {
+        if (recognizer != null) recognizer.stopListening();
+    }
+
+    private static void voiceEvent(String stage, String text, String error) {
+        JSONObject o = new JSONObject();
+        try {
+            o.put("type", "voice").put("stage", stage).put("text", text);
+            if (error != null) o.put("error", error);
+        } catch (JSONException ignored) {
+        }
+        sendToWeb(o.toString());
+    }
+
+    private static String firstResult(Bundle b) {
+        ArrayList<String> r = b == null ? null : b.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION);
+        return r == null || r.isEmpty() ? "" : r.get(0);
+    }
+
+    private static class VoiceListener implements RecognitionListener {
+        @Override public void onReadyForSpeech(Bundle params) { voiceEvent("listening", "", null); }
+        @Override public void onBeginningOfSpeech() {}
+        @Override public void onRmsChanged(float rmsdB) {}
+        @Override public void onBufferReceived(byte[] buffer) {}
+        @Override public void onEndOfSpeech() { voiceEvent("processing", "", null); }
+        @Override public void onPartialResults(Bundle partial) { voiceEvent("partial", firstResult(partial), null); }
+        @Override public void onEvent(int eventType, Bundle params) {}
+        @Override public void onResults(Bundle results) { voiceEvent("final", firstResult(results), null); }
+
+        @Override
+        public void onError(int error) {
+            String name;
+            switch (error) {
+                case SpeechRecognizer.ERROR_NO_MATCH: name = "no_match"; break;
+                case SpeechRecognizer.ERROR_SPEECH_TIMEOUT: name = "silence"; break;
+                case SpeechRecognizer.ERROR_NETWORK:
+                case SpeechRecognizer.ERROR_NETWORK_TIMEOUT: name = "network"; break;
+                case SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS: name = "permission"; break;
+                case SpeechRecognizer.ERROR_AUDIO: name = "audio"; break;
+                case SpeechRecognizer.ERROR_RECOGNIZER_BUSY: name = "busy"; break;
+                default: name = "other";
+            }
+            voiceEvent("error", "", name);
+        }
     }
 
     String[] missingPermissions() {
@@ -219,6 +363,13 @@ public class MainActivity extends Activity {
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] results) {
         super.onRequestPermissionsResult(requestCode, permissions, results);
         sendToWeb("{\"type\":\"permissions\"}");
+        if (requestCode == 8) {
+            if (locationWanted && Locator.allowed(this)) sendLocation();
+            else if (locationWanted) sendToWeb("{\"type\":\"location\",\"ok\":false,\"reason\":\"permission\"}");
+            locationWanted = false;
+            return;
+        }
+        if (requestCode == 9) return;
         if (!canFullScreen()) askPermissions();
     }
 
@@ -227,6 +378,14 @@ public class MainActivity extends Activity {
         MainActivity a = current;
         if (a == null || a.web == null) return;
         a.runOnUiThread(() -> a.web.evaluateJavascript("window.auraNativeEvent&&window.auraNativeEvent(" + json + ")", null));
+    }
+
+    /** A notification asked for a screen (for example the medicines): the page opens it when it is ready. */
+    private void rememberOpen(Intent intent) {
+        String open = intent == null ? null : intent.getStringExtra("open");
+        if (open == null || !open.matches("[a-z]{1,20}")) return;
+        Store.setOpen(this, open);
+        sendToWeb("{\"type\":\"open\",\"screen\":\"" + open + "\"}");
     }
 
     private void showOverLockScreenIfAlert(Intent intent) {
@@ -242,6 +401,7 @@ public class MainActivity extends Activity {
         super.onNewIntent(intent);
         setIntent(intent);
         showOverLockScreenIfAlert(intent);
+        rememberOpen(intent);
     }
 
     @Override
@@ -262,6 +422,7 @@ public class MainActivity extends Activity {
     protected void onDestroy() {
         if (current == this) current = null;
         if (tts != null) tts.shutdown();
+        if (recognizer != null) recognizer.destroy();
         web.destroy();
         super.onDestroy();
     }

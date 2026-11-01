@@ -1,7 +1,7 @@
 # Running checklist
 
 Kept up to date so work can resume if context is lost. `[x]` = done and checked, `[ ]` = not done,
-`[~]` = partly done (see note). Last update: 29 Oct 2026.
+`[~]` = partly done (see note). Last update: 2 Nov 2026.
 
 ## Phase 1: inspect the environment, choose the path
 
@@ -102,6 +102,22 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       Key saved by the developer; 42 API + 7 browser tests pass with Glimmer live
 - [x] DEMO_SCRIPT.md rewritten: stroke at night (knock) → auto-call + SMS → guide finder → card; morning check;
       opening line "built during the hackathon"
+
+## v3 "Aura, the family's assistant" (2 Nov, developer's request)
+
+- [x] Family & health: people (name, age, blood group, conditions, allergies, medicines, notes), contacts with roles
+      (phoned first / texted / medicine guardian), kept on the phone only; the 2 old guard contacts carry over
+- [x] Health card on the home screen (read aloud); saved people fill age and health notes into the handoff card
+      (checked in the browser preview with made-up data)
+- [~] Medicine reminders run by Android: Taken button, repeat after 10 min, guardian text after the wait, update text
+      when taken later, "Try it" test, alarms set again after a restart. Builds; **not yet tested on the phone**
+- [~] Location: map link in night-guard alert texts, "Share my location", nearest hospital / medical store.
+      Builds; **not yet tested on the phone**
+- [~] Talk to Aura: chat with Muse Glimmer through the laptop, emergency words and household questions answered on
+      the phone, push-to-talk voice. Chat measured (EVALUATION 2e); **voice not yet tested on the phone**
+- [x] Guide wording changes after August's suggestions (not a clinical review): docs/GUIDE_CHANGES.md; review PDF
+      made again
+- [ ] Country choice: only India (112) is set up; other countries need a sourced emergency number first
 
 ## Open decisions for the developer
 

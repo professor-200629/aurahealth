@@ -56,6 +56,12 @@ export const api = {
       json('POST', { text }),
       100000,
     ),
+  chat: (messages: { role: string; text: string }[]) =>
+    call<{ status: string; reply: string; guides: string[]; action: string; checks: string[]; model?: string }>(
+      '/api/chat',
+      json('POST', { messages, region: 'IN' }),
+      100000,
+    ),
   samples: () => call<{ samples: string[] }>('/api/samples'),
   useSample: (name: string) => call<{ session: Session }>(`/api/document/sample/${encodeURIComponent(name)}`, { method: 'POST' }),
   upload: (file: File) => {

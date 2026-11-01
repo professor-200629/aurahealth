@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
+import { loadHousehold } from '../household'
 import { TEL_URI } from '../i18n'
-import { loadContacts, native, onNativeEvent } from '../native'
+import { native, onNativeEvent } from '../native'
 import { Icon, useUi } from '../ui'
 
 interface AlertState {
@@ -27,9 +28,11 @@ export function AlertOverlay({ onHelp }: { onHelp: () => void }) {
   )
 
   if (!alert) return null
-  const c = loadContacts()
-  const neighbour = c.neighbour.name || t('alert.someone')
-  const family = c.family.name || t('alert.yourFamily')
+  const contacts = loadHousehold().contacts.filter((c) => c.number.trim())
+  const first = contacts.find((c) => c.call)
+  const texted = contacts.filter((c) => c.text).map((c) => c.name.trim()).filter(Boolean)
+  const neighbour = first?.name.trim() || t('alert.someone')
+  const family = texted.length ? texted.join(', ') : t('alert.yourFamily')
 
   return (
     <div className="alert-overlay" role="alertdialog" aria-modal="true" aria-labelledby="alert-title" data-testid="alert-overlay">

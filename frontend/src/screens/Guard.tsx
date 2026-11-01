@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { logEvent, pendingEvents, subscribe } from '../eventlog'
-import { guardStatus, isNativeApp, loadContacts, loadMorning, native, onNativeEvent, saveContacts, saveMorning } from '../native'
-import type { Contacts, GuardStatus, MorningCheck } from '../native'
+import { useHousehold } from '../household'
+import { guardStatus, isNativeApp, loadMorning, native, onNativeEvent, saveMorning } from '../native'
+import type { GuardStatus, MorningCheck } from '../native'
 import { Dual, Icon, useUi } from '../ui'
 
 const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -14,12 +15,13 @@ const PERMS: { key: string; label: string }[] = [
   { key: 'fullscreen', label: 'guard.perm.fullscreen' },
 ]
 
-export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
+export function Guard({ lastCheckin, onFamily }: { lastCheckin: string | null; onFamily: () => void }) {
   const { t } = useUi()
   const inApp = isNativeApp()
   const [status, setStatus] = useState<GuardStatus | null>(guardStatus)
-  const [contacts, setContacts] = useState<Contacts>(loadContacts)
-  const [saved, setSaved] = useState(false)
+  const [household] = useHousehold()
+  const callFirst = household.contacts.find((c) => c.call && c.number.trim())
+  const texted = household.contacts.filter((c) => c.text && c.number.trim())
   const [level, setLevel] = useState(0)
   const [knocks, setKnocks] = useState(0)
   const [checkin, setCheckin] = useState<string | null>(lastCheckin ?? latestLocalCheckin())
@@ -48,13 +50,6 @@ export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
     else native()?.startGuard?.()
     window.setTimeout(() => setStatus(guardStatus()), 400)
   }
-  const save = () => {
-    saveContacts(contacts)
-    setSaved(true)
-    window.setTimeout(() => setSaved(false), 2000)
-  }
-  const setField = (role: keyof Contacts, field: 'name' | 'number', value: string) =>
-    setContacts((c) => ({ ...c, [role]: { ...c[role], [field]: value } }))
   const check = (kind: 'checkin_night' | 'checkin_morning') => {
     native()?.checkIn?.(kind)
     setCheckin(logEvent({ kind }).at)
@@ -194,33 +189,19 @@ export function Guard({ lastCheckin }: { lastCheckin: string | null }) {
         )}
       </section>
 
-      <section className="card">
-        <h2>{t('guard.contacts')}</h2>
-        <p className="small muted">{t('guard.contactsNote')}</p>
-        {(['neighbour', 'family'] as const).map((role) => (
-          <fieldset key={role} className="contact">
-            <legend>{t(`guard.${role}`)}</legend>
-            <label className="field" htmlFor={`${role}-name`}>
-              {t('guard.name')}
-            </label>
-            <input id={`${role}-name`} className="input" value={contacts[role].name} maxLength={40} autoComplete="off" onChange={(e) => setField(role, 'name', e.target.value)} />
-            <label className="field" htmlFor={`${role}-number`}>
-              {t('guard.number')}
-            </label>
-            <input
-              id={`${role}-number`}
-              className="input"
-              type="tel"
-              inputMode="tel"
-              value={contacts[role].number}
-              maxLength={20}
-              autoComplete="off"
-              onChange={(e) => setField(role, 'number', e.target.value.replace(/[^\d+ ]/g, ''))}
-            />
-          </fieldset>
-        ))}
-        <button className="btn primary" style={{ marginTop: 14 }} onClick={save} data-testid="save-contacts">
-          {saved ? t('guard.saved') : t('common.save')}
+      <section className="card stack" data-testid="guard-contacts">
+        <h2 style={{ margin: 0 }}>{t('guard.contacts')}</h2>
+        <p style={{ margin: 0 }}>
+          <strong>{t('guard.callsFirst')}</strong> {callFirst ? callFirst.name || callFirst.number : t('guard.nobodySet')}
+        </p>
+        <p style={{ margin: 0 }}>
+          <strong>{t('guard.texts')}</strong> {texted.length ? texted.map((c) => c.name || c.number).join(', ') : t('guard.nobodySet')}
+        </p>
+        <p className="small muted" style={{ margin: 0 }}>
+          {t('guard.contactsWhere')}
+        </p>
+        <button className="btn secondary" onClick={onFamily} data-testid="edit-contacts">
+          {t('guard.editContacts')}
         </button>
       </section>
     </div>

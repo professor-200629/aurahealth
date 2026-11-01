@@ -11,7 +11,7 @@ from fastapi import FastAPI, File, HTTPException, Request, UploadFile
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 
-from . import ai, config, extraction, firstaid, guidefinder, handoff, ollama, packs, store, structuring
+from . import ai, chat, config, extraction, firstaid, guidefinder, handoff, ollama, packs, store, structuring
 
 app = FastAPI(title="AuraHealth", version=config.APP_VERSION, docs_url=None, redoc_url=None, openapi_url=None)
 
@@ -229,6 +229,23 @@ def structure(body: SplitRequest):
 def guide_finder(body: SplitRequest):
     """Suggests which first-aid guide to open. The words are not saved; no session is needed."""
     return guidefinder.find(body.text)
+
+
+class ChatTurn(BaseModel):
+    role: str
+    text: str = Field(max_length=2000)
+
+
+class ChatRequest(BaseModel):
+    messages: list[ChatTurn] = Field(max_length=40)
+    region: str = "IN"
+
+
+@app.post("/api/chat")
+def chat_reply(body: ChatRequest):
+    """Talk to Aura. The conversation is sent to the AI helper and not saved; no session is needed."""
+    region = packs.regions().get(body.region) or packs.regions()["IN"]
+    return chat.reply([t.model_dump() for t in body.messages], region["emergency"]["number"])
 
 
 # ---------- report image + reader (Llama 3.2 Vision) ----------

@@ -6,10 +6,13 @@
 
 When someone collapses or cannot get up at home, help is often far away. AuraHealth turns the nearest person into
 a first responder: the phone **alerts a neighbour and family by itself**, **speaks Red Cross first-aid steps** one
-at a time, and hands over a **timed record** of what happened and what was done.
+at a time, and hands over a **timed record** of what happened and what was done. Every day it keeps each
+person's **health card** ready, **reminds them to take their medicines** and **texts a guardian if a dose is
+missed**, and lets the family **talk to Aura** by voice or text.
 
 **The emergency path works with no internet and no laptop:** the 112 button, the first-aid steps, the night
-guard (3 knocks, or no "Good morning"), the automatic call and text, and the time log all run on the phone.
+guard (3 knocks, or no "Good morning"), the automatic call and text (with the phone's location), medicine
+reminders and the guardian text, the health card, and the time log all run on the phone.
 
 **The AI helpers use Meta Muse Glimmer** (Meta's open-weight 30B model, Apache 2.0), hosted free by NVIDIA
 (`meta/muse-glimmer-30b` on build.nvidia.com). They need internet and an NVIDIA key, and they only ever suggest:
@@ -44,6 +47,24 @@ clear, timed record.
 
 ## What it does
 
+- **Talk to Aura (voice or text).** Tap the microphone and speak, or type. Emergency words ("collapsed", "not
+  breathing", "choking", "bleeding", "chest pain", "face drooping", "seizure", "snake"...) get an answer **on the
+  phone at once**: a "Call 112" button and the matching first-aid guide. Questions about the family's own saved
+  data ("Has today's medicine been taken?", "What is Amma's blood group?") are also answered on the phone. Anything
+  else goes to **Meta Muse Glimmer**, which may only point to the app's guides and actions; code drops anything
+  else, removes any medicine amount, and adds "Call 112" whenever the person's words have an emergency sign.
+  Measured in `EVALUATION.md` section 2e. Replies can be read aloud.
+- **Family & health.** The people at home (name, age, blood group, conditions, allergies, regular medicines,
+  notes) and the contacts: who is phoned first in an alert, who is texted, and who is the medicine guardian.
+  Kept on the phone only. The **health card** on the home screen shows what to tell the operator and can read it
+  aloud; starting a handoff card from a saved person fills in their age and health notes.
+- **Medicine reminders that tell a guardian.** The family types the medicine and amount exactly as prescribed
+  (AuraHealth never suggests either) and the times. Android rings a reminder with a **Taken** button, repeats it
+  after 10 minutes, and if it is still not marked taken after the chosen wait (30 minutes by default) **texts every
+  guardian**. If it is marked taken later, the guardian gets a short update. Works with the app closed, after a
+  restart, with no laptop and no internet.
+- **Help nearby.** "Nearest hospital" and "Nearest medical store" open Google Maps near the phone (needs internet);
+  "Share my location" finds the phone with GPS and opens the share sheet with a map link.
 - **"Help someone now": step-by-step first aid while waiting for help.** 9 guides (start here, CPR, recovery
   position, choking, heavy bleeding, chest pain, stroke signs, snakebite, seizure), adapted in plain English
   from the IFRC 2020 first aid guidelines, one big step per screen, read aloud, with a 110-per-minute beat for
@@ -96,7 +117,8 @@ clear, timed record.
 
 ## What it does not do
 
-It does not diagnose, triage, rank urgency, recommend medicine doses, or call 112 by itself. It sends nothing
+It does not diagnose, triage, rank urgency, recommend medicines or doses (reminders use only what the family
+typed from the prescription), or call 112 by itself. It sends nothing
 anywhere except the AI helper calls described above. The first-aid steps are fixed text adapted from the Red Cross (IFRC) 2020
 guidelines; no model writes them (see `packs/sources/README.md`).
 
@@ -110,13 +132,16 @@ A native Android app (Java, no extra libraries) wraps the same web app:
 - **Night guard:** a foreground service listens for **3 knocks** (sharp sounds, each 0.12–1.5 s apart, all within
   3 s; speech and music are ignored). Audio is processed in memory, never recorded or sent; only loudness numbers
   go to the Android debug log. Then a loud alarm and a full-screen **"Are you OK?"** countdown (30 s). If nobody
-  taps "I'm OK", it **phones the neighbour** and **texts the family** (numbers stay on the phone). It cannot call
+  taps "I'm OK", it **phones the first contact** (best someone nearby, like a neighbour) and **texts the family**,
+  with a **map link of where the phone is** if location is allowed (numbers stay on the phone). It cannot call
   112 by itself: Android does not allow apps to; the big button opens the dialer.
 - **Check-ins:** "Good night" / "Good morning" give the card a **last seen well** time.
 - **Morning check:** someone who had a stroke or a fall in the night may not be able to knock. While the guard
   is on, if there is no "Good morning" by a set time (default 09:00), the same countdown → call → text runs, and
   the card says "No "Good morning" by the morning check time". (Built 31 Oct; not yet tested on the real phone.)
-- **Voice:** steps are read with the phone's own text-to-speech.
+- **Voice:** steps are read with the phone's own text-to-speech; "Talk to Aura" listens with the phone's own speech
+  recognizer (push to talk; it may need internet unless the phone has Google's offline English pack).
+- **Medicine alarms:** one exact alarm (`Meds.java`), set again after a restart (`BootReceiver.java`).
 
 Build and install (phone on USB with USB debugging on):
 
@@ -146,7 +171,7 @@ goes on the card or whether emergency help is shown.
 
 | Role | Model | Where it runs | Status (31 Oct 2026) |
 | --- | --- | --- | --- |
-| Guide finder, text helper, photo reader | **Meta Muse Glimmer 30B** (`meta/muse-glimmer-30b`, Meta open weights, Apache 2.0) | NVIDIA's free hosted API (build.nvidia.com), called by the laptop server; needs internet and `NVIDIA_API_KEY` (`scripts/set-nvidia-key.ps1`) | Default. Measured: `EVALUATION.md` section 2d |
+| Talk to Aura, guide finder, text helper, photo reader | **Meta Muse Glimmer 30B** (`meta/muse-glimmer-30b`, Meta open weights, Apache 2.0) | NVIDIA's free hosted API (build.nvidia.com), called by the laptop server; needs internet and `NVIDIA_API_KEY` (`scripts/set-nvidia-key.ps1`) | Default. Measured: `EVALUATION.md` section 2d |
 | Offline backup (optional) | Llama 3.2 3B (`llama3.2:3b`, Ollama) + Windows OCR | The laptop, no internet (`AURA_AI=llama`) | Measured: sections 2, 2b, 2c. Organizers said Llama does not count as a Meta model for this hackathon |
 | Online reader (optional) | Meta Muse Spark (`muse-spark-1.3`, Meta Model API) | Meta's API; needs `MODEL_API_KEY` | Built, never run with a real key |
 | Report reader (optional) | Llama 3.2 Vision 11B | The laptop | Cannot run on Ollama 0.30+; not measured |
@@ -202,11 +227,12 @@ Then tap **Status → Check now**: it should say the internet is not reachable w
 
 ```powershell
 cd C:\Users\Balu\Documents\aurahealth\backend
-uv run pytest -q                                          # 43 API and safety-rule tests (no model calls)
+uv run pytest -q                                          # 47 API and safety-rule tests (no model calls)
 $env:AURA_E2E = "1"; uv run pytest tests/test_e2e.py -v   # 7 browser tests in Microsoft Edge, phone size
 uv run python scripts/eval_splitter.py                    # text helper, real calls to the active AI helper
 uv run python scripts/eval_guidefinder.py --set heldout2  # guide finder, real calls (also: dev, heldout)
 uv run python scripts/eval_reader.py --glimmer            # photo reader with Muse Glimmer (also: --ocr)
+uv run python scripts/eval_chat.py                        # Talk to Aura: 24 cases, real calls
 ```
 
 Results and what was *not* tested are in [`EVALUATION.md`](EVALUATION.md).
@@ -239,6 +265,10 @@ EVAL_RESULTS/ JSON output of real measurement runs
 - Report fields are proposals; the model's reading cannot be overwritten by the client:
   `backend/src/aurahealth/app.py` (`update_fields`), `extraction.py`.
 - Card built without any model, unknowns listed, `not_assessed: true`: `backend/src/aurahealth/handoff.py`.
+- Talk to Aura: guides and actions from fixed lists, medicine amounts removed, "Call 112" added on emergency words:
+  `backend/src/aurahealth/chat.py` (`check`, `red_flags`); the phone's own copy: `frontend/src/chatlocal.ts`.
+- Medicine reminders never suggest a medicine or amount; the guardian text says only what was typed:
+  `android/app/src/main/java/health/aura/app/Meds.java`.
 - Pairing, security headers (CSP `connect-src 'self'`), no access logs: `backend/src/aurahealth/app.py`.
 
 ## Docs
