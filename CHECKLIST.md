@@ -73,7 +73,7 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       110/min CPR beat, every step saved with phone time (kept on the phone if the laptop is unreachable),
       time log on the handoff card; 24 API + 5 browser tests pass
 - [x] Real-phone check of the guides: read-aloud (Google TTS) and the CPR beat sound play on the Galaxy A36
-- [ ] Doctor review of the 9 guides (developer's doctor friend)
+- [ ] Doctor review of the 10 guides (developer's doctor friend; the 10th, low blood sugar, was added 2 Nov)
 - [x] Android app (Java, WebView + bridge, bundled web app, laptop optional), night guard (knock detector,
       alarm, full-screen countdown, auto-call neighbour, SMS family), check-ins, premium home and guard design;
       tested on the real phone with played sounds (see EVALUATION.md section 6)
@@ -122,7 +122,7 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
 - [x] Guide wording changes after August's suggestions (not a clinical review): docs/GUIDE_CHANGES.md; review PDF
       made again
 - [x] 2 Nov: Aura vs August on the phone, 10 questions, rules fixed first (docs/AUGUST_VS_AURA.md): Aura 76/80 after
-      fixes (blind reviewer 76), August 25-44/80. Open: "sugar if awake" for low blood sugar
+      fixes (blind reviewer 76), August 25-44/80. Low blood sugar guide added (IFRC 2020 pp. 291-294), so "sugar if awake and able to swallow" is now said
 - [ ] Country choice: only India (112) is set up; other countries need a sourced emergency number first
 
 ## Open decisions for the developer

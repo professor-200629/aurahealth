@@ -496,5 +496,6 @@
   "aikey.removeConfirm": "Remove the NVIDIA key from this phone?",
   "aikey.removed": "Removed.",
   "chat.emergencyCall": "Call {number} now and say what happened. Stay with them and watch their breathing.",
-  "chat.readHealth": "Read {name}'s health card aloud"
+  "chat.readHealth": "Read {name}'s health card aloud",
+  "chat.aiSlow": "The AI is taking too long to answer right now. Please ask again, open the first-aid guides, or call {number} if it is an emergency."
 }

@@ -18,7 +18,7 @@ safety or usability validation.
 | Suite | Command | Result |
 | --- | --- | --- |
 | API and safety rules | `uv run pytest -q` | **49 passed** (2 Nov, after the August comparison fixes) |
-| Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **7 passed** (2 Nov) |
+| Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **7 passed** (2 Nov, 00:33). At 12:50 and 13:00 the guide-finder test failed twice: NVIDIA's free API did not answer within its 60 s limit (the same hour the chat test had timeouts); the other 6 passed |
 
 What the API tests check (model output is injected, no model call):
 
@@ -249,11 +249,13 @@ answer word for word and the limits: [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_A
 | August | 44 / 80 | 25 / 80 |
 | Aura, first run | 66 / 80 | 65 / 80 |
 | Aura after fixing what the first run showed | **76 / 80** | **76 / 80** |
+| Aura with the low blood sugar guide (round 3) | 75 / 80 | not re-scored |
 
 The first run found a real Aura bug (a fit described as "shaking all over and not responding" went to the collapse
 guide instead of the seizure guide) and that its emergency answers did not say what to do first; both were fixed.
-Still missing: on "my diabetic father is sweating and confused" Aura says call 112 but not "sugar if awake and able
-to swallow". August answered everyday questions faster (7–11 s vs 12–17 s); Aura answered emergencies in 0.1 s.
+Round 3 (same day): a 10th guide, "Low blood sugar (diabetes)" from IFRC 2020 pp. 291-294, was added, and the
+confused diabetic now gets "give something sugary if awake and able to swallow" at once; Aura scored 75/80 that run
+(model wording varies between runs). August answered everyday questions faster (7–11 s vs 12–17 s); Aura answered emergencies in 0.1 s.
 Scores are by AI, not by a clinician.
 
 ## 3. Report reader (Meta Llama 3.2 Vision 11B)

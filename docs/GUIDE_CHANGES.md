@@ -46,3 +46,15 @@ the first one to three things to do, shown at once when someone describes that e
 line only repeats steps that are already in the same guide (for choking and heavy bleeding the hands-on step comes
 before the call). They are in the review PDF under "Shown first in Talk to Aura" for the clinician to check.
 
+## 2 Nov 2026: new guide "Low blood sugar (diabetes)"
+
+The August-vs-Aura test showed that for "My father is diabetic and is sweating and confused" Aura said to call
+112 but not to give sugar. A 10th guide was added from the IFRC 2020 guidelines, "Diabetic emergency", pages
+291-294: ask first whether the person is awake and able to swallow (if not, go to "Someone collapsed"); help them sit
+down; give something sugary (their own glucose tablets, fruit juice or a sugary non-diet drink, sugar or sweets);
+again after 15 minutes if still unwell; call 112 if not clearly better in about 30 minutes or if they get more
+drowsy, have a fit or stop responding; afterwards something more filling. Do not: food or drink only if awake and
+able to swallow; no diet or sugar-free drinks. The IFRC's amount (15-20 g of glucose) is left out, like all amounts
+in AuraHealth. The chat points to this guide when "diabetic" comes with sweating, shaking, confusion or drowsiness,
+or when someone says the sugar is low now. The guide finder's list was not changed (it was measured as it is).
+

@@ -24,7 +24,7 @@ export interface AuraAnswer {
   source: 'phone' | 'ai'
 }
 
-const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure']
+const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure', 'low_sugar']
 const NEG = /\b(not|no|never|isn'?t|wasn'?t|doesn'?t|didn'?t)\s+(\w+\s+){0,2}$/i
 const RED_FLAGS: [RegExp, string | null][] = [
   [/\b(not|isn'?t|stopped|no longer)\s+(breathing|breathe)|\bunconscious|\bnot (responding|answering|waking)|\bwon'?t wake|\bcollapsed?\b|\bfainted\b|\bpassed out\b|\bblacked out\b/gi, 'check'],
@@ -34,6 +34,7 @@ const RED_FLAGS: [RegExp, string | null][] = [
   [/\bstroke\b|\bface\b[^.?!]{0,20}\bdroop|\bslurr|\b(arm|leg|side)\b[^.?!]{0,20}\b(weak|numb|can'?t move)/gi, 'stroke'],
   [/\bsnake/gi, 'snakebite'],
   [/\bseizures?\b|\bfitting\b|\b(a|the) fit\b|\bfits\b|\bshaking all over\b|\bjerking\b|\bconvuls/gi, 'seizure'],
+  [/\blow (blood )?sugar\b|\bsugar (is |has gone |went )?(very )?(low|down)\b|\bhypo(glyc\w*)?\b|\bdiabet\w*\b[^.?!]{0,60}\b(sweat\w*|shak\w*|confus\w*|drows\w*|dizzy|faint\w*|weak)\b|\b(sweat\w*|shak\w*|confus\w*|drows\w*)\b[^.?!]{0,60}\bdiabet\w*/gi, 'low_sugar'],
   [/\bpoison|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|chemical|bleach|acid|kerosene)|\btoo many\b[^.?!]{0,20}\b(pills|tablets|medicines?)|\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bunresponsive\b/gi, null],
 ]
 

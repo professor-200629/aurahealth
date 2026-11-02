@@ -422,6 +422,76 @@
         "Do not give them food, drink or medicine until they are fully awake."
       ],
       "notes": []
+    },
+    {
+      "id": "low_sugar",
+      "chat_now": "If they are awake and can swallow, give something sugary now: their own glucose tablets, fruit juice or a sugary (not diet) drink, or sweets. Help them sit down. Call {number} if they cannot swallow safely, get more drowsy, have a fit or stop responding.",
+      "title": "Low blood sugar (diabetes)",
+      "when": "Someone with diabetes is sweating, shaky, weak, confused or drowsy.",
+      "source_pages": "291-294",
+      "steps": [
+        {
+          "id": "swallow",
+          "kind": "question",
+          "text": "Are they awake and able to swallow safely?",
+          "log": "Awake and able to swallow",
+          "choices": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "goto": "next"
+            },
+            {
+              "id": "no",
+              "label": "No, very drowsy or not responding",
+              "goto": "guide:check"
+            }
+          ]
+        },
+        {
+          "id": "sit",
+          "kind": "action",
+          "text": "Help them sit down.",
+          "log": "Helped them sit down"
+        },
+        {
+          "id": "sugar",
+          "kind": "action",
+          "text": "Give something sugary now: their own glucose tablets if they have them, or a glass of fruit juice or a sugary (not diet) drink, or a few spoonfuls of sugar or some sweets.",
+          "log": "Gave something sugary"
+        },
+        {
+          "id": "again",
+          "kind": "action",
+          "text": "Stay with them. If they still feel unwell after 15 minutes, give something sugary again.",
+          "log": "Checked again after 15 minutes"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} if they are not clearly better in about 30 minutes, or if they get more drowsy, have a fit or stop responding. Keep watching their breathing.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "after",
+          "kind": "action",
+          "text": "When they feel better, give them something more filling, such as a slice of bread or a chapati, and check their blood sugar if they have a meter.",
+          "log": "Gave a filling snack"
+        }
+      ],
+      "do_not": [
+        "Only give food or drink if they are awake and able to swallow: otherwise it can choke them.",
+        "Do not give diet or sugar-free drinks or sweets: they do not raise blood sugar."
+      ],
+      "notes": [
+        "If you are not sure whether their sugar is low or high, treat it as low: sugar is unlikely to harm someone whose sugar is high, but not giving it to someone whose sugar is low can."
+      ],
+      "links": [
+        {
+          "label": "They stopped responding",
+          "goto": "guide:check"
+        }
+      ]
     }
   ]
 }

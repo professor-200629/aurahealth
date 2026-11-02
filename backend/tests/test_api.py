@@ -676,7 +676,8 @@ def test_phone_and_laptop_send_aura_the_same_rules():
     """The phone app builds the prompt from the same pack file (frontend/src/aura.ts), so the lists must match."""
     from aurahealth import chat
     pack = json.loads((config.PACKS_DIR / "ai" / "aura_chat.json").read_text(encoding="utf-8"))
-    assert pack["choices"] == guidefinder.CHOICES and tuple(pack["actions"]) == chat.ACTIONS
+    assert set(guidefinder.CHOICES) <= set(pack["choices"]) <= set(packs.guides()["guides"])
+    assert not {"cpr", "recovery"} & set(pack["choices"]) and tuple(pack["actions"]) == chat.ACTIONS
     prompt = chat.system_prompt("112")
     assert "{" + "number}" not in prompt and "Call 112 now." in prompt and "never give an amount or dose" in prompt
 
@@ -686,5 +687,16 @@ def test_a_fit_points_to_the_seizure_guide_not_the_collapse_one():
     assert chat.red_flags("My daughter is shaking all over and not responding, it looks like a fit") == (True, ["seizure"])
     assert chat.red_flags("He is having fits") == (True, ["seizure"])
     guides = packs.guides()["guides"]
-    for gid in guidefinder.CHOICES:  # every guide the chat can point to says what to do first
+    for gid in chat.CHOICES:  # every guide the chat can point to says what to do first
         assert guides[gid].get("chat_now") and not chat.DOSE.search(guides[gid]["chat_now"])
+
+
+def test_low_blood_sugar_points_to_its_guide_and_says_sugar_only_if_awake():
+    from aurahealth import chat
+    assert chat.red_flags("My father is diabetic and is sweating and confused") == (True, ["low_sugar"])
+    assert chat.red_flags("her sugar is very low and she is shaky")[1] == ["low_sugar"]
+    # a question about earlier today is not an emergency now
+    assert chat.red_flags("Should I stop his sugar tablets because his sugar was low this morning?") == (False, [])
+    guide = packs.guides()["guides"]["low_sugar"]
+    assert guide["steps"][0]["kind"] == "question" and "swallow" in guide["steps"][0]["text"]
+    assert "awake and can swallow" in guide["chat_now"] and "low_sugar" not in guidefinder.CHOICES

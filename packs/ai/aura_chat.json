@@ -8,7 +8,8 @@
     "chest_pain": "pain, pressure or tightness in the chest",
     "stroke": "face drooping on one side, a weak arm, or sudden strange or slurred speech",
     "snakebite": "bitten by a snake, or might have been",
-    "seizure": "a seizure or fit: shaking, jerking, stiffening"
+    "seizure": "a seizure or fit: shaking, jerking, stiffening",
+    "low_sugar": "someone with diabetes who is sweating, shaky, weak, confused or drowsy (low blood sugar)"
   },
   "actions": [
     "none",

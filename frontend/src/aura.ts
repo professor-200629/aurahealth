@@ -10,7 +10,7 @@ import { native, nativeJson, onNativeEvent } from './native'
 
 const ACTIONS = pack.actions as ChatAction[]
 const CHOICES = Object.keys(pack.choices)
-const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure']
+const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure', 'low_sugar']
 const MAX_TURNS = 10
 const MAX_CHARS = 500
 const MAX_REPLY = 600

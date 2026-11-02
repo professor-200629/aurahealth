@@ -104,7 +104,13 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
         /* fall through to the phone's own answer */
       }
     }
-    const why = phoneError === 'key_rejected' ? 'chat.keyRejected' : phoneError === 'rate_limited' ? 'chat.rateLimited' : phoneError ? 'chat.noInternet' : aiReady ? 'chat.aiFailed' : 'chat.offline'
+    const why =
+      phoneError === 'key_rejected' ? 'chat.keyRejected'
+      : phoneError === 'rate_limited' ? 'chat.rateLimited'
+      : phoneError === 'timeout' ? 'chat.aiSlow'
+      : phoneError ? 'chat.noInternet'
+      : aiReady ? 'chat.aiFailed'
+      : 'chat.offline'
     return { text: t(why), guides: [], action: 'open_help', source: 'phone' }
   }
 

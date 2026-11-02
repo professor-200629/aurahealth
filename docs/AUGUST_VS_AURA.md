@@ -113,6 +113,31 @@ blows, raising a bleeding arm, and "drive to hospital" offered as equal to calli
 urgency rule takes 3 points from the improved Aura for putting the hands-on step first in choking, bleeding and
 seizure, which is the right order.
 
+### Round 3: low blood sugar guide (same day)
+
+Round 2 left one gap: no "give sugar" for the confused diabetic father. A 10th first-aid guide, "Low blood sugar
+(diabetes)", was added from the IFRC 2020 guidelines (pages 291-294), and the chat now points to it. Same 10
+questions again on the phone (laptop not used):
+
+- **Q10 now:** "If they are awake and can swallow, give something sugary now: their own glucose tablets, fruit juice
+  or a sugary (not diet) drink, or sweets. Help them sit down. Call 112 if they cannot swallow safely, get more
+  drowsy, have a fit or stop responding." + [Call 112] [Low blood sugar (diabetes)], in 0.1 s. Points 1/2/2/2 = 7:
+  the first action is now right, but this follows the IFRC order (sugar first, call if no better or if drowsy), and
+  the scoring rule written before the test expected "call 112" first. Our own rule and the IFRC disagree here; the
+  guide follows the IFRC.
+- Q1-Q7: the same answers as round 2.
+- Q8 (paracetamol) 8, Q9 (dizzy) 7: the model's wording changed between runs; this time it said "Offer water if she
+  can swallow safely" without "and is not showing stroke signs", although it then listed the stroke signs.
+- **Round 3 total: 75 / 80** (round 2: 76). Model answers vary from run to run; the fixed emergency answers do not.
+- During this round NVIDIA's free hosted API was slow: on the phone, Q8 and Q9 first timed out after 90 s (while
+  the laptop's 24-case chat test was using the same key; that test also had 5 timeouts or server errors), then
+  answered in 49 s and 29 s on a second try. Emergencies never wait for the model, so they were not affected. The
+  phone now says "The AI is taking too long" instead of "no internet" when this happens.
+- The new low-sugar rule first also fired on "Should I stop his sugar tablets because his sugar **was** low this
+  morning?" (a past event): it was narrowed to the present ("is low", "low blood sugar") and a test was added. The
+  24-case chat test was then run again: 19 of the 20 cases NVIDIA answered passed (that one is now right; "knock"
+  still lacks its button), 4 timed out (`EVAL_RESULTS/chat_glimmer_20261102_125821.json`).
+
 ### Honest limits
 
 - 10 questions, one run each, one phone, English only. Answers from AI models vary between runs.

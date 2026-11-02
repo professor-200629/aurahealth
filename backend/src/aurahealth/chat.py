@@ -16,7 +16,10 @@ import json
 import re
 
 from . import ai, config, packs
-from .guidefinder import CHOICES
+
+# The guides the chat may point to: the guide finder's list plus a few more (packs/ai/aura_chat.json).
+_PACK = json.loads((config.PACKS_DIR / "ai" / "aura_chat.json").read_text(encoding="utf-8"))
+CHOICES: dict[str, str] = _PACK["choices"]
 
 ACTIONS = ("none", "call_emergency", "open_help", "nearby_hospital", "nearby_pharmacy", "share_location",
            "open_medicines", "open_guard", "open_family", "open_card")
@@ -37,9 +40,8 @@ SCHEMA = {
 
 def system_prompt(number: str) -> str:
     """The instructions, from packs/ai/aura_chat.json (the phone app sends the same text when it calls the model)."""
-    pack = json.loads((config.PACKS_DIR / "ai" / "aura_chat.json").read_text(encoding="utf-8"))
-    choices = "\n".join(f"  - {gid}: {what}" for gid, what in pack["choices"].items())
-    return (pack["system"].replace("{choices}", choices).replace("{actions}", ", ".join(pack["actions"]))
+    choices = "\n".join(f"  - {gid}: {what}" for gid, what in _PACK["choices"].items())
+    return (_PACK["system"].replace("{choices}", choices).replace("{actions}", ", ".join(_PACK["actions"]))
             .replace("{number}", number))
 
 
@@ -62,6 +64,9 @@ RED_FLAGS: list[tuple[re.Pattern, str | None]] = [
     (re.compile(r"\bstroke\b|\bface\b[^.?!]{0,20}\bdroop|\bslurr|\b(arm|leg|side)\b[^.?!]{0,20}\b(weak|numb|can'?t move)", re.I), "stroke"),
     (re.compile(r"\bsnake", re.I), "snakebite"),
     (re.compile(r"\bseizures?\b|\bfitting\b|\b(a|the) fit\b|\bfits\b|\bshaking all over\b|\bjerking\b|\bconvuls", re.I), "seizure"),
+    (re.compile(r"\blow (blood )?sugar\b|\bsugar (is |has gone |went )?(very )?(low|down)\b|\bhypo(glyc\w*)?\b"
+                r"|\bdiabet\w*\b[^.?!]{0,60}\b(sweat\w*|shak\w*|confus\w*|drows\w*|dizzy|faint\w*|weak)\b"
+                r"|\b(sweat\w*|shak\w*|confus\w*|drows\w*)\b[^.?!]{0,60}\bdiabet\w*", re.I), "low_sugar"),
     (re.compile(r"\bpoison|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|chemical|bleach|acid|kerosene)"
                 r"|\btoo many\b[^.?!]{0,20}\b(pills|tablets|medicines?)"
                 r"|\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bunresponsive\b", re.I), None),

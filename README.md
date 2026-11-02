@@ -57,7 +57,7 @@ clear, timed record.
   paste it in the chat screen), the phone calls Muse Glimmer itself over its own internet. Phone and laptop send the
   same prompt (`packs/ai/aura_chat.json`) and apply the same checks.
   Measured in `EVALUATION.md` section 2e; compared with the August health app on the same phone in
-  [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_AURA.md) (Aura 76/80, August 25–44/80 on 10 questions, scored by AI).
+  [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_AURA.md) (Aura 75–76/80, August 25–44/80 on 10 questions, scored by AI).
   Replies can be read aloud.
 - **Family & health.** The people at home (name, age, blood group, conditions, allergies, regular medicines,
   notes) and the contacts: who is phoned first in an alert, who is texted, and who is the medicine guardian.
@@ -70,8 +70,8 @@ clear, timed record.
   restart, with no laptop and no internet.
 - **Help nearby.** "Nearest hospital" and "Nearest medical store" open Google Maps near the phone (needs internet);
   "Share my location" finds the phone with GPS and opens the share sheet with a map link.
-- **"Help someone now": step-by-step first aid while waiting for help.** 9 guides (start here, CPR, recovery
-  position, choking, heavy bleeding, chest pain, stroke signs, snakebite, seizure), adapted in plain English
+- **"Help someone now": step-by-step first aid while waiting for help.** 10 guides (start here, CPR, recovery
+  position, choking, heavy bleeding, chest pain, stroke signs, snakebite, seizure, low blood sugar in diabetes), adapted in plain English
   from the IFRC 2020 first aid guidelines, one big step per screen, read aloud, with a 110-per-minute beat for
   chest compressions. **Every step tapped is saved with the phone's time** and appears on the handoff card,
   so the doctor sees what was done and when. It works with the laptop out of reach; the log is sent later.
