@@ -111,6 +111,31 @@ final class AuraBridge {
         activity.runOnUiThread(() -> activity.openMaps(query));
     }
 
+    /** Talk to Aura without the laptop: is an NVIDIA key saved on this phone? (The key itself is never returned.) */
+    @JavascriptInterface
+    public String aiStatus() {
+        try {
+            return new JSONObject().put("key", !AiClient.key(activity).isEmpty()).put("model", AiClient.MODEL).toString();
+        } catch (JSONException e) {
+            return "{}";
+        }
+    }
+
+    @JavascriptInterface
+    public boolean setAiKey(String key) {
+        return AiClient.setKey(activity, key);
+    }
+
+    @JavascriptInterface
+    public void clearAiKey() {
+        AiClient.clearKey(activity);
+    }
+
+    @JavascriptInterface
+    public void askAi(String requestJson) {
+        AiClient.ask(activity, requestJson);
+    }
+
     @JavascriptInterface
     public boolean canListen() {
         return activity.canListen();

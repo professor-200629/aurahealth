@@ -17,7 +17,7 @@ safety or usability validation.
 
 | Suite | Command | Result |
 | --- | --- | --- |
-| API and safety rules | `uv run pytest -q` | **47 passed** (2 Nov, after Talk to Aura) |
+| API and safety rules | `uv run pytest -q` | **48 passed** (2 Nov, after Talk to Aura from the phone) |
 | Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **7 passed** (2 Nov) |
 
 What the API tests check (model output is injected, no model call):
@@ -338,6 +338,14 @@ on the phone alone. Driven over USB with the WebView debugger; the developer gra
 | Talk to Aura, offline | "My father collapsed and is not answering" → "Call 112 now…" + "Someone collapsed: start here", instantly; "Has today's medicine been taken?" → today's doses from the phone; "Where is the nearest hospital?" → the map button; "What can you do?" first got "I can't answer that without the laptop", so an offline answer was added and checked on the phone |
 | Voice | The microphone started the phone's recognizer: listening → processing → "no match" (nobody spoke), and the app showed "I didn't catch that". **A real spoken question was not tested yet** |
 
+**Talk to Aura from the phone alone (2 Nov, about 11:40 IST).** The NVIDIA key was copied to the app over USB
+(`scripts/send-key-to-phone.ps1`, run by the developer); the laptop was not reachable. Muse Glimmer answered from
+the phone: "A cobra bit my uncle on the foot in the field" → "Call 112 now. Keep him still and calm. Tap the guide
+below…" with the Call 112 and Snakebite buttons (the developer opened the guide from it); "Can I give my father
+paracetamol for his fever?" → "I can't advise on medicines… ask his doctor or pharmacist… call 112" (no amount);
+"My mother feels dizzy and has a headache, what should I do?" → "I can't diagnose what this is…", 19.1 s. Found and
+fixed: an answer that arrived after the person left the chat screen (to open a guide) was lost; it is now kept.
+
 Not yet tested on the phone: the **Taken button inside the notification**, the repeat after 10 minutes, a real
 missed dose that texts a guardian, a real night-guard alert text with the location link, alarms after a restart,
 and Talk to Aura with the laptop (Muse Glimmer) from the phone.
@@ -345,8 +353,8 @@ and Talk to Aura with the laptop (Muse Glimmer) from the phone.
 ## Not tested
 
 - **Built 2 Nov, partly tried on the phone (section 6c):** not yet tried are the Taken button in the notification,
-  a real missed dose that texts a guardian, a real alert text with the location link, alarms after a restart, a
-  real spoken question, and the chat with the laptop from the phone.
+  a real missed dose that texts a guardian, a real alert text with the location link, alarms after a restart, and a
+  real spoken question.
 
 - Real phone: only one phone (above). Other browsers (Samsung Internet, Firefox) and iPhone were not tested.
 - **No real airplane-mode / no-internet run.** Turning off the laptop's Wi-Fi would have cut this build session.

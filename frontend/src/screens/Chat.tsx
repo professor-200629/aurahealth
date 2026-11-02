@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
+import { askFromPhone, phoneAiReady } from '../aura'
 import { localAnswer, redFlags } from '../chatlocal'
 import type { AuraAnswer, ChatAction } from '../chatlocal'
+import { PhoneAiKey } from '../components/PhoneAiKey'
 import { GUIDES } from '../guides'
 import { loadDoses, useHousehold } from '../household'
 import { TEL_URI } from '../i18n'
@@ -17,9 +19,13 @@ interface Msg {
   answer?: AuraAnswer
 }
 
-// Kept while the app is open, so going to a guide and back keeps the conversation. Never saved.
+// Kept while the app is open, so going to a guide and back keeps the conversation, and an answer that arrives
+// after the person left this screen is still there when they come back. Never saved.
 let history: Msg[] = []
+let waiting = false
 let nextId = 1
+const listeners = new Set<() => void>()
+const publish = () => listeners.forEach((fn) => fn())
 
 export type ChatTarget = 'help' | 'meds' | 'guard' | 'family' | 'card'
 
@@ -28,34 +34,50 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
   const [household] = useHousehold()
   const [msgs, setMsgs] = useState<Msg[]>(history)
   const [text, setText] = useState('')
-  const [busy, setBusy] = useState(false)
+  const [busy, setBusy] = useState(waiting)
   const [voice, setVoice] = useState<'' | 'listening' | 'processing'>('')
   const [voiceNote, setVoiceNote] = useState('')
   const [readAloud, setReadAloud] = useState(false)
   const [shareNote, setShareNote] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
-  const latest = useRef({ msgs, readAloud })
-  latest.current = { msgs, readAloud }
-  const aiReady = !!health?.models.text && !serverDown
+  const latest = useRef({ readAloud })
+  latest.current = { readAloud }
+  const laptopAi = !!health?.models.text && !serverDown
+  const [phoneAi, setPhoneAi] = useState(phoneAiReady)
+  const aiReady = phoneAi || laptopAi
   const canVoice = isNativeApp() && !!native()?.canListen?.()
 
   useEffect(() => {
-    history = msgs
+    const update = () => {
+      setMsgs(history)
+      setBusy(waiting)
+    }
+    listeners.add(update)
+    return () => {
+      listeners.delete(update)
+    }
+  }, [])
+  useEffect(() => {
     endRef.current?.scrollIntoView({ block: 'end' })
   }, [msgs])
   useEffect(() => () => stopSpeaking(), [])
+  useEffect(() => {
+    const again = () => setPhoneAi(phoneAiReady())
+    window.addEventListener('aura-ai-key', again)
+    return () => window.removeEventListener('aura-ai-key', again)
+  }, [])
 
   const ask = async (question: string, spoken: boolean) => {
     const q = question.trim()
-    if (!q || busy) return
-    const user: Msg = { id: nextId++, role: 'user', text: q }
-    const convo = [...latest.current.msgs, user]
-    setMsgs(convo)
+    if (!q || waiting) return
+    history = [...history, { id: nextId++, role: 'user', text: q }]
+    waiting = true
     setText('')
-    setBusy(true)
-    const answer = await respond(convo, q)
-    setBusy(false)
-    setMsgs((m) => [...m, { id: nextId++, role: 'aura', text: answer.text, answer }])
+    publish()
+    const answer = await respond(history, q)
+    history = [...history, { id: nextId++, role: 'aura', text: answer.text, answer }]
+    waiting = false
+    publish()
     if (spoken || latest.current.readAloud) speak(answer.text)
   }
 
@@ -65,15 +87,24 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     if (flags.found) return { text: t('chat.emergency'), guides: flags.guides, action: 'call_emergency', source: 'phone' }
     const local = localAnswer(q, household, loadDoses(), t)
     if (local) return local
-    if (aiReady) {
+    const turns = convo.slice(-10).map((m) => ({ role: m.role, text: m.text }))
+    let phoneError = ''
+    if (phoneAi) {
+      // The phone calls Muse Glimmer itself with its own internet: no laptop needed.
+      const r = await askFromPhone(turns)
+      if ('answer' in r) return r.answer
+      phoneError = r.error
+    }
+    if (laptopAi) {
       try {
-        const r = await api.chat(convo.slice(-10).map((m) => ({ role: m.role, text: m.text })))
+        const r = await api.chat(turns)
         if (r.status === 'ok') return { text: r.reply, guides: r.guides.filter((g) => GUIDES[g]), action: r.action as ChatAction, source: 'ai' }
       } catch {
         /* fall through to the phone's own answer */
       }
     }
-    return { text: aiReady ? t('chat.aiFailed') : t('chat.offline'), guides: [], action: 'open_help', source: 'phone' }
+    const why = phoneError === 'key_rejected' ? 'chat.keyRejected' : phoneError === 'rate_limited' ? 'chat.rateLimited' : phoneError ? 'chat.noInternet' : aiReady ? 'chat.aiFailed' : 'chat.offline'
+    return { text: t(why), guides: [], action: 'open_help', source: 'phone' }
   }
 
   const askRef = useRef(ask)
@@ -210,14 +241,16 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
         <span>{t('chat.readAloud')}</span>
       </label>
       <p className="tiny muted" style={{ margin: 0 }}>
-        {aiReady ? t('chat.noteOnline') : t('chat.noteOffline')}
+        {phoneAi ? t('chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
       </p>
+      <PhoneAiKey />
       {msgs.length > 0 && (
         <button
           className="btn ghost"
           onClick={() => {
             stopSpeaking()
-            setMsgs([])
+            history = []
+            publish()
           }}
         >
           {t('chat.clear')}

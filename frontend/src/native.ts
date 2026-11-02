@@ -44,6 +44,10 @@ interface Bridge {
   startVoice?: () => void
   stopVoice?: () => void
   takeOpen?: () => string
+  aiStatus?: () => string
+  setAiKey?: (key: string) => boolean
+  clearAiKey?: () => void
+  askAi?: (requestJson: string) => void
 }
 
 export type AlertReason = 'knock' | 'silence' | 'test'
@@ -59,6 +63,7 @@ export type NativeEvent =
   | { type: 'open'; screen: string }
   | { type: 'toast'; key: string }
   | { type: 'location'; ok: boolean; reason?: 'permission' | 'off' | 'unknown'; lat?: number; lng?: number; accuracy?: number; at?: number; link?: string }
+  | { type: 'ai'; id: string; ok: boolean; content?: string; error?: string; ms?: number }
   | { type: 'voice'; stage: 'listening' | 'partial' | 'final' | 'processing' | 'error'; text: string; error?: string }
 
 export const native = (): Bridge | undefined => (window as unknown as { AuraNative?: Bridge }).AuraNative

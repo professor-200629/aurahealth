@@ -114,6 +114,8 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       cleared when marked taken (EVALUATION 6c); notification button, real missed dose and restart not yet tested
 - [~] Location: map link in night-guard alert texts, "Share my location", nearest hospital / medical store.
       Phone, 2 Nov: location fix (~100 m), share menu, Maps hospital search work; alert text with link not yet tested
+- [x] 2 Nov: Talk to Aura works from the phone with no laptop (key saved in the app; same prompt file and checks as
+      the laptop); tested on the phone with the laptop unreachable (EVALUATION 6c)
 - [~] Talk to Aura: chat with Muse Glimmer through the laptop, emergency words and household questions answered on
       the phone, push-to-talk voice. Chat measured (EVALUATION 2e); offline answers checked on the phone; voice starts
       and reports "no match", a real spoken question not yet tested

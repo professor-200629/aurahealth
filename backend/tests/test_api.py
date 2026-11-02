@@ -670,3 +670,12 @@ def test_chat_without_the_model_still_points_to_help(client, monkeypatch):
     monkeypatch.setattr(ollama, "chat_json", down)
     r = client.post("/api/chat", json={"messages": [{"role": "user", "text": "My son is choking on a sweet"}]}).json()
     assert r["status"] == "model_unavailable" and r["action"] == "call_emergency" and r["guides"] == ["choking"]
+
+
+def test_phone_and_laptop_send_aura_the_same_rules():
+    """The phone app builds the prompt from the same pack file (frontend/src/aura.ts), so the lists must match."""
+    from aurahealth import chat
+    pack = json.loads((config.PACKS_DIR / "ai" / "aura_chat.json").read_text(encoding="utf-8"))
+    assert pack["choices"] == guidefinder.CHOICES and tuple(pack["actions"]) == chat.ACTIONS
+    prompt = chat.system_prompt("112")
+    assert "{" + "number}" not in prompt and "Call 112 now." in prompt and "never give an amount or dose" in prompt

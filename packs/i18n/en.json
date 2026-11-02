@@ -480,5 +480,19 @@
   "guard.texts": "Texted:",
   "guard.nobodySet": "nobody set",
   "guard.contactsWhere": "Contacts are set in Family & health. Alert texts include the phone's location if you allow it there.",
-  "guard.editContacts": "Edit contacts"
+  "guard.editContacts": "Edit contacts",
+  "chat.notePhone": "Questions about the app and your saved details are answered on this phone. Other questions go from this phone, over its own internet, to Meta's Muse Glimmer model (hosted by NVIDIA) and are not saved. No laptop is needed.",
+  "chat.keyRejected": "NVIDIA did not accept the key saved on this phone. Save a new key below. In an emergency, call {number}.",
+  "chat.rateLimited": "NVIDIA's free limit was reached. Try again in a minute. In an emergency, call {number}.",
+  "chat.noInternet": "I couldn't reach the AI: this phone may have no internet. You can open the first-aid guides, or call {number} if it is an emergency.",
+  "aikey.title": "Make Aura work without the laptop",
+  "aikey.titleReady": "Aura works from this phone (key saved)",
+  "aikey.note": "Paste your NVIDIA API key (free from build.nvidia.com). It is kept in this app on this phone only and is used only to ask Meta Muse Glimmer.",
+  "aikey.readyNote": "Aura asks Meta Muse Glimmer from this phone with the key saved here. It needs this phone's internet.",
+  "aikey.placeholder": "NVIDIA API key",
+  "aikey.saved": "Saved. Aura now works from this phone.",
+  "aikey.invalid": "That does not look like an API key. Nothing was saved.",
+  "aikey.remove": "Remove the key from this phone",
+  "aikey.removeConfirm": "Remove the NVIDIA key from this phone?",
+  "aikey.removed": "Removed."
 }

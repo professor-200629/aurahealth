@@ -4,6 +4,7 @@ import { LANGUAGES } from '../i18n'
 import type { Lang } from '../types'
 import { isNativeApp, native } from '../native'
 import { Sheet, useUi } from '../ui'
+import { PhoneAiKey } from './PhoneAiKey'
 
 export function LanguageToggle({ onChange }: { onChange: (l: Lang) => void }) {
   const { lang, t } = useUi()
@@ -69,6 +70,7 @@ export function StatusSheet({ onClose, onLang, onAbout }: { onClose: () => void;
           </span>
         </div>
       </div>
+      <PhoneAiKey />
       <p className="small muted">{t('status.offlineNote')}</p>
       <p className="small">
         <b>{t('app.setup')}</b>
