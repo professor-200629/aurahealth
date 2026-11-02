@@ -474,6 +474,7 @@
   "chat.local.allergies": "{name}'s allergies, as saved by the family: {text}.",
   "chat.local.allergiesUnknown": "No allergies are saved for {name}. That does not mean there are none.",
   "chat.local.guard": "The night guard listens for 3 knocks. If nobody taps \"I'm OK\" within 30 seconds, it phones your first contact and texts the family.",
+  "chat.local.about": "I'm Aura. On this phone I can point you to the right first-aid guide and the call button, tell you today's medicines, read the family's saved health details, show the nearest hospital or medical store, and share your location. When the laptop is connected I can answer other questions too.",
   "chat.local.card": "The handoff card puts what happened in one place, to read to the operator.",
   "guard.callsFirst": "Phoned first:",
   "guard.texts": "Texted:",

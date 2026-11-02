@@ -80,5 +80,6 @@ export function localAnswer(text: string, h: Household, doses: Dose[], t: T): Au
   }
   if (has(s, /\b(night guard|knock|knocks)\b/)) return say('chat.local.guard', 'open_guard')
   if (has(s, /\b(handoff|operator card)\b/)) return say('chat.local.card', 'open_card')
+  if (has(s, /\b(what can you do|what do you do|who are you|what are you|how (does|do) (this|the) app|how to use)\b/)) return say('chat.local.about', 'none')
   return null
 }

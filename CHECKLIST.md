@@ -110,11 +110,13 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
 - [x] Health card on the home screen (read aloud); saved people fill age and health notes into the handoff card
       (checked in the browser preview with made-up data)
 - [~] Medicine reminders run by Android: Taken button, repeat after 10 min, guardian text after the wait, update text
-      when taken later, "Try it" test, alarms set again after a restart. Builds; **not yet tested on the phone**
+      when taken later, "Try it" test, alarms set again after a restart. Phone, 2 Nov: test reminder shown on time and
+      cleared when marked taken (EVALUATION 6c); notification button, real missed dose and restart not yet tested
 - [~] Location: map link in night-guard alert texts, "Share my location", nearest hospital / medical store.
-      Builds; **not yet tested on the phone**
+      Phone, 2 Nov: location fix (~100 m), share menu, Maps hospital search work; alert text with link not yet tested
 - [~] Talk to Aura: chat with Muse Glimmer through the laptop, emergency words and household questions answered on
-      the phone, push-to-talk voice. Chat measured (EVALUATION 2e); **voice not yet tested on the phone**
+      the phone, push-to-talk voice. Chat measured (EVALUATION 2e); offline answers checked on the phone; voice starts
+      and reports "no match", a real spoken question not yet tested
 - [x] Guide wording changes after August's suggestions (not a clinical review): docs/GUIDE_CHANGES.md; review PDF
       made again
 - [ ] Country choice: only India (112) is set up; other countries need a sourced emergency number first

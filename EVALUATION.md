@@ -322,11 +322,31 @@ Not checked on the phone: Telugu screens, download .txt, print, the report reade
 - Not tested on the phone this time: the AI helpers (the phone and the laptop were on different networks), a
   real 09:00 deadline overnight.
 
+### 6c. New features on the phone (2 Nov 2026, 07:50-08:10 IST, same phone, new APK)
+
+The laptop was not on the phone's network, so the app ran its bundled copy (no AI helper): this checks what works
+on the phone alone. Driven over USB with the WebView debugger; the developer granted the location permission himself.
+
+| Check | Result |
+| --- | --- |
+| Install over the old app, start | No crash. The 2 night-guard contacts carried over: the neighbour contact is "phoned first", the family contact "texted in an alert" and "medicine guardian" (names and flags read; numbers not displayed) |
+| Permissions | Notifications, texts and exact alarms allowed; speech recognizer available |
+| Medicine "Try it" | The "Medicine time: Test reminder" notification appeared about 60 s after the tap. Nobody tapped Taken, so the test script marked it taken 40 s later through the app; the notification disappeared and **no guardian text was sent** (guardians told: 0) |
+| Location | After "While using the app": a fix within about 100 m, 5 s old |
+| Share my location | The Android share menu opened ("Location found (within about 100 m). Pick who to send it to."); closed without sending |
+| Nearest hospital | Google Maps opened with a "hospital" search around the phone. The first results were **sponsored** listings, not sorted by distance |
+| Talk to Aura, offline | "My father collapsed and is not answering" → "Call 112 now…" + "Someone collapsed: start here", instantly; "Has today's medicine been taken?" → today's doses from the phone; "Where is the nearest hospital?" → the map button; "What can you do?" first got "I can't answer that without the laptop", so an offline answer was added and checked on the phone |
+| Voice | The microphone started the phone's recognizer: listening → processing → "no match" (nobody spoke), and the app showed "I didn't catch that". **A real spoken question was not tested yet** |
+
+Not yet tested on the phone: the **Taken button inside the notification**, the repeat after 10 minutes, a real
+missed dose that texts a guardian, a real night-guard alert text with the location link, alarms after a restart,
+and Talk to Aura with the laptop (Muse Glimmer) from the phone.
+
 ## Not tested
 
-- **Built 2 Nov and not yet tried on the real phone:** medicine reminders and the guardian text, the location link
-  in alert texts, "Share my location", the nearest hospital / medical store buttons, and voice input. Family &
-  health, the health card, the medicine screen and the chat were checked in the browser preview with made-up data.
+- **Built 2 Nov, partly tried on the phone (section 6c):** not yet tried are the Taken button in the notification,
+  a real missed dose that texts a guardian, a real alert text with the location link, alarms after a restart, a
+  real spoken question, and the chat with the laptop from the phone.
 
 - Real phone: only one phone (above). Other browsers (Samsung Internet, Firefox) and iPhone were not tested.
 - **No real airplane-mode / no-internet run.** Turning off the laptop's Wi-Fi would have cut this build session.
