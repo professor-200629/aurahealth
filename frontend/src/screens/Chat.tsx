@@ -4,8 +4,9 @@ import { askFromPhone, phoneAiReady } from '../aura'
 import { localAnswer, redFlags } from '../chatlocal'
 import type { AuraAnswer, ChatAction } from '../chatlocal'
 import { PhoneAiKey } from '../components/PhoneAiKey'
-import { GUIDES } from '../guides'
-import { loadDoses, useHousehold } from '../household'
+import { healthSpeech } from '../components/HealthCard'
+import { fill, GUIDES } from '../guides'
+import { loadDoses, mainPerson, useHousehold } from '../household'
 import { TEL_URI } from '../i18n'
 import { isNativeApp, native, onNativeEvent } from '../native'
 import { locate, openNearby, shareText } from '../nearby'
@@ -84,7 +85,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
   const respond = async (convo: Msg[], q: string): Promise<AuraAnswer> => {
     // Emergency words get the phone's own answer at once (call button + guide): waiting ~10 s for the AI costs time.
     const flags = redFlags(q)
-    if (flags.found) return { text: t('chat.emergency'), guides: flags.guides, action: 'call_emergency', source: 'phone' }
+    if (flags.found) return { text: emergencyText(flags.guides, t), guides: flags.guides, action: 'call_emergency', source: 'phone' }
     const local = localAnswer(q, household, loadDoses(), t)
     if (local) return local
     const turns = convo.slice(-10).map((m) => ({ role: m.role, text: m.text }))
@@ -260,6 +261,13 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
   )
 }
 
+/** What to do first, from the guides' own "chat_now" lines; the call line is said once. */
+function emergencyText(guides: string[], t: (k: string) => string): string {
+  const lines = guides.map((g) => GUIDES[g]?.chat_now).filter((x): x is string => !!x).map(fill)
+  if (!lines.length) return t('chat.emergencyCall')
+  return lines.map((l, i) => (i ? l.replace(/^Call \d+ now[.:]\s*/, '') : l)).join(' ')
+}
+
 const ACTION_KEYS: Partial<Record<ChatAction, string>> = {
   open_help: 'chat.act.help',
   nearby_hospital: 'nearby.hospital',
@@ -273,7 +281,13 @@ const ACTION_KEYS: Partial<Record<ChatAction, string>> = {
 
 function AnswerActions({ answer, onGuide, onAct }: { answer: AuraAnswer; onGuide: (id: string) => void; onAct: (a: ChatAction) => void }) {
   const { t } = useUi()
+  const [household] = useHousehold()
   const key = ACTION_KEYS[answer.action]
+  // During the call the operator asks about the person: any saved person's health card can be read aloud.
+  const main = mainPerson(household)
+  const cards = answer.action === 'call_emergency'
+    ? household.people.filter((p) => p.name.trim()).sort((a, b) => Number(b.id === main?.id) - Number(a.id === main?.id)).slice(0, 3)
+    : []
   if (answer.action !== 'call_emergency' && !answer.guides.length && !key) return null
   return (
     <div className="bubble-actions">
@@ -293,6 +307,11 @@ function AnswerActions({ answer, onGuide, onAct }: { answer: AuraAnswer; onGuide
           {t(key)}
         </button>
       )}
+      {cards.map((card) => (
+        <button key={card.id} className="btn secondary" onClick={() => speak(healthSpeech(card, t))} data-testid="chat-health">
+          <Icon name="speaker" /> {t('chat.readHealth', { name: card.name })}
+        </button>
+      ))}
     </div>
   )
 }

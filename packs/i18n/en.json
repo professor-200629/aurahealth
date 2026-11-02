@@ -494,5 +494,7 @@
   "aikey.invalid": "That does not look like an API key. Nothing was saved.",
   "aikey.remove": "Remove the key from this phone",
   "aikey.removeConfirm": "Remove the NVIDIA key from this phone?",
-  "aikey.removed": "Removed."
+  "aikey.removed": "Removed.",
+  "chat.emergencyCall": "Call {number} now and say what happened. Stay with them and watch their breathing.",
+  "chat.readHealth": "Read {name}'s health card aloud"
 }

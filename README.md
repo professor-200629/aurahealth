@@ -56,7 +56,9 @@ clear, timed record.
   **No laptop needed:** with an NVIDIA key saved in the app (`scripts/send-key-to-phone.ps1` copies it over USB, or
   paste it in the chat screen), the phone calls Muse Glimmer itself over its own internet. Phone and laptop send the
   same prompt (`packs/ai/aura_chat.json`) and apply the same checks.
-  Measured in `EVALUATION.md` section 2e. Replies can be read aloud.
+  Measured in `EVALUATION.md` section 2e; compared with the August health app on the same phone in
+  [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_AURA.md) (Aura 76/80, August 25–44/80 on 10 questions, scored by AI).
+  Replies can be read aloud.
 - **Family & health.** The people at home (name, age, blood group, conditions, allergies, regular medicines,
   notes) and the contacts: who is phoned first in an alert, who is texted, and who is the medicine guardian.
   Kept on the phone only. The **health card** on the home screen shows what to tell the operator and can read it
@@ -230,7 +232,7 @@ Then tap **Status → Check now**: it should say the internet is not reachable w
 
 ```powershell
 cd C:\Users\Balu\Documents\aurahealth\backend
-uv run pytest -q                                          # 48 API and safety-rule tests (no model calls)
+uv run pytest -q                                          # 49 API and safety-rule tests (no model calls)
 $env:AURA_E2E = "1"; uv run pytest tests/test_e2e.py -v   # 7 browser tests in Microsoft Edge, phone size
 uv run python scripts/eval_splitter.py                    # text helper, real calls to the active AI helper
 uv run python scripts/eval_guidefinder.py --set heldout2  # guide finder, real calls (also: dev, heldout)

@@ -38,6 +38,7 @@ for n, g in enumerate(pack["guides"], 1):
   </table>
   {f'<div class="dont"><b>Do not</b><ul>{donts}</ul></div>' if donts else ''}
   {f'<div class="note"><b>Good to know</b><ul>{notes}</ul></div>' if notes else ''}
+  {f'<div class="note"><b>Shown first in "Talk to Aura"</b> (when someone describes this emergency in the chat, before they open the guide): {esc(g["chat_now"])} &nbsp; &#9744; OK &#9744; Change</div>' if g.get('chat_now') else ''}
   <p class="overall">Overall for this guide: &#9744; Approve &nbsp; &#9744; Approve with the changes above &nbsp; &#9744; Do not use</p>
 </section>""")
 

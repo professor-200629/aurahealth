@@ -17,7 +17,7 @@ safety or usability validation.
 
 | Suite | Command | Result |
 | --- | --- | --- |
-| API and safety rules | `uv run pytest -q` | **48 passed** (2 Nov, after Talk to Aura from the phone) |
+| API and safety rules | `uv run pytest -q` | **49 passed** (2 Nov, after the August comparison fixes) |
 | Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **7 passed** (2 Nov) |
 
 What the API tests check (model output is injected, no model call):
@@ -236,6 +236,25 @@ anything itself; at most 3 sentences.
 - Speed: a reply takes about 4 to 25 seconds, sometimes nearly a minute, on NVIDIA's free hosted API from a Jio
   hotspot. That is why emergency words never wait for the model.
 - Not tested: voice on the real phone, long conversations, Telugu, messages from real families.
+
+## 2f. Aura vs August on the phone (2 Nov 2026)
+
+The same 10 fictional questions (7 emergencies, 3 everyday) were typed into AuraHealth's "Talk to Aura" (phone only,
+no laptop) and into **August**, a consumer health AI app, on the developer's phone. The scoring rules were written
+before any answer came in (urgency, right first action, safety, usable under stress; 80 points). Full method, every
+answer word for word and the limits: [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_AURA.md).
+
+| | Claude's score | Blind reviewer (separate agent, names hidden) |
+| --- | --- | --- |
+| August | 44 / 80 | 25 / 80 |
+| Aura, first run | 66 / 80 | 65 / 80 |
+| Aura after fixing what the first run showed | **76 / 80** | **76 / 80** |
+
+The first run found a real Aura bug (a fit described as "shaking all over and not responding" went to the collapse
+guide instead of the seizure guide) and that its emergency answers did not say what to do first; both were fixed.
+Still missing: on "my diabetic father is sweating and confused" Aura says call 112 but not "sugar if awake and able
+to swallow". August answered everyday questions faster (7–11 s vs 12–17 s); Aura answered emergencies in 0.1 s.
+Scores are by AI, not by a clinician.
 
 ## 3. Report reader (Meta Llama 3.2 Vision 11B)
 

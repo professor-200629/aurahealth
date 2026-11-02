@@ -38,3 +38,11 @@ clearer or says why it matters; none changes what to do.
   read aloud one step at a time.
 
 The review PDF for a clinician (`docs/AuraHealth_first_aid_guides_for_review.pdf`) was made again after these changes.
+
+## 2 Nov 2026: "what to do first" lines for Talk to Aura
+
+After the August-vs-Aura test (`docs/AUGUST_VS_AURA.md`), each guide the chat can point to got a `chat_now` line:
+the first one to three things to do, shown at once when someone describes that emergency in "Talk to Aura". Each
+line only repeats steps that are already in the same guide (for choking and heavy bleeding the hands-on step comes
+before the call). They are in the review PDF under "Shown first in Talk to Aura" for the clinician to check.
+

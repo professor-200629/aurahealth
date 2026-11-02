@@ -121,6 +121,8 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       and reports "no match", a real spoken question not yet tested
 - [x] Guide wording changes after August's suggestions (not a clinical review): docs/GUIDE_CHANGES.md; review PDF
       made again
+- [x] 2 Nov: Aura vs August on the phone, 10 questions, rules fixed first (docs/AUGUST_VS_AURA.md): Aura 76/80 after
+      fixes (blind reviewer 76), August 25-44/80. Open: "sugar if awake" for low blood sugar
 - [ ] Country choice: only India (112) is set up; other countries need a sourced emergency number first
 
 ## Open decisions for the developer

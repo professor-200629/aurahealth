@@ -17,6 +17,7 @@
   "guides": [
     {
       "id": "check",
+      "chat_now": "Call {number} now, or ask someone to call. Shout and tap their shoulders. If they don't respond, look and listen: are they breathing normally? If not, start CPR: open the guide below.",
       "title": "Someone collapsed: start here",
       "when": "You are not sure what is wrong.",
       "source_pages": "128-139",
@@ -125,6 +126,7 @@
     },
     {
       "id": "choking",
+      "chat_now": "Act now: if they cannot cough or speak, give up to 5 sharp blows between the shoulder blades, then up to 5 abdominal thrusts, and keep repeating. Ask someone to call {number}. The guide below shows each step.",
       "title": "Choking",
       "when": "Something is stuck in the throat.",
       "source_pages": "170-174, 400",
@@ -171,6 +173,7 @@
     },
     {
       "id": "bleeding",
+      "chat_now": "Press hard on the wound with a cloth and keep pressing. Call {number}, or ask someone to call while you press. Help them lie down.",
       "title": "Heavy bleeding",
       "when": "Blood is flowing fast from a wound.",
       "source_pages": "187-194",
@@ -219,6 +222,7 @@
     },
     {
       "id": "chest_pain",
+      "chat_now": "Call {number} now. Help them sit down and rest, and keep them calm. Ask someone to bring a defibrillator (AED) if there is one nearby.",
       "title": "Chest pain",
       "when": "Pain or pressure in the chest that does not go away.",
       "source_pages": "264-270",
@@ -251,6 +255,7 @@
     },
     {
       "id": "stroke",
+      "chat_now": "Call {number} now: these can be signs of a stroke. Note the time the signs started. Keep them comfortable and give nothing to eat or drink.",
       "title": "Signs of a stroke",
       "when": "Sudden weak face or arm, or strange speech.",
       "source_pages": "271-278",
@@ -312,6 +317,7 @@
     },
     {
       "id": "snakebite",
+      "chat_now": "Call {number} now. Help them lie down and keep as still as possible. Do not tie the limb, cut the bite or suck out the venom.",
       "title": "Snakebite",
       "when": "Bitten by a snake, or you think so.",
       "source_pages": "254-257",
@@ -364,6 +370,7 @@
     },
     {
       "id": "seizure",
+      "chat_now": "Move hard or sharp things away and put something soft under their head. Do not hold them down or put anything in their mouth. Call {number} if it lasts more than 5 minutes, it is their first seizure, or they are hurt.",
       "title": "Seizure (fit)",
       "when": "Shaking, stiffening or not responding with twitching.",
       "source_pages": "295-298",

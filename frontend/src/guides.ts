@@ -23,6 +23,7 @@ export interface GuideStep {
 
 export interface Guide {
   id: string
+  chat_now?: string // what to do first, shown at once by Talk to Aura (from this guide's own steps)
   title: string
   when: string
   source_pages: string

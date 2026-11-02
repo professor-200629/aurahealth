@@ -679,3 +679,12 @@ def test_phone_and_laptop_send_aura_the_same_rules():
     assert pack["choices"] == guidefinder.CHOICES and tuple(pack["actions"]) == chat.ACTIONS
     prompt = chat.system_prompt("112")
     assert "{" + "number}" not in prompt and "Call 112 now." in prompt and "never give an amount or dose" in prompt
+
+
+def test_a_fit_points_to_the_seizure_guide_not_the_collapse_one():
+    from aurahealth import chat
+    assert chat.red_flags("My daughter is shaking all over and not responding, it looks like a fit") == (True, ["seizure"])
+    assert chat.red_flags("He is having fits") == (True, ["seizure"])
+    guides = packs.guides()["guides"]
+    for gid in guidefinder.CHOICES:  # every guide the chat can point to says what to do first
+        assert guides[gid].get("chat_now") and not chat.DOSE.search(guides[gid]["chat_now"])

@@ -61,7 +61,7 @@ RED_FLAGS: list[tuple[re.Pattern, str | None]] = [
     (re.compile(r"\bchest\b[^.?!]{0,30}\b(pain|pressure|tight|hurts?|heavy)|\bheart attack\b", re.I), "chest_pain"),
     (re.compile(r"\bstroke\b|\bface\b[^.?!]{0,20}\bdroop|\bslurr|\b(arm|leg|side)\b[^.?!]{0,20}\b(weak|numb|can'?t move)", re.I), "stroke"),
     (re.compile(r"\bsnake", re.I), "snakebite"),
-    (re.compile(r"\bseizures?\b|\bfitting\b|\bhaving a fit\b|\bconvuls", re.I), "seizure"),
+    (re.compile(r"\bseizures?\b|\bfitting\b|\b(a|the) fit\b|\bfits\b|\bshaking all over\b|\bjerking\b|\bconvuls", re.I), "seizure"),
     (re.compile(r"\bpoison|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|chemical|bleach|acid|kerosene)"
                 r"|\btoo many\b[^.?!]{0,20}\b(pills|tablets|medicines?)"
                 r"|\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bunresponsive\b", re.I), None),
@@ -81,6 +81,8 @@ def red_flags(text: str) -> tuple[bool, list[str]]:
                 guides.append(guide)
             break
     order = list(packs.guides()["guides"])
+    if "seizure" in guides:  # someone fitting does not respond either: the seizure guide comes first
+        guides = [g for g in guides if g != "check"]
     return found, sorted(guides, key=order.index)[:2]
 
 

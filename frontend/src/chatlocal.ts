@@ -33,7 +33,7 @@ const RED_FLAGS: [RegExp, string | null][] = [
   [/\bchest\b[^.?!]{0,30}\b(pain|pressure|tight|hurts?|heavy)|\bheart attack\b/gi, 'chest_pain'],
   [/\bstroke\b|\bface\b[^.?!]{0,20}\bdroop|\bslurr|\b(arm|leg|side)\b[^.?!]{0,20}\b(weak|numb|can'?t move)/gi, 'stroke'],
   [/\bsnake/gi, 'snakebite'],
-  [/\bseizures?\b|\bfitting\b|\bhaving a fit\b|\bconvuls/gi, 'seizure'],
+  [/\bseizures?\b|\bfitting\b|\b(a|the) fit\b|\bfits\b|\bshaking all over\b|\bjerking\b|\bconvuls/gi, 'seizure'],
   [/\bpoison|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|chemical|bleach|acid|kerosene)|\btoo many\b[^.?!]{0,20}\b(pills|tablets|medicines?)|\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bunresponsive\b/gi, null],
 ]
 
@@ -48,7 +48,9 @@ export function redFlags(text: string): { found: boolean; guides: string[] } {
       break
     }
   }
-  return { found, guides: guides.sort((a, b) => GUIDE_ORDER.indexOf(a) - GUIDE_ORDER.indexOf(b)).slice(0, 2) }
+  // Someone fitting does not respond either: the seizure guide (which checks breathing at the end) comes first.
+  const kept = guides.includes('seizure') ? guides.filter((g) => g !== 'check') : guides
+  return { found, guides: kept.sort((a, b) => GUIDE_ORDER.indexOf(a) - GUIDE_ORDER.indexOf(b)).slice(0, 2) }
 }
 
 const has = (text: string, re: RegExp) => re.test(text)

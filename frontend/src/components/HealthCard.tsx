@@ -6,6 +6,14 @@ import { Icon, useUi } from '../ui'
 
 const FIELDS = ['blood', 'conditions', 'allergies', 'medicines', 'notes'] as const
 
+/** The health card as one paragraph, to read aloud to the emergency operator. */
+export function healthSpeech(person: Person, t: (k: string, v?: Record<string, string | number>) => string): string {
+  return [
+    person.age ? t('health.sayAge', { name: person.name, age: person.age }) : person.name,
+    ...FIELDS.filter((f) => person[f].trim()).map((f) => `${t(`health.${f}`)}: ${person[f].trim()}`),
+  ].join('. ')
+}
+
 /** What to tell the emergency operator about a person, from Family & health. Works with no laptop and no internet. */
 export function HealthCard({ onEdit }: { onEdit: () => void }) {
   const { t } = useUi()
@@ -32,13 +40,7 @@ export function HealthCard({ onEdit }: { onEdit: () => void }) {
   }
 
   const lines = FIELDS.filter((f) => person[f].trim()).map((f) => ({ f, text: person[f].trim() }))
-  const read = () =>
-    speak(
-      [
-        person.age ? t('health.sayAge', { name: person.name, age: person.age }) : person.name,
-        ...lines.map((l) => `${t(`health.${l.f}`)}: ${l.text}`),
-      ].join('. '),
-    )
+  const read = () => speak(healthSpeech(person, t))
 
   return (
     <section className="card health-card stack" aria-labelledby="health-title" data-testid="health-card">
