@@ -258,7 +258,7 @@ export default function App() {
       <main className={wide ? 'wide' : ''}>
         {/* In the Android app everything that matters works without the laptop, so its absence is shown only in Settings. */}
         {WEB_DEMO && screen === 'home' && (
-          <div className="banner" style={{ marginBottom: 16 }} data-testid="web-demo">
+          <div className="banner" style={{ marginBottom: 16, display: 'block' }} data-testid="web-demo">
             {t(liveOn() ? 'web.demoLive' : 'web.demo')}
             <WebLive />
           </div>
