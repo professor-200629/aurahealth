@@ -115,7 +115,10 @@ final class AuraBridge {
     @JavascriptInterface
     public String aiStatus() {
         try {
-            return new JSONObject().put("key", !AiClient.key(activity).isEmpty()).put("model", AiClient.MODEL).toString();
+            String key = AiClient.key(activity);
+            boolean meta = AiClient.usesMeta(key);
+            return new JSONObject().put("key", !key.isEmpty()).put("host", meta ? "meta" : "other")
+                    .put("model", meta ? AiClient.META_MODEL : AiClient.MODEL).toString();
         } catch (JSONException e) {
             return "{}";
         }

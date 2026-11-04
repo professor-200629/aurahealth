@@ -5,7 +5,7 @@ import { clockOf, loadDoses, personName, today, useHousehold } from '../househol
 import { isNativeApp, native } from '../native'
 import { Icon, useUi } from '../ui'
 import { WEB_DEMO } from '../api'
-import { phoneAiReady } from '../aura'
+import { phoneAiReady, phoneUsesMeta } from '../aura'
 import { askOnOpen, listenOnOpen, photoOnOpen } from './Chat'
 import { Moon } from './Guard'
 
@@ -118,7 +118,7 @@ export function Home(props: Props) {
           ))}
         </div>
         <p className="tiny muted" style={{ margin: 0 }}>
-          {t(WEB_DEMO ? 'web.askNote' : 'home.askNote')}
+          {t(WEB_DEMO ? 'web.askNote' : phoneUsesMeta() ? 'home.askNoteMeta' : 'home.askNote')}
         </p>
         {phoneAiReady() && (
           <label className="btn talk block" data-testid="home-photo">

@@ -14,15 +14,14 @@ not marked taken**, and lets the family **talk to Aura** by voice or text.
 guard (3 knocks, or no "Good morning"), the automatic call and text (with the phone's location), medicine
 reminders and the guardian text, the health card, and the time log all run on the phone.
 
-**The AI helpers use Meta Muse Glimmer** (Meta's open-weight 30B model, Apache 2.0), hosted free by NVIDIA
-(`meta/muse-glimmer-30b` on build.nvidia.com). They need internet and an NVIDIA key. Talk to Aura writes answers that code checks before they show; the other
+**The AI uses two Meta models.** **Muse Spark** (`muse-spark-1.1`, Meta Model API) gives live answers and reads photos, called from the phone: on 60 test questions the median answer took 3.9 s. **Muse Glimmer** (Meta's open-weight 30B model, Apache 2.0) wrote the answers that ship in the app and work offline; with an NVIDIA key, it can also give live answers through NVIDIA's free host, much more slowly. Talk to Aura writes answers that code checks before they show; the other
 helpers only suggest, and a person confirms. NVIDIA's free terms are for trials, not real users (`LAUNCH_PLAN.md`). Where each model runs is listed under "Meta models" below.
 
-**Setup:** Android app. Talk to Aura needs an NVIDIA key saved on the phone. A laptop server on the same Wi-Fi is needed only for the handoff card, guide finder and report reader.
+**Setup:** Android app. Live answers need a Meta Model API key or an NVIDIA key saved on the phone. A laptop server on the same Wi-Fi is needed only for the handoff card, guide finder and report reader.
 
 **Try it with no install and no key:** [web demo](https://professor-200629.github.io/aurahealth/). It answers from what is built into the app (emergency words, readings, common medicine questions, prepared answers, first-aid guides) and sends nothing anywhere. Live AI, the photo reader, alarms, reminders and the night guard need the Android app.
 
-**Android app:** [download the APK](https://github.com/professor-200629/aurahealth/releases/latest/download/AuraHealth-prototype.apk) (a debug build with no key inside; install steps are in the [release](https://github.com/professor-200629/aurahealth/releases/latest)). Live answers and the photo reader need your own free NVIDIA key, saved in the chat screen.
+**Android app:** [download the APK](https://github.com/professor-200629/aurahealth/releases/latest/download/AuraHealth-prototype.apk) (a debug build with no key inside; install steps are in the [release](https://github.com/professor-200629/aurahealth/releases/latest)). Live answers and the photo reader need your own key, a Meta Model API key or a free NVIDIA key, saved in the chat screen.
 
 ## Why the first hour matters (sources)
 
@@ -196,12 +195,14 @@ goes on the card, and SOS never depends on a model. In Talk to Aura, the word li
 
 | Role | Model | Where it runs | Status (31 Oct 2026) |
 | --- | --- | --- | --- |
-| Talk to Aura, guide finder, text helper, photo reader | **Meta Muse Glimmer 30B** (`meta/muse-glimmer-30b`, Meta open weights, Apache 2.0) | NVIDIA's free hosted API (build.nvidia.com), called by the laptop server; needs internet and `NVIDIA_API_KEY` (`scripts/set-nvidia-key.ps1`) | Default. Measured: `EVALUATION.md` section 2d |
+| Live answers and photo reader on the phone | **Meta Muse Spark 1.1** (`muse-spark-1.1`, low effort) | Meta Model API, called from the phone with a key saved in the app. `AURA_AI=spark` does the same on the laptop | Measured 5 Nov: `QA_AND_EVALUATION.md` |
+| Answers written in advance | **Meta Muse Glimmer 30B** (open weights) | Written once through NVIDIA's hosted copy (`scripts/build_prepared.py`), then shipped in the app, offline | 371 answers, unreviewed |
+| Talk to Aura without a Meta key, guide finder, text helper | **Meta Muse Glimmer 30B** (`meta/muse-glimmer-30b`, Meta open weights, Apache 2.0) | NVIDIA's free hosted API (build.nvidia.com), called by the laptop server; needs internet and `NVIDIA_API_KEY` (`scripts/set-nvidia-key.ps1`) | Default. Measured: `EVALUATION.md` section 2d |
 | Offline backup (optional) | Llama 3.2 3B (`llama3.2:3b`, Ollama) + Windows OCR | The laptop, no internet (`AURA_AI=llama`) | Measured: sections 2, 2b, 2c. Organizers said Llama does not count as a Meta model for this hackathon |
-| Online reader (optional) | Meta Muse Spark (`muse-spark-1.3`, Meta Model API) | Meta's API; needs `MODEL_API_KEY` | Built, never run with a real key |
+| Laptop online reader (optional) | Meta Muse Spark (`muse-spark-1.1`, Meta Model API) | Meta's API; needs `MODEL_API_KEY` | Built. The screen itself was not run with a real key; the same photo request was, from a script |
 | Report reader (optional) | Llama 3.2 Vision 11B | The laptop | Cannot run on Ollama 0.30+; not measured |
 
-Muse Glimmer was chosen because the hackathon counts Meta's open-weight models (Muse Glimmer, Muse Spark Open)
+Muse Spark 1.1 was chosen for live answers by testing it against 1.3 (`QA_AND_EVALUATION.md`). Muse Glimmer was chosen because the hackathon counts Meta's open-weight models (Muse Glimmer, Muse Spark Open)
 and the Meta Model API. Muse Glimmer (about 18 GB) does not fit this laptop's 15.5 GB of memory, so it runs on
 NVIDIA's hosted copy of the same open weights.
 

@@ -19,7 +19,7 @@ Last update: 4 Nov 2026. Branch `product-v2`, off `master`. Nothing here is prod
 | Voice input | Real on Android | A spoken question is still untested. Transcript shows while listening |
 | Prepared answers | Real, offline | 371 answers for 207 topics, written in advance by Muse Glimmer (`scripts/build_prepared.py`), unreviewed, not personal |
 | Fixed medicine answers | Real, offline | `frontend/src/medicine.ts`. Never gives an amount. Unreviewed |
-| Report and medicine photo on the phone | Real, for synthetic samples | Muse Glimmer, online. The picker itself was opened and cancelled on the phone; the reading was tested with a sample given to the app |
+| Report and medicine photo on the phone | Real, for synthetic samples | Muse Spark with a Meta key, Muse Glimmer with an NVIDIA key, online. The picker itself was opened and cancelled on the phone; the reading was tested with a sample given to the app |
 | Handoff record on the phone | Real | Built from the phone's time log and health card |
 | Fuller handoff card, guide finder, older report reader | Needs the laptop server | Optional |
 | Web demo for judges | Real, limited | A plain page with no server or key. No live AI, photo reader, alarms, reminders or night guard |

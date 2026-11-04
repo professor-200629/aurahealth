@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { api, WEB_DEMO } from '../api'
 import IN from '../../../packs/regions/IN.json'
-import { askFromPhone, crisisText, phoneAiReady, readPhoto, shrinkPhoto } from '../aura'
+import { askFromPhone, crisisText, phoneAiReady, phoneUsesMeta, readPhoto, shrinkPhoto } from '../aura'
 import { STEPS_FIRST, guideHints, isGeneralQuestion, localAnswer, redFlags } from '../chatlocal'
 import { medicineAnswer } from '../medicine'
 import { answersEnough, bestWhenAiFails, isSimple, preparedFor } from '../prepared'
@@ -158,7 +158,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     setWaitingOnPerson(!general)
     publish()
     const slow = window.setTimeout(() => setThinking('chat.slow'), 12000)
-    const early = general ? window.setTimeout(showFacts, 6000) : 0
+    const early = general ? window.setTimeout(showFacts, phoneUsesMeta() ? 15000 : 6000) : 0
     const answer = await fromAi(convo, evidence)
     window.clearTimeout(slow)
     window.clearTimeout(early)
@@ -185,7 +185,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
       const base64 = await shrinkPhoto(file)
       history = [...history, { id: nextId++, role: 'user', text: t('chat.photoSent'), photo: `data:image/jpeg;base64,${base64}`, phoneOnly: true }]
       waiting++
-      setThinking('chat.photoReading')
+      setThinking(phoneUsesMeta() ? 'chat.photoReadingMeta' : 'chat.photoReading')
       setWaitingOnPerson(false)
       publish()
       const r = await readPhoto(base64)
@@ -249,8 +249,8 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
       }
     }
     const why =
-      phoneError === 'key_rejected' ? 'chat.keyRejected'
-      : phoneError === 'rate_limited' ? 'chat.rateLimited'
+      phoneError === 'key_rejected' ? (phoneUsesMeta() ? 'chat.keyRejectedMeta' : 'chat.keyRejected')
+      : phoneError === 'rate_limited' ? (phoneUsesMeta() ? 'chat.rateLimitedMeta' : 'chat.rateLimited')
       : phoneError === 'timeout' ? 'chat.aiSlow'
       : phoneError ? 'chat.noInternet'
       : aiReady ? 'chat.aiFailed'
@@ -330,7 +330,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
         <span>{t('chat.readAloud')}</span>
       </label>
       <p className="tiny muted" style={{ margin: 0 }}>
-        {WEB_DEMO ? t('web.chatNote') : phoneAi ? t('chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
+        {WEB_DEMO ? t('web.chatNote') : phoneAi ? t(phoneUsesMeta() ? 'chat.notePhoneMeta' : 'chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
       </p>
       <PhoneAiKey />
       {msgs.length > 0 && (
@@ -371,7 +371,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
             {m.answer ? <AnswerBody answer={m.answer} /> : <p>{m.text}</p>}
             {m.answer && <AnswerActions answer={m.answer} onGuide={onGuide} onAct={act} onMore={(q) => void ask(q, false, true)} />}
             {m.answer && <AnswerMore answer={m.answer} />}
-            {m.answer && <span className="bubble-source">{m.answer.prepared ? t('chat.sourcePrepared') : m.answer.facts ? t('chat.sourceFacts') : m.answer.source === 'ai' ? t('chat.sourceAi') : t('chat.sourcePhone')}</span>}
+            {m.answer && <span className="bubble-source">{m.answer.prepared ? t('chat.sourcePrepared') : m.answer.facts ? t('chat.sourceFacts') : m.answer.source === 'ai' ? t(phoneUsesMeta() ? 'chat.sourceSpark' : 'chat.sourceAi') : t('chat.sourcePhone')}</span>}
           </div>
         ))}
         {busy && (

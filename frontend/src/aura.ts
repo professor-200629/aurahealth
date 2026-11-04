@@ -197,8 +197,11 @@ export function readPhoto(base64: string): Promise<{ answer: AuraAnswer } | { er
   })
 }
 
-/** Is an NVIDIA key saved in the Android app on this phone? */
+/** Is an AI key saved in the Android app on this phone? */
 export const phoneAiReady = () => !!nativeJson<{ key: boolean }>((b) => b.aiStatus?.())?.key
+
+/** Is that key a Meta Model API key, so that answers come from Muse Spark and not from Muse Glimmer on NVIDIA? */
+export const phoneUsesMeta = () => nativeJson<{ host?: string }>((b) => b.aiStatus?.())?.host === 'meta'
 
 export type PhoneAiError = 'no_key' | 'key_rejected' | 'rate_limited' | 'timeout' | 'network' | 'bad_response' | string
 
@@ -207,7 +210,7 @@ let nextRequest = 1
 const RETRY: PhoneAiError[] = ['network', 'rate_limited', 'bad_response']
 
 /**
- * Ask Muse Glimmer from the phone. The free service can take over a minute, so one patient try of up to 110 s beats
+ * Ask the model from the phone. NVIDIA's free service can take over a minute, so one patient try of up to 110 s beats
  * giving up early and starting again at the back of its queue. A quick failure gets one more try.
  * onRetry lets the screen say it is trying again.
  */

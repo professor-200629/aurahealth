@@ -458,7 +458,7 @@ def test_online_reader_reads_fields_and_never_exposes_the_key(client, monkeypatc
     def fake_read(instructions, request, jpeg_b64):
         calls.append(len(jpeg_b64))
         return ('Here you go:\n```json\n{"fields": [{"label": "Medicine", "value": "Metformin 500 mg tablets"}]}\n```',
-                {"wall_s": 1.2, "model": "muse-spark-1.3", "cost_usd": 0.003})
+                {"wall_s": 1.2, "model": "muse-spark-1.1", "cost_usd": 0.003})
 
     monkeypatch.setattr(meta_api, "read_image", fake_read)
     client.post("/api/session", json={"region": "IN", "language": "en"})
@@ -469,7 +469,7 @@ def test_online_reader_reads_fields_and_never_exposes_the_key(client, monkeypatc
     assert started["status"] == "running"
     done = _wait_job(client, started["job"])
     doc = done["session"]["document"]
-    assert doc["extraction"]["model"] == "muse-spark-1.3" and doc["extraction"]["engine"] == "online"
+    assert doc["extraction"]["model"] == "muse-spark-1.1" and doc["extraction"]["engine"] == "online"
     assert [f["model_value"] for f in doc["fields"]] == ["Metformin 500 mg tablets"]
     assert calls  # the photo was sent only because "online" was chosen
     for r in (health, client.get("/api/session"), client.get("/api/handoff")):

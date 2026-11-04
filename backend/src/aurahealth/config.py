@@ -23,8 +23,10 @@ USE_LOCAL_VISION = os.environ.get("AURA_LOCAL_VISION", "0") == "1"
 
 # Optional online reader: Meta Model API, Muse Spark. Needs MODEL_API_KEY (scripts/set-meta-key.ps1).
 META_API_BASE = os.environ.get("AURA_META_API_BASE", "https://api.meta.ai/v1")
-META_MODEL = os.environ.get("AURA_META_MODEL", "muse-spark-1.3")
+# On the 60 test questions, 1.1 at "low" did better than 1.3 at "minimal": 3.9 s against 4.8 s median, 112/113 against 106/113 concepts (5 Nov).
+META_MODEL = os.environ.get("AURA_META_MODEL", "muse-spark-1.1")
 META_TIMEOUT_S = float(os.environ.get("AURA_META_TIMEOUT_S", "120"))
+META_EFFORT = os.environ.get("AURA_META_EFFORT", "low")
 MAX_META_SPEND_USD = float(os.environ.get("AURA_MAX_META_SPEND_USD", "2.00"))
 META_CALL_RESERVE_USD = 0.02
 # Published prices (dev.meta.ai/docs/pricing-rate-limits, read 2026-10-29), USD per million tokens.

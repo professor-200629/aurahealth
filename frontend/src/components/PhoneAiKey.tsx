@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { phoneAiReady } from '../aura'
+import { phoneAiReady, phoneUsesMeta } from '../aura'
 import { isNativeApp, native } from '../native'
 import { useUi } from '../ui'
 
-/** Save the NVIDIA key in the Android app, so Talk to Aura works from the phone without the laptop. */
+/** Save an AI key in the Android app, so Talk to Aura works from the phone without the laptop. */
 export function PhoneAiKey() {
   const { t } = useUi()
   const [ready, setReady] = useState(phoneAiReady)
@@ -31,7 +31,7 @@ export function PhoneAiKey() {
   return (
     <details className="card flat small" open={!ready} data-testid="phone-ai-key">
       <summary style={{ fontWeight: 700, cursor: 'pointer' }}>{ready ? t('aikey.titleReady') : t('aikey.title')}</summary>
-      <p style={{ margin: '8px 0' }}>{ready ? t('aikey.readyNote') : t('aikey.note')}</p>
+      <p style={{ margin: '8px 0' }}>{ready ? t(phoneUsesMeta() ? 'aikey.readyNoteMeta' : 'aikey.readyNote') : t('aikey.note')}</p>
       {!ready && (
         <form
           className="row"

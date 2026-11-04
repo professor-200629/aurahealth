@@ -15,14 +15,14 @@ after a fall is often awake but cannot reach or use the phone. For a stroke, the
 - **Clear the chat** and the old handoff record, so that the screens are clean.
 - Put `SAMPLE_DATA/reports/ranges_report.png` on the phone, so you can pick it. Keep your own photos out of the shot.
 - Practise the knock: 3 sharp knocks on the bedside table, within 3 seconds.
-- If the OpenRouter key is saved, live answers take seconds. If not, trim the wait in the edit and say so on screen.
+- With the Meta key saved on the phone, live answers take seconds. Record them uncut. Never show the key on screen.
 - Screen-record the phone for the app parts, and film the phone with another camera for the knock and the ringing.
 
 ## Script
 
 | Time | Screen / action | Say |
 | --- | --- | --- |
-| 0:00 | Title card | "AuraHealth: the first hour at home. Everything shown was built during the hackathon, on this phone, with Meta's open Muse Glimmer." |
+| 0:00 | Title card | "AuraHealth: the first hour at home. Everything shown was built during the hackathon, with Meta's Muse Spark and open Muse Glimmer." |
 | 0:08 | Numbers on screen (sources in README) | "When someone collapses at home in India, almost nobody nearby starts CPR: 1 to 10 out of 100. Ambulances are often late. For a stroke, every minute counts." |
 | 0:20 | Taps **Good night**, Night guard on | "Asha is 72 and lives alone. At 22:40 she says good night. The night guard listens for three knocks. The sound never leaves the phone." |
 | 0:32 | Dark room. She **knocks 3 times** | "At 2 a.m. one arm is weak and she can't speak properly. She can't reach the phone, but she can knock." |
@@ -32,9 +32,9 @@ after a fall is often awake but cannot reach or use the phone. For a stroke, the
 | 1:15 | Opens the guide: steps read aloud, taps each one | "Each step is read aloud and saved with the time." |
 | 1:30 | Menu → **Handoff card**: the times, her medicines and allergies | "When help arrives, it's all here: last seen well, the knock, the call, every step and its time. He can read it aloud or send it." |
 | 1:45 | Next day. Taps the example **Loose motions since yesterday**, then **His HbA1c is 7.5**. Instant answers | "On ordinary days the family can just ask, in everyday words. Common questions open instantly, because Muse Glimmer wrote and checked them in advance, from MedlinePlus. It works offline too." |
-| 2:02 | Types a personal question. Live Muse Glimmer adds **For your situation**, with a next step | "For anything personal, the live model adds to it. Code checks every AI answer: no doses, no stated diagnosis, no false comfort, and only sources it really found." |
-| 2:15 | **Read a report or medicine photo**, picks the sample. Lines appear with high and low flags and what each means | "Muse Glimmer reads a report or a medicine strip right on the phone, and explains each line against the lab's own range." |
-| 2:30 | Eval numbers on screen from `QA_AND_EVALUATION.md`, including 22 of 49 | "We measured it, and tried to break it. Word rules caught only 22 of 49 fresh emergency phrases. So there's always a Call button while the AI thinks, and SOS on every screen." |
+| 2:02 | Types a personal question. Live Muse Spark adds **For your situation** in seconds, with a next step | "For anything personal, Muse Spark answers live, in seconds, through the Meta Model API. Code checks every AI answer: no doses, no stated diagnosis, no false comfort, and only sources it really found." |
+| 2:15 | **Read a report or medicine photo**, picks the sample. Lines appear with high and low flags and what each means | "Muse Spark reads a report or a medicine strip from the phone, and explains each line against the lab's own range." |
+| 2:30 | Eval numbers on screen from `QA_AND_EVALUATION.md`: 22 of 49, then 47 of 49 | "We measured it, and tried to break it. On 49 fresh emergency phrases, word rules alone caught 22. With live Muse Spark, 47. So there's always a Call button while the AI thinks, and SOS on every screen." |
 | 2:45 | **SOS** button, then Airplane-mode clip, then an end card with the repo and web demo links | "SOS and first aid kept working with the internet off. It's a prototype: no clinician has reviewed it yet, and it was tested on one phone. Next: a doctor's review, and a pilot with families. You can try it now at this link, with no install." |
 
 **If you have one phone:** at 0:50, use the night guard's **test** mode, which rings no one, and show its alert screen. Say: "In a real alert it phones the neighbour and texts the family."
