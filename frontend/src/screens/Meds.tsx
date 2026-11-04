@@ -10,6 +10,8 @@ interface MedStatus {
   exact: boolean
   notify: boolean
   sms: boolean
+  battery?: boolean
+  lastText?: { at?: number; state?: string; why?: string }
 }
 
 /** Medicine reminders. Android runs them; if a dose is not marked taken in time, the guardians get a text. */
@@ -39,6 +41,8 @@ export function Meds({ onFamily }: { onFamily: () => void }) {
   }, [])
 
   const guardians = h.contacts.filter((c) => c.guardian && c.number.trim())
+  const medicines = h.meds.filter((m) => (m.kind ?? 'medicine') === 'medicine')
+  const last = status?.lastText
   const list = today(h, doses)
   const saveMed = (m: Med) => {
     const clean = { ...m, name: m.name.trim(), dose: m.dose.trim(), times: [...new Set(m.times.filter(Boolean))].sort(), since: Date.now() }
@@ -87,6 +91,18 @@ export function Meds({ onFamily }: { onFamily: () => void }) {
         </div>
       )}
 
+      {inApp && status && status.battery === false && (
+        <div className="banner warn" data-testid="meds-battery">
+          <Icon name="alert" />
+          <span>
+            {t('meds.battery')}{' '}
+            <button className="link-btn" onClick={() => native()?.openBatterySettings?.()} data-testid="meds-battery-open">
+              {t('meds.batteryOpen')}
+            </button>
+          </span>
+        </div>
+      )}
+
       <section className="card stack" aria-labelledby="today-title">
         <h2 id="today-title" style={{ margin: 0 }}>
           {t('meds.today')}
@@ -118,8 +134,8 @@ export function Meds({ onFamily }: { onFamily: () => void }) {
         <h2 id="reminders-title" style={{ margin: 0 }}>
           {t('meds.reminders')}
         </h2>
-        {h.meds.length === 0 && !editing && <p className="small muted">{t('meds.remindersEmpty')}</p>}
-        {h.meds.map((m) =>
+        {medicines.length === 0 && !editing && <p className="small muted">{t('meds.remindersEmpty')}</p>}
+        {medicines.map((m) =>
           editing?.id === m.id ? (
             <MedForm key={m.id} value={editing} onChange={setEditing} onSave={saveMed} onCancel={() => setEditing(null)} onRemove={() => removeMed(m)} />
           ) : (
@@ -178,6 +194,11 @@ export function Meds({ onFamily }: { onFamily: () => void }) {
             <p className="tiny muted" style={{ margin: 0 }}>
               {guardians.length ? t('meds.tryNote') : t('meds.tryNoteNobody')}
             </p>
+            {last?.at && (
+              <p className={`small ${last.state === 'failed' ? 'care-late' : ''}`} style={{ margin: 0 }} data-testid="meds-last-text">
+                {last.state === 'sent' ? t('meds.textSent', { time: clockOf(last.at) }) : last.state === 'sending' ? t('meds.textSending', { time: clockOf(last.at) }) : t(`meds.textFailed.${['no_service', 'airplane', 'permission'].includes(last.why ?? '') ? last.why : 'other'}`, { time: clockOf(last.at) })}
+              </p>
+            )}
           </>
         )}
       </section>

@@ -211,6 +211,78 @@ def test_home_question_is_answered_at_once_with_no_ai(phone):
     assert link.get_attribute("href").startswith("https://medlineplus.gov/")
 
 
+def test_simple_questions_do_not_say_call_112_with_no_ai(phone):
+    page, _, base = phone
+    page.route("**/api/chat", lambda route: route.abort())
+    page.goto(base + "#chat")
+    for text in ("pimples on my face", "hair fall treatment", "my father snores a lot"):
+        before = page.get_by_test_id("bubble-aura").count()
+        page.get_by_test_id("chat-text").fill(text)
+        page.get_by_test_id("chat-send").click()
+        expect(page.get_by_test_id("bubble-aura")).to_have_count(before + 1, timeout=5000)
+    page.wait_for_timeout(600)
+    expect(page.get_by_test_id("chat-call")).to_have_count(0)
+    expect(page.get_by_test_id("chat-soft-call")).to_have_count(0)
+    expect(page.get_by_test_id("chat-wait-call")).to_have_count(0)
+    # Something that could be serious, which the word rules miss, still gets a way to call while there is no AI.
+    page.get_by_test_id("chat-text").fill("he can hardly get any air in")
+    page.get_by_test_id("chat-send").click()
+    expect(page.get_by_test_id("chat-soft-call")).to_have_count(1, timeout=8000)
+
+
+def test_care_plan_daily_progress_and_day_by_day_record(phone):
+    page, _, base = phone
+    page.goto(base + "/")
+    page.get_by_test_id("nav-care").click()
+    expect(page.get_by_test_id("care-progress")).to_contain_text("Nothing planned yet")
+    page.get_by_test_id("care-new").click()
+    page.get_by_test_id("plan-title").fill("After hospital stay")
+    page.get_by_test_id("plan-length").select_option("30")
+    page.get_by_test_id("task-name").first.fill("Test medicine")
+    page.get_by_test_id("task-dose").first.fill("as prescribed")
+    page.get_by_test_id("task-add-time").first.click()
+    page.get_by_test_id("task-add").click()
+    food = page.get_by_test_id("plan-task").nth(1)
+    food.get_by_test_id("task-kind").select_option("food")
+    food.get_by_test_id("task-name").fill("No added salt")
+    page.get_by_test_id("plan-precautions").fill("Avoid smoking")
+    page.get_by_test_id("plan-save").click()
+    expect(page.get_by_test_id("care-count")).to_have_text("0 of 3 done")
+    expect(page.get_by_test_id("care-day")).to_contain_text("Day 1 of 30")
+    page.get_by_test_id("care-check").first.click()
+    expect(page.get_by_test_id("care-count")).to_have_text("1 of 3 done")
+    page.get_by_test_id("care-feel-4").click()
+    page.get_by_test_id("care-bp").fill("190/120")
+    page.get_by_test_id("care-save").click()
+    expect(page.get_by_test_id("care-reading-note")).to_contain_text("190/120 is very high")
+    expect(page.get_by_test_id("care-readings")).to_contain_text("190/120")
+    expect(page.locator(".care-col")).to_have_count(14)
+    page.reload()
+    expect(page.get_by_test_id("care-count")).to_have_text("1 of 3 done")
+    page.get_by_test_id("care-check").first.click()
+    expect(page.get_by_test_id("care-count")).to_have_text("0 of 3 done")
+    page.get_by_test_id("nav-home").click()
+    expect(page.get_by_test_id("home-today")).to_contain_text("0 of 3 done")
+    page.get_by_test_id("nav-care").click()
+    page.get_by_test_id("care-edit").click()
+    page.on("dialog", lambda d: d.accept())
+    page.get_by_test_id("plan-remove").click()
+    expect(page.get_by_test_id("care-progress")).to_contain_text("Nothing planned yet")
+
+
+def test_sample_days_are_labelled_and_can_be_removed(phone):
+    page, _, base = phone
+    page.goto(base + "/#care")
+    page.get_by_test_id("care-sample-add").click()
+    expect(page.get_by_test_id("care-sample")).to_contain_text("made-up numbers")
+    expect(page.get_by_test_id("care-day")).to_contain_text("Day 12 of 30")
+    expect(page.get_by_test_id("care-week")).to_contain_text("Last 7 days")
+    expect(page.get_by_test_id("care-trend")).to_contain_text("better")
+    page.get_by_test_id("care-sample-remove").click()
+    expect(page.get_by_test_id("care-progress")).to_contain_text("Nothing planned yet")
+    expect(page.get_by_test_id("care-record")).not_to_contain_text("Last 7 days")
+
+
 def test_call_now_answers_are_only_for_what_is_happening_now(phone):
     page, _, base = phone
     page.route("**/api/chat", lambda route: route.abort())

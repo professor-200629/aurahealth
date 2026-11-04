@@ -74,7 +74,9 @@ final class AuraBridge {
         try {
             return new JSONObject().put("exact", Meds.canExact(activity))
                     .put("notify", Build.VERSION.SDK_INT < 33 || granted(Manifest.permission.POST_NOTIFICATIONS))
-                    .put("sms", granted(Manifest.permission.SEND_SMS)).toString();
+                    .put("sms", granted(Manifest.permission.SEND_SMS))
+                    .put("battery", activity.getSystemService(android.os.PowerManager.class).isIgnoringBatteryOptimizations(activity.getPackageName()))
+                    .put("lastText", Store.lastText(activity)).toString();
         } catch (JSONException e) {
             return "{}";
         }

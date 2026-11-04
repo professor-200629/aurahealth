@@ -13,7 +13,8 @@ after a fall is often awake but cannot reach or use the phone. For a stroke, the
 - Phone: this build installed, volume up, Do Not Disturb off, battery saving off for AuraHealth.
 - **Family & health:** add a fictional Asha (72, diabetes, allergic to penicillin, a made-up medicine). Contacts: Ravi (phone in an alert), Kiran (text in an alert). Use numbers of people who agreed, and tell them a test is coming.
 - **Clear the chat** and the old handoff record, so that the screens are clean.
-- Put `SAMPLE_DATA/reports/ranges_report.png` on the phone, so you can pick it. Keep your own photos out of the shot.
+- Put `SAMPLE_DATA/reports/ranges_report.png` and `SAMPLE_DATA/reports/doctor_note.png` on the phone, so you can pick them. Keep your own photos out of the shot.
+- Turn on Do Not Disturb for other apps' notifications, but test that AuraHealth's reminder still shows. Remove sample days after filming.
 - Practise the knock: 3 sharp knocks on the bedside table, within 3 seconds.
 - With the Meta key saved on the phone, live answers take seconds. Record them uncut. Never show the key on screen.
 - Screen-record the phone for the app parts, and film the phone with another camera for the knock and the ringing.
@@ -22,20 +23,20 @@ after a fall is often awake but cannot reach or use the phone. For a stroke, the
 
 | Time | Screen / action | Say |
 | --- | --- | --- |
-| 0:00 | Title card | "AuraHealth: the first hour at home. Everything shown was built during the hackathon, with Meta's Muse Spark and open Muse Glimmer." |
-| 0:08 | Numbers on screen (sources in README) | "When someone collapses at home in India, almost nobody nearby starts CPR: 1 to 10 out of 100. Ambulances are often late. For a stroke, every minute counts." |
-| 0:20 | Taps **Good night**, Night guard on | "Asha is 72 and lives alone. At 22:40 she says good night. The night guard listens for three knocks. The sound never leaves the phone." |
-| 0:32 | Dark room. She **knocks 3 times** | "At 2 a.m. one arm is weak and she can't speak properly. She can't reach the phone, but she can knock." |
-| 0:40 | Alarm, full-screen **"Are you OK?"** countdown | "If she is fine, one tap stops it. Nobody taps." |
-| 0:50 | Ravi's phone **rings**. Kiran's phone gets the **text** with the location | "AuraHealth phones the neighbour and texts her son by itself. It never calls 112 by itself: that's one tap, on a button that's always there." |
-| 1:02 | Ravi arrives, types in the Home box: *"her face is drooping and she can't speak properly"*. **Answer in under a second**, Call 112 on top, stroke guide | "Ravi isn't trained. He types what he sees. Emergency words get an answer at once, on the phone, with no AI and no internet." |
-| 1:15 | Opens the guide: steps read aloud, taps each one | "Each step is read aloud and saved with the time." |
-| 1:30 | Menu → **Handoff card**: the times, her medicines and allergies | "When help arrives, it's all here: last seen well, the knock, the call, every step and its time. He can read it aloud or send it." |
-| 1:45 | Next day. Taps the example **Loose motions since yesterday**, then **His HbA1c is 7.5**. Instant answers | "On ordinary days the family can just ask, in everyday words. Common questions open instantly, because Muse Glimmer wrote and checked them in advance, from MedlinePlus. It works offline too." |
-| 2:02 | Types a personal question. Live Muse Spark adds **For your situation** in seconds, with a next step | "For anything personal, Muse Spark answers live, in seconds, through the Meta Model API. Code checks every AI answer: no doses, no stated diagnosis, no false comfort, and only sources it really found." |
-| 2:15 | **Read a report or medicine photo**, picks the sample. Lines appear with high and low flags and what each means | "Muse Spark reads a report or a medicine strip from the phone, and explains each line against the lab's own range." |
-| 2:30 | Eval numbers on screen from `QA_AND_EVALUATION.md`: 22 of 49, then 47 of 49 | "We measured it, and tried to break it. On 49 fresh emergency phrases, word rules alone caught 22. With live Muse Spark, 47. So there's always a Call button while the AI thinks, and SOS on every screen." |
-| 2:45 | **SOS** button, then Airplane-mode clip, then an end card with the repo and web demo links | "SOS and first aid kept working with the internet off. It's a prototype: no clinician has reviewed it yet, and it was tested on one phone. Next: a doctor's review, and a pilot with families. You can try it now at this link, with no install." |
+| 0:00 | Title card | "AuraHealth. Everything shown was built during the hackathon, with Meta's Muse Spark and open Muse Glimmer." |
+| 0:06 | Numbers on screen (sources in README) | "4.5 billion people are not fully covered by essential health services. In India, when someone collapses at home, bystanders start CPR in only 1 to 10 cases out of 100." |
+| 0:17 | Taps **Good night**, Night guard on | "Asha is 72 and lives alone. At night, the guard listens for three knocks. The sound never leaves the phone." |
+| 0:25 | Dark room. She **knocks 3 times**. Alarm, **"Are you OK?"** countdown. Nobody taps | "One arm is weak and she can't speak. She can't reach the phone, but she can knock." |
+| 0:37 | Ravi's phone **rings**. Kiran's phone gets the **text** | "AuraHealth phones the neighbour and texts her son by itself. It never calls 112 by itself: that's one tap." |
+| 0:47 | Ravi types in the Home box: *"her face is drooping and she can't speak properly"*. **Answer at once**, Call 112 on top, stroke guide read aloud | "Emergency words get an answer at once, with no AI and no internet. Each step is read aloud and saved with the time, for the ambulance crew." |
+| 1:02 | Types the Telugu mix *"tata padipoyaru lechi matladatledu"*. Call 112 in seconds | "Word rules miss many real emergencies, in many languages. Muse Spark, through the Meta Model API, catches them in about four seconds." |
+| 1:13 | Asks *"my son has a cold"*, then *"can I eat curd at night"*. Good answers, no 112 | "And for ordinary questions it just answers, like a friend who knows, without shouting 'call 112'. Common ones even work offline, because Muse Glimmer wrote them in advance." |
+| 1:28 | **Today** tab → **Add from a photo of the doctor's paper**, pick `doctor_note.png`. The plan appears in seconds. Scroll the lines | "After the clinic, families forget what the doctor said. Photograph the paper, and Muse Spark copies it into a plan: medicines, food, exercise, what to avoid. You check every line. It never adds anything." |
+| 1:50 | Save. Reminder rings, tap **Done**. Show the status bar progress | "Reminders ring on time, stop when the course ends, and the day's progress stays in the status bar. If a dose isn't marked taken, the guardian gets a text." |
+| 2:05 | Tap **See sample days** (the banner says made up). Day 12 of 30, 14-day chart, how she felt, BP and sugar. Tap **Send this record** | "These are sample days, to show what it looks like after two weeks: daily progress, how she felt, and her readings, ready to send to the doctor." |
+| 2:22 | **Read a report or medicine photo**, sample report. Lines with high and low flags | "It also reads a report, line by line, against the lab's own range." |
+| 2:32 | Eval numbers on screen: 35 s to 3.9 s, then 22 of 49 to 47 of 49 | "We measured it, and tried to break it. On 49 fresh emergency phrases, word rules alone caught 22. With live Muse Spark, 47. It's a prototype: no clinician has reviewed it yet, and it was tested on one phone." |
+| 2:48 | SOS button, then an end card with the repo and web demo links. Do not show the judge code | "SOS is on every screen, even offline. Next: a doctor's review, and a pilot with families. You can try it now at this link." |
 
 **If you have one phone:** at 0:50, use the night guard's **test** mode, which rings no one, and show its alert screen. Say: "In a real alert it phones the neighbour and texts the family."
 

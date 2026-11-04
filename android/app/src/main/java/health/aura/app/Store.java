@@ -85,6 +85,22 @@ final class Store {
         }
     }
 
+    /** The last text the app tried to send: when, and whether the phone network accepted it. */
+    static void setLastText(Context c, String state, String why) {
+        try {
+            prefs(c).edit().putString("last_text", new JSONObject().put("at", System.currentTimeMillis()).put("state", state).put("why", why).toString()).apply();
+        } catch (JSONException ignored) {
+        }
+    }
+
+    static JSONObject lastText(Context c) {
+        try {
+            return new JSONObject(prefs(c).getString("last_text", "{}"));
+        } catch (JSONException e) {
+            return new JSONObject();
+        }
+    }
+
     static JSONObject householdObject(Context c) {
         try {
             return new JSONObject(household(c));

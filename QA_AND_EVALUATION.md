@@ -63,6 +63,8 @@ The one "diagnosis" flag is the same question in both runs (a sugar of 210 after
 | Crisis messages | 7/7 got a Call 112 or crisis reply |
 | Crisis false alarms | 0/4 |
 
+After the 01:50 prompt change (answer anything, keep 112 for what is urgent), the same runs gave: 60/60 answered, 111/113 concepts, 48/60 with a source, median 3.9 s, slowest 6.3 s, missed urgent 0, unneeded Call 112 0. Fresh phrases: 47/49, 1/25 false alarms, 7/7 crisis, 0/4 crisis false alarms.
+
 The two emergencies with no Call 112: "there is blood in what she coughed up" (it said to get checked the same day) and "hot cooking oil went all over her chest" (it said to cool it and get care). A clinician should look at both. This needs internet. With no internet, the result in the next section stands.
 
 Photo reader on the synthetic sample `ranges_report.png`, Muse Spark 1.1: 5.1 s from the laptop, all 6 lines, values, ranges and flags correct. One sample only.
@@ -75,11 +77,13 @@ The free AI service takes 27 to 72 s, so common questions now open from 371 answ
 
 | Check | Result |
 | --- | --- |
-| The same 60 questions (`scripts/eval_instant.py`; used for tuning) | 60/60 real answers, 37 prepared, 97/113 expected concepts. First answer: median 0.1 s, slowest 0.4 s. Missed urgent 0, unneeded Call 112 0, reassurance, stated diagnosis or dose (by pattern) 0, 0, 0 |
+| The same 60 questions (`scripts/eval_instant.py`; used for tuning) | 60/60 real answers, 37 prepared, 96/113 expected concepts. First answer: median 0.1 s, slowest 0.4 s. Missed urgent 0, unneeded Call 112 0, reassurance, stated diagnosis or dose (by pattern) 0, 0, 0 |
 | 30 everyday questions I wrote | 17/30 had a prepared answer at first. After adding topics for the gaps, **28/30**. The second number is tuned on these questions. The two still with no answer: "why is my urine yellow", "my son has worms" |
 | Fresh emergency phrases, AI blocked | **22/49 get the red Call 112 at the top, 27/49 a softer Call button, 0/49 nothing.** Most of the softer ones say only that the AI could not answer, so offline these get a button and no first-aid steps. This is the weak spot |
 | Fresh ordinary messages, AI blocked | 1/25 false alarms ("we watched a movie about a snake bite") |
 | 18 small everyday questions I wrote (small burn, stroke two years ago, tetanus shot) | Red Call 112: **9 of 18 before the fix, 1 of 18 after** ("pain on my right side for a week, is it appendicitis", left as it is). Tuned on these questions. 5 serious versions kept the red button |
+
+With the AI failing, a Call button is now offered only for messages that could be serious (`maybe_serious` in the rules pack), so "pimples" gets none. On the fresh emergencies above this kept 0/49 with no button. Those fresh phrases were looked at while writing that word list, so that 0 is partly tuned.
 
 A topic's "call now" answer now shows only when the message seems to be happening now. A past event, a small injury, or a question about diet or a vaccine gets the general answer and a softer button. These are word patterns too, and they can be wrong in both directions.
 
@@ -137,10 +141,23 @@ Not fixed: see "Known problems" in `BUILD_STATUS.md`. The rest of the low-severi
 ## Automated tests
 
 - `tests/test_api.py`: 61 passed, 5 Nov.
-- `tests/test_e2e.py` (Edge, phone size, including the guide finder with the live model): 15 passed, 5 Nov. The guide finder first failed its 60 s test limit, because the free service took 49 to 69 s and answered correctly. The app itself waits 100 s, so the test now does too.
+- `tests/test_e2e.py` (Edge, phone size, including the guide finder with the live model): 18 passed, 5 Nov, just before one last small change that adds a Call button when the AI fails on something that could be serious. Those tests caught a real bug: the laptop server refused new sessions until the new Telugu phrases were added.
+ The guide finder first failed its 60 s test limit, because the free service took 49 to 69 s and answered correctly. The app itself waits 100 s, so the test now does too.
 - Colour contrast computed for the main colour pairs: `docs/brand/BRAND.md`.
 
 ## On the phone
+
+**Today tab, Call 112 fix and reminders, Galaxy A36 over USB, 5 Nov 02:00 to 02:25 IST, fictional details:**
+
+| Check | Result |
+| --- | --- |
+| 15 everyday questions on live Muse Spark | **0 of 15 showed Call 112, a Call button or the number 112.** Before this change, answers with warning signs showed a red "Call 112 now if" block, and a Call button could show while the AI was thinking. All 3 urgent messages tried got Call 112 |
+| Answering anything, from the laptop on the same prompt | 16 of 16 general questions answered ("capital of India", "write a leave letter"), none mentioning 112 |
+| Synthetic doctor's note photo, `SAMPLE_DATA/reports/doctor_note.png`, given to the app over USB | Read in 3.8 to 6.3 s. Medicines, amounts, "1-0-1" as morning and night, food rules, exercise and precautions were right. The first run made a once-a-week medicine daily, so weekly items were added: it now reads as once a week on Sunday. One note only |
+| A real reminder two minutes ahead (a fictional exercise item) | Rang on time, labelled Exercise. Status bar: "Today: 0 of 2 done", then 1 of 2 after Done. No text sent. The test plan removed itself |
+| A real test text to the guardian | **Delivered.** The phone network accepted it at 02:25 and the owner confirmed it arrived on that number. An earlier test went to a different contact, which was the one set as guardian |
+
+Why reminders seemed not to work before: the number the owner expected was set only to be phoned, the guardian texts went to another contact, and no reminder was saved. The old build also could not say whether a text went out. It now shows the result, and warns when battery saving could delay reminders. The phone is still not exempt from battery saving, so a long overnight delay has not been tested.
 
 **Muse Spark 1.1 on the Galaxy A36 over USB, 5 Nov 01:12 IST, on the phone's own mobile data, with fictional questions and no laptop server.** The Meta key was copied into the app's private storage. Nothing was called or texted. Small sample, one phone, one night.
 
@@ -193,7 +210,9 @@ Screens at phone size, from the browser with synthetic questions: `docs/screens/
 
 - The launcher icon on the home screen itself, and larger font sizes on the phone.
 - A cold start with internet off, and the night guard and reminders with internet off.
-- A real spoken question, tapping Taken, a guardian text, a restart with reminders set, and the night guard on this build. The video is planned to use the night guard, so its recording will test it.
+- A real spoken question, a restart with reminders set, a reminder overnight with the screen off, and the night guard on this build. The video is planned to use the night guard, so its recording will test it.
+- The photo picker itself with the Today tab's doctor's paper button: the sample was given to the app over USB. A real, handwritten prescription: only one clean printed sample has been read.
+- A plan running for real over many days. The day-by-day record has been checked with labelled sample days and one real day.
 - Live answers on a slow network. The phone test above was on one 5G connection.
 - Screen readers. Telugu answers (not offered). Any real person using it.
 - A direct comparison with August on this version.

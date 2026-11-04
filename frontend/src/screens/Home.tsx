@@ -7,6 +7,7 @@ import { Icon, useUi } from '../ui'
 import { WEB_DEMO } from '../api'
 import { liveOn } from '../live'
 import { phoneAiReady, phoneUsesMeta } from '../aura'
+import { dayItems, score } from '../care'
 import { askOnOpen, listenOnOpen, photoOnOpen } from './Chat'
 import { Moon } from './Guard'
 
@@ -33,7 +34,9 @@ export function Home(props: Props) {
   const { hasSession, busy, error, notice, guardOn, inApp, ownerName, onStart, onHelp, onGuard, onChat, onMeds, onFamily, onResume, onAbout, onProfile } = props
   const { t } = useUi()
   const [h] = useHousehold()
-  const next = today(h, loadDoses()).find((d) => d.status === 'upcoming' || d.status === 'due' || d.status === 'scheduled')
+  const doses = loadDoses()
+  const next = today(h, doses).find((d) => d.status === 'upcoming' || d.status === 'due' || d.status === 'scheduled')
+  const progress = score(dayItems(h, doses))
   const hour = new Date().getHours()
   const hello = hour < 12 ? 'home.morning' : hour < 17 ? 'home.afternoon' : 'home.evening'
   const [question, setQuestion] = useState('')
@@ -156,15 +159,26 @@ export function Home(props: Props) {
         </button>
       )}
 
+      {progress.total > 0 && (
+        <button className="card today-card" onClick={onMeds} data-testid="home-today">
+          <span className="today-head">
+            <strong>{t('care.doneOf', { done: progress.done, total: progress.total })}</strong>
+            <span className="small muted">{t('care.title')}</span>
+          </span>
+          <span className="care-bar" role="img" aria-label={`${progress.pct}%`}>
+            <span style={{ width: `${progress.pct}%` }} />
+          </span>
+          {next && <span className="small muted">{t('home.nextDose', { time: clockOf(next.due), name: next.name, who: personName(h, next.person) || '' }).replace(' ()', '')}</span>}
+        </button>
+      )}
+
       <div className="tiles">
         <button className="tile" onClick={onMeds} data-testid="tile-meds">
           <span className="tile-icon">
             <Icon name="pill" />
           </span>
-          <span className="tile-title">{t('home.meds')}</span>
-          <span className="tile-sub">
-            {next ? t('home.nextDose', { time: clockOf(next.due), name: next.name, who: personName(h, next.person) || '' }).replace(' ()', '') : t('home.medsSub')}
-          </span>
+          <span className="tile-title">{t('care.title')}</span>
+          <span className="tile-sub">{t('care.tileSub')}</span>
         </button>
         <button className={`tile tile-night ${guardOn ? 'on' : ''}`} onClick={onGuard} data-testid="tile-guard">
           <span className="tile-icon">

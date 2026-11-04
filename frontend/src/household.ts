@@ -27,15 +27,48 @@ export interface HouseContact {
   guardian: boolean // texted when a medicine is not marked taken
 }
 
+export type TaskKind = 'medicine' | 'food' | 'exercise' | 'care'
+
 export interface Med {
   id: string
   person: string
   name: string
   dose: string
-  times: string[]
+  times: string[] // no times: a daily item with no reminder, such as "no added salt"
   on: boolean
   wait: number
   since: number
+  kind?: TaskKind // missing means medicine
+  until?: number // the last moment of a course or plan
+  weekday?: number // once a week on this day (0 is Sunday); missing means every day
+  demo?: boolean // part of the labelled sample days: it never rings and never texts anyone
+  plan?: string
+}
+
+/** A doctor's advice for a set time: daily items (kept in meds), and what to watch for. */
+export interface CarePlan {
+  id: string
+  person: string
+  title: string
+  doctor: string
+  start: number
+  days: number
+  precautions: string[]
+  followUp: string
+  on: boolean
+  sample?: boolean
+}
+
+/** One day's record: what was ticked by hand, how the person felt, and any numbers. */
+export interface DayLog {
+  done: string[]
+  feel?: number
+  bp?: string
+  sugar?: string
+  temp?: string
+  weight?: string
+  note?: string
+  sample?: boolean
 }
 
 export interface Owner {
@@ -50,6 +83,9 @@ export interface Household {
   people: Person[]
   contacts: HouseContact[]
   meds: Med[]
+  plans: CarePlan[]
+  days: Record<string, DayLog>
+  noStatusBar?: boolean
 }
 
 export interface Dose {
@@ -67,7 +103,13 @@ export interface Dose {
 }
 
 const KEY = 'aura.household'
-const EMPTY: Household = { version: 1, country: 'IN', owner: { name: '', phone: '' }, people: [], contacts: [], meds: [] }
+const EMPTY: Household = { version: 1, country: 'IN', owner: { name: '', phone: '' }, people: [], contacts: [], meds: [], plans: [], days: {} }
+
+export const startOfDay = (ms: number) => new Date(ms).setHours(0, 0, 0, 0)
+export function dayKey(ms = Date.now()): string {
+  const d = new Date(ms)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 export const newPerson = (main: boolean): Person => ({
   id: `p${rid()}`,
@@ -81,6 +123,7 @@ export const newPerson = (main: boolean): Person => ({
   main,
 })
 export const newContact = (): HouseContact => ({ id: `c${rid()}`, name: '', number: '', relation: '', call: false, text: true, guardian: true })
+export const newPlan = (person: string): CarePlan => ({ id: `plan${rid()}`, person, title: '', doctor: '', start: Date.now(), days: 30, precautions: [], followUp: '', on: true })
 export const newMed = (person: string): Med => ({ id: `m${rid()}`, person, name: '', dose: '', times: ['08:00'], on: true, wait: 30, since: Date.now() })
 
 function fromOldWebContacts(): HouseContact[] {
@@ -107,6 +150,9 @@ function normalise(h: Partial<Household> | null): Household {
     people: Array.isArray(h.people) ? h.people.map((p) => ({ ...newPerson(false), ...p })) : [],
     contacts: Array.isArray(h.contacts) ? h.contacts.map((c) => ({ ...newContact(), ...c })) : [],
     meds: Array.isArray(h.meds) ? h.meds.map((m) => ({ ...newMed(''), ...m, times: Array.isArray(m.times) ? m.times : [] })) : [],
+    plans: Array.isArray(h.plans) ? h.plans.map((p) => ({ ...newPlan(''), ...p, precautions: Array.isArray(p.precautions) ? p.precautions : [] })) : [],
+    days: h.days && typeof h.days === 'object' ? h.days : {},
+    noStatusBar: !!h.noStatusBar,
   }
 }
 
@@ -192,10 +238,12 @@ export function today(h: Household, doses: Dose[], now = Date.now()): TodayDose[
   const used = new Set<string>()
   for (const m of h.meds) {
     if (!m.on || !m.name.trim()) continue
+    if (m.weekday !== undefined && m.weekday !== new Date(start).getDay()) continue
     for (const t of m.times) {
       const [hh, mm] = t.split(':').map(Number)
       if (!Number.isFinite(hh) || !Number.isFinite(mm)) continue
       const due = new Date(start).setHours(hh, mm, 0, 0)
+      if (m.until && due > m.until) continue
       const d = doses.find((x) => x.med === m.id && x.due === due)
       if (d) used.add(d.key)
       out.push({

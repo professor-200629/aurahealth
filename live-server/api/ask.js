@@ -80,7 +80,7 @@ module.exports = async function handler(req, res) {
 
   const user = typeof body.user === 'string' ? body.user : ''
   const image = typeof body.image === 'string' ? body.image : ''
-  if ((body.kind !== 'chat' && body.kind !== 'photo') || !user || user.length > MAX_USER || image.length > MAX_IMAGE || (image && body.kind !== 'photo')) {
+  if (!['chat', 'photo', 'plan'].includes(body.kind) || !user || user.length > MAX_USER || image.length > MAX_IMAGE || (image && body.kind === 'chat')) {
     return reply(400, { ok: false, error: 'bad_request' })
   }
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown'

@@ -8,7 +8,8 @@ import android.content.Intent;
 public class MedReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context c, Intent intent) {
-        if (Meds.ACTION_TAKEN.equals(intent.getAction())) Meds.markTaken(c, intent.getStringExtra("key"));
+        if (Sms.ACTION_RESULT.equals(intent.getAction())) Sms.result(c, getResultCode());
+        else if (Meds.ACTION_TAKEN.equals(intent.getAction())) Meds.markTaken(c, intent.getStringExtra("key"));
         else Meds.run(c);
     }
 }

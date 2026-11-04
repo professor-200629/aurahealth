@@ -17,6 +17,7 @@ import { useHousehold } from './household'
 import { makeT } from './i18n'
 import { guardStatus, isNativeApp, native, onNativeEvent } from './native'
 import { About } from './screens/About'
+import { Care } from './screens/Care'
 import { Chat } from './screens/Chat'
 import type { ChatTarget } from './screens/Chat'
 import { Family } from './screens/Family'
@@ -34,7 +35,7 @@ import type { StepProps } from './screens/Steps'
 import type { Health, Lang, Session } from './types'
 import { UiContext } from './ui'
 
-type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide' | 'guard' | 'family' | 'meds' | 'chat' | 'profile' | 'phonecard'
+type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide' | 'guard' | 'family' | 'meds' | 'care' | 'chat' | 'profile' | 'phonecard'
 const FLOW: Screen[] = ['who', 'age', 'what', 'onset', 'details', 'doc', 'review']
 const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   who: Who,
@@ -44,9 +45,9 @@ const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   details: Details,
   doc: DocumentStep,
 }
-const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help', 'guard', 'family', 'meds', 'chat', 'profile', 'phonecard']
+const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help', 'guard', 'family', 'meds', 'care', 'chat', 'profile', 'phonecard']
 // Screens a notification may open (for example a medicine reminder opens "meds").
-const OPENABLE: Screen[] = ['meds', 'guard', 'family', 'chat', 'help']
+const OPENABLE: Screen[] = ['meds', 'care', 'guard', 'family', 'chat', 'help']
 interface Route {
   screen: Screen
   guide: string
@@ -245,7 +246,7 @@ export default function App() {
     if (target === 'card') return session ? go('review') : void start()
     go(target)
   }
-  const tab: Tab | null = (['home', 'chat', 'meds', 'family'] as Tab[]).includes(screen as Tab) ? (screen as Tab) : null
+  const tab: Tab | null = (['home', 'chat', 'care', 'family'] as Tab[]).includes(screen as Tab) ? (screen as Tab) : null
 
   const Step = STEPS[screen]
   const flowIndex = FLOW.indexOf(screen)
@@ -278,7 +279,7 @@ export default function App() {
             onHelp={openHelp}
             onGuard={() => go('guard')}
             onChat={() => go('chat')}
-            onMeds={() => go('meds')}
+            onMeds={() => go('care')}
             onFamily={() => go('family')}
             guardOn={guardOn}
             inApp={isNativeApp()}
@@ -299,6 +300,7 @@ export default function App() {
         {screen === 'guard' && <Guard lastCheckin={lastCheckin(session)} onFamily={() => go('family')} />}
         {screen === 'family' && <Family />}
         {screen === 'meds' && <Meds onFamily={() => go('family')} />}
+        {screen === 'care' && <Care onMeds={() => go('meds')} />}
         {screen === 'chat' && (
           <Chat
             onGuide={(id) => go('guide', id)}

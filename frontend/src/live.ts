@@ -60,7 +60,7 @@ export async function tryCode(code: string): Promise<'ok' | 'bad' | 'down'> {
 }
 
 /** One question or one photo. Same answer format as the phone's own call. */
-export async function askLive(kind: 'chat' | 'photo', user: string, image: string | undefined, timeoutMs: number): Promise<{ content: string } | { error: string }> {
+export async function askLive(kind: 'chat' | 'photo' | 'plan', user: string, image: string | undefined, timeoutMs: number): Promise<{ content: string } | { error: string }> {
   try {
     const r = await post(liveCode(), { kind, user, image }, Math.min(timeoutMs, 58000))
     if (r.data.ok === true && typeof r.data.content === 'string' && r.data.content.trim()) return { content: r.data.content }

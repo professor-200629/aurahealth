@@ -3,12 +3,13 @@ import type { Lang } from '../types'
 import { Icon, useUi } from '../ui'
 import { LanguageToggle } from './StatusSheet'
 
-export type DrawerTarget = 'home' | 'chat' | 'help' | 'meds' | 'family' | 'guard' | 'card' | 'profile' | 'status' | 'about'
+export type DrawerTarget = 'home' | 'chat' | 'help' | 'care' | 'meds' | 'family' | 'guard' | 'card' | 'profile' | 'status' | 'about'
 
 const ITEMS: { id: DrawerTarget; icon: string; key: string }[] = [
   { id: 'home', icon: 'home', key: 'nav.home' },
   { id: 'chat', icon: 'chat', key: 'home.talk' },
   { id: 'help', icon: 'aid', key: 'nav.firstAid' },
+  { id: 'care', icon: 'check', key: 'care.title' },
   { id: 'meds', icon: 'pill', key: 'home.meds' },
   { id: 'family', icon: 'people', key: 'home.family' },
   { id: 'guard', icon: 'moon', key: 'home.guard' },

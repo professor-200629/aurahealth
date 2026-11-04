@@ -347,6 +347,7 @@
   "past": "\\b(last|previous) (year|month|week|night|time)\\b|\\b\\w+ (years?|months?|weeks?) ago\\b|\\bin (19|20)\\d\\d\\b|\\bas a child\\b|\\bhistory of\\b|\\bwhen i was\\b|(?<!since )\\byesterday\\b|\\bsince \\d+ years\\b",
   "still_now": "\\b(right now|still|again|just now|currently|at the moment|is now|now he|now she|now i)\\b",
   "not_now": "\\b(small|minor|tiny|mild|slight|slightly|lightly|a little|playing)\\b|\\b(diet|foods?|exercise|yoga|prevent\\w*|avoid|vaccin\\w*|booster|shots?|injections?|recover\\w*|risk|chances?)\\b|\\bcan (he|she|i|they|we|you)\\b[^.?!]{0,20}\\b(eat|drink|walk|swim|run|work|travel|play|drive|fly)\\b|\\b(good|safe|bad|ok|okay) (to|for)\\b|\\b(dog|cat|monkey|bat)\\b[^.?!]{0,20}\\b(bit|bite|bitten|scratch\\w*)\\b",
+  "maybe_serious": "\\b(sudden\\w*|collaps\\w*|unconscious|faint\\w*|not (opening|waking|responding|moving|speaking|talking|breathing|hearing|kicking)|no sound|cannot|can'?t|can not|unable|hardly|fighting for|blood|bleed\\w*|severe\\w*|terrible|worst|crush\\w*|chest|breath\\w*|air|chok\\w*|fell|fall\\w*|dropped|stiff|twitch\\w*|shak\\w*|seizure|fits?|bite|bitten|bit|fang|snake|krait|cobra|poison\\w*|swallow\\w*|kerosene|burn\\w*|fire|oil|knife|stab\\w*|deep|baby|newborn|pregnan\\w*|confus\\w*|rubbish|dead|numb\\w*|weak\\w*|droop\\w*|slipped|gir|padipoy\\w*|noppi|kaat\\w*|saanp|dard|lechi|bachche)\\b",
   "severe": "\\b(heavy|heavily|badly|lot|lots|won'?t stop|not stop\\w*|does not stop|pouring|spurting|gushing|pregnan\\w*)\\b",
   "rules": [
     {

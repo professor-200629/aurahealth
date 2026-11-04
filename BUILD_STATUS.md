@@ -22,6 +22,7 @@ Last update: 4 Nov 2026. Branch `product-v2`, off `master`. Nothing here is prod
 | Report and medicine photo on the phone | Real, for synthetic samples | Muse Spark with a Meta key, Muse Glimmer with an NVIDIA key, online. The picker itself was opened and cancelled on the phone; the reading was tested with a sample given to the app |
 | Handoff record on the phone | Real | Built from the phone's time log and health card |
 | Fuller handoff card, guide finder, older report reader | Needs the laptop server | Optional |
+| Today tab: doctor's plan, progress, daily check-in, record | Real, new | Tested on one phone with fictional details. Reminders rang on time and a real guardian text arrived. Not run for many real days |
 | Web demo for judges | Real, limited | No key in the page. Answers from what is built in, plus live AI and the photo reader with a judge code, through `live-server/`. No alarms, reminders or night guard |
 | Telugu | Screens only, unreviewed | First aid and answers are in English |
 | Hindi | Absent | Only a few search words |

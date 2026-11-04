@@ -25,6 +25,8 @@ helpers only suggest, and a person confirms. NVIDIA's free terms are for trials,
 
 ## Why the first hour matters (sources)
 
+- 4.5 billion people were not fully covered by essential health services in 2021, and 2 billion faced financial hardship from health costs ([WHO and World Bank, 2023](https://www.worldbank.org/en/news/press-release/2023/09/18/billions-left-behind-on-the-path-to-universal-health-coverage)).
+
 - Most cardiac arrests outside hospital happen at home: 68% in Ireland's 2024 registry
   ([HSE](https://about.hse.ie/news/press-release-ohcar-annual-report-2024/)).
 - CPR started before the ambulance more than doubled 30-day survival in Sweden: 10.5% vs 4.0% across 30,381
@@ -66,6 +68,7 @@ clear, timed record.
   Results for this version: `QA_AND_EVALUATION.md`. An earlier version (2 Nov) was compared with the August health app on the same phone in
   [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_AURA.md) (10 questions, scored by AI on a rubric that favoured safety and brevity); that result does not describe this version.
   Replies can be read aloud.
+- **Today: a doctor's plan, day by day.** Photograph the doctor's paper, and Muse Spark copies it into a plan (medicines, food, exercise, what to avoid, how long, as written) for the family to check line by line, or type it in. Items can be daily or weekly, ring on time and stop when the course ends. The Today tab shows progress and "Day 12 of 30", also as a quiet notification in the status bar, plus a daily check-in (feeling, BP, sugar, temperature, weight) with fixed explanations of the numbers, a 14-day chart and a record to send to the doctor. AuraHealth never suggests a medicine, amount, diet or exercise. "See sample days" shows labelled made-up history for a demo; those items never ring or text anyone.
 - **Reads a report or medicine photo on the phone.** Muse Glimmer reads each line, marks what the report's own range shows as high or low, and says what each line
   measures, all from the phone with no laptop. For synthetic samples only for now, because photos go to the AI host. The sample `SAMPLE_DATA/reports/ranges_report.png` prints its own ranges.
 - **Handoff record on the phone alone.** The time log and health card become a record to read aloud or send, with no laptop. With the laptop server, the fuller handoff card is used.

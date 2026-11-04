@@ -62,6 +62,7 @@ const PAST = new RegExp(rules.past, 'i')
 const STILL = new RegExp(rules.still_now, 'i')
 const SEVERE = new RegExp(rules.severe, 'i')
 const NOT_NOW = new RegExp(rules.not_now, 'i')
+const MAYBE_SERIOUS = new RegExp(rules.maybe_serious, 'i')
 const NOT_BREATHING = /\b(not|stopped|stop|no longer)\s+breath|\bbreathing\s+(has\s+)?stopped/i
 const RED_FLAGS = rules.rules.map((r) => ({ pattern: new RegExp(r.pattern, 'gi'), guide: r.guide, minor: r.minor ? new RegExp(r.minor, 'i') : null }))
 
@@ -76,6 +77,12 @@ export function normalize(text: string): string {
 export function isGeneralQuestion(text: string): boolean {
   const t = normalize(text)
   return GENERAL.test(t) && !PERSONAL.test(t)
+}
+
+/** With no AI to judge a message, could it be serious enough to offer a Call button? Pimples and hair fall should not get one. */
+export function maybeSerious(text: string): boolean {
+  const t = normalize(text)
+  return MAYBE_SERIOUS.test(t) && !notHappeningNow(t)
 }
 
 /** A stroke years ago, a small burn, or a question about diet or a vaccine: not something needing a call right now. */

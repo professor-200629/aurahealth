@@ -3,7 +3,7 @@ import { api, WEB_DEMO } from '../api'
 import { liveOn } from '../live'
 import IN from '../../../packs/regions/IN.json'
 import { askFromPhone, crisisText, phoneAiReady, phoneUsesMeta, readPhoto, shrinkPhoto } from '../aura'
-import { STEPS_FIRST, guideHints, isGeneralQuestion, localAnswer, redFlags } from '../chatlocal'
+import { STEPS_FIRST, guideHints, isGeneralQuestion, localAnswer, maybeSerious, redFlags } from '../chatlocal'
 import { medicineAnswer } from '../medicine'
 import { answersEnough, bestWhenAiFails, isSimple, preparedFor } from '../prepared'
 import { hasMoreThanReading, readingAnswer } from '../readings'
@@ -136,7 +136,8 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     // with personal details also goes to the AI, which adds to it when it can.
     const ready = instant || live || hints.some((g) => STEPS_FIRST.includes(g)) ? null : preparedFor(direct, isGeneralQuestion(q), q)
     if (ready) {
-      const aboutPerson = !isGeneralQuestion(q) && !isSimple(q) && ready.action !== 'call_emergency'
+      // With the AI on, it decides within seconds whether this needs Call 112. With no AI, offer a button only if it could be serious.
+      const aboutPerson = !aiReady && !isGeneralQuestion(q) && ready.action !== 'call_emergency' && maybeSerious(q)
       say({ ...ready, guides: [...new Set([...ready.guides, ...hints])].slice(0, 2), askAbout: aiReady ? q : undefined, softCall: aboutPerson })
       publish()
       if ((isSimple(q) && answersEnough(q, ready)) || !aiReady) return
@@ -167,13 +168,15 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     waiting = Math.max(0, waiting - 1)
     if (answer.source === 'ai' || answer.crisis) say({ ...answer, forYou: !!ready || live, guides: answer.guides.filter((g) => !hints.includes(g) && !ready?.guides.includes(g)) })
     else if (ready) {
-      // The prepared answer is already there, so the AI's failure needs no bubble of its own.
+      // The prepared answer is already there, so the AI's failure usually needs no bubble of its own. But the AI was what would have
+      // caught an emergency the word rules miss, so anything that could be serious gets a way to call.
+      if (!general && maybeSerious(q)) say({ ...answer, action: 'none', softCall: true })
     } else {
       // The word rules miss many emergencies, so someone describing a person gets what the app has for the closest topic and a way to call.
       const closest = general || live || instant || hints.length ? null : bestWhenAiFails(direct, q)
-      if (closest) say({ ...closest, softCall: closest.action !== 'call_emergency' })
+      if (closest) say({ ...closest, softCall: closest.action !== 'call_emergency' && maybeSerious(q) })
       else showFacts()
-      if (!hints.length && !instant) say(factsShown || closest ? { ...answer, action: 'none' } : { ...answer, softCall: !general })
+      if (!hints.length && !instant) say(factsShown || closest ? { ...answer, action: 'none' } : { ...answer, action: 'none', softCall: !general && maybeSerious(q) })
     }
     publish()
   }
@@ -202,7 +205,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
 
   const factsAnswer = (e: Evidence, q: string, general: boolean): AuraAnswer | null => {
     const text = quickFacts(e, q, general)
-    return text ? { text, guides: [], action: 'none', source: 'phone', facts: true, softCall: !general, sources: [publicSource(e)] } : null
+    return text ? { text, guides: [], action: 'none', source: 'phone', facts: true, softCall: !general && maybeSerious(q), sources: [publicSource(e)] } : null
   }
 
   /** What the phone can answer by itself, with no waiting. */
@@ -379,7 +382,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
         {busy && (
           <div className="bubble aura" data-testid="chat-busy">
             <p className="muted">{t(thinking)}</p>
-            {waitingOnPerson && (
+            {waitingOnPerson && thinking === 'chat.slow' && (
               <a className="btn secondary block" href={TEL_URI} style={{ marginTop: 8 }} data-testid="chat-wait-call">
                 <Icon name="phone" /> {t('chat.dontWait')}
               </a>
@@ -488,11 +491,17 @@ function AnswerBody({ answer }: { answer: AuraAnswer }) {
           <strong>{t('chat.nextStep')}</strong> {answer.nextStep}
         </p>
       )}
-      {!!answer.urgentIf?.length && (
-        <p className="answer-urgent">
-          <strong>{t('chat.urgentIf')}</strong> {answer.urgentIf.join(', ')}.
-        </p>
-      )}
+      {!!answer.urgentIf?.length &&
+        (answer.action === 'call_emergency' ? (
+          <p className="answer-urgent">
+            <strong>{t('chat.urgentIf')}</strong> {answer.urgentIf.join(', ')}.
+          </p>
+        ) : (
+          <details className="answer-more" data-testid="answer-warning">
+            <summary>{t('chat.warningSigns')}</summary>
+            <p>{answer.urgentIf.join(', ')}.</p>
+          </details>
+        ))}
       {answer.followUp && <p className="answer-follow">{answer.followUp}</p>}
       {answer.softCall && <p className="answer-urgent">{t('chat.factsNote')}</p>}
     </div>

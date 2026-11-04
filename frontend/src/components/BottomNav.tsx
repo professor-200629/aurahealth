@@ -1,6 +1,6 @@
 import { Icon, useUi } from '../ui'
 
-export type Tab = 'home' | 'chat' | 'meds' | 'family'
+export type Tab = 'home' | 'chat' | 'care' | 'family'
 
 /** The app's main places, always at the bottom. SOS in the middle opens the emergency sheet (it never calls by itself). */
 export function BottomNav({ active, onTab, onSos }: { active: Tab | null; onTab: (t: Tab) => void; onSos: () => void }) {
@@ -18,7 +18,7 @@ export function BottomNav({ active, onTab, onSos }: { active: Tab | null; onTab:
       <button className="nav-sos" onClick={onSos} aria-label={t('sos.open')} data-testid="sos">
         <span className="nav-sos-ring">SOS</span>
       </button>
-      {item('meds', 'pill', t('nav.meds'))}
+      {item('care', 'pill', t('nav.today'))}
       {item('family', 'people', t('nav.family'))}
     </nav>
   )

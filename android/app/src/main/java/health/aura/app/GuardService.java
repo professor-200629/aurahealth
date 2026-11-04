@@ -383,16 +383,7 @@ public class GuardService extends Service {
         Location where = alertLocation != null ? alertLocation : Store.locationInAlerts(this) ? Locator.last(this) : null;
         if (where != null) msg += " Phone location: " + Locator.describe(where) + ".";
         msg += " (Prototype)";
-        boolean any = false;
-        try {
-            SmsManager sms = Build.VERSION.SDK_INT >= 31 ? getSystemService(SmsManager.class) : SmsManager.getDefault();
-            for (String[] f : family) {
-                sms.sendMultipartTextMessage(f[1], null, sms.divideMessage(msg), null, null);
-                any = true;
-            }
-        } catch (RuntimeException e) {
-            Log.w("AuraGuard", "text not sent: " + e.getClass().getSimpleName());
-        }
+        boolean any = Sms.send(this, family, msg) > 0;
         Store.addEvent(this, any ? "guard_sms" : "guard_failed", "family");
         return any;
     }
