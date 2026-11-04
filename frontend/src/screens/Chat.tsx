@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { api, WEB_DEMO } from '../api'
+import { liveOn } from '../live'
 import IN from '../../../packs/regions/IN.json'
 import { askFromPhone, crisisText, phoneAiReady, phoneUsesMeta, readPhoto, shrinkPhoto } from '../aura'
 import { STEPS_FIRST, guideHints, isGeneralQuestion, localAnswer, redFlags } from '../chatlocal'
@@ -252,6 +253,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
       phoneError === 'key_rejected' ? (phoneUsesMeta() ? 'chat.keyRejectedMeta' : 'chat.keyRejected')
       : phoneError === 'rate_limited' ? (phoneUsesMeta() ? 'chat.rateLimitedMeta' : 'chat.rateLimited')
       : phoneError === 'timeout' ? 'chat.aiSlow'
+      : ['bad_code', 'ended', 'not_configured', 'bad_request'].includes(phoneError) ? 'chat.aiFailed'
       : phoneError ? 'chat.noInternet'
       : aiReady ? 'chat.aiFailed'
       : WEB_DEMO ? 'web.noAi'
@@ -330,7 +332,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
         <span>{t('chat.readAloud')}</span>
       </label>
       <p className="tiny muted" style={{ margin: 0 }}>
-        {WEB_DEMO ? t('web.chatNote') : phoneAi ? t(phoneUsesMeta() ? 'chat.notePhoneMeta' : 'chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
+        {WEB_DEMO ? t(liveOn() ? 'web.chatNoteLive' : 'web.chatNote') : phoneAi ? t(phoneUsesMeta() ? 'chat.notePhoneMeta' : 'chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
       </p>
       <PhoneAiKey />
       {msgs.length > 0 && (

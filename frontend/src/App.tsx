@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { JSX } from 'react'
 import { api, WEB_DEMO } from './api'
+import { WebLive } from './components/WebLive'
+import { liveOn } from './live'
 import { clearPending, flush, pendingCount, setSessionListener } from './eventlog'
 import { GUIDES } from './guides'
 import { AlertOverlay } from './components/AlertOverlay'
@@ -257,7 +259,8 @@ export default function App() {
         {/* In the Android app everything that matters works without the laptop, so its absence is shown only in Settings. */}
         {WEB_DEMO && screen === 'home' && (
           <div className="banner" style={{ marginBottom: 16 }} data-testid="web-demo">
-            {t('web.demo')}
+            {t(liveOn() ? 'web.demoLive' : 'web.demo')}
+            <WebLive />
           </div>
         )}
         {serverDown && !isNativeApp() && !WEB_DEMO && (

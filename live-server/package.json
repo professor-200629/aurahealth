@@ -1,0 +1,6 @@
+{
+  "name": "aurahealth-live",
+  "private": true,
+  "description": "The small server behind the web demo's live AI for judges.",
+  "engines": { "node": "22.x" }
+}

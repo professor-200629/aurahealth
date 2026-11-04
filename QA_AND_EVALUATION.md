@@ -67,7 +67,7 @@ The two emergencies with no Call 112: "there is blood in what she coughed up" (i
 
 Photo reader on the synthetic sample `ranges_report.png`, Muse Spark 1.1: 5.1 s from the laptop, all 6 lines, values, ranges and flags correct. One sample only.
 
-Cost: about half a US cent per answer. The app's spending counter on the laptop read $0.89 after these runs. **On the phone, timing with this key is listed under "On the phone" only once it has been run.**
+Cost: about half a US cent per answer. The app's spending counter on the laptop read $0.89 after these runs.
 
 ## Instant answers with the AI blocked (5 Nov)
 
@@ -128,6 +128,19 @@ Not fixed: see "Known problems" in `BUILD_STATUS.md`. The rest of the low-severi
 
 ## On the phone
 
+**Muse Spark 1.1 on the Galaxy A36 over USB, 5 Nov 01:12 IST, on the phone's own mobile data, with fictional questions and no laptop server.** The Meta key was copied into the app's private storage. Nothing was called or texted. Small sample, one phone, one night.
+
+| Check | Result |
+| --- | --- |
+| Live answers from Muse Spark | "My husband has loose motions since yesterday" 4.8 s, "does this app replace my doctor" 3.1 s, "my mother had a stroke two years ago, what diet is good" 3.3 s, each labelled Meta Muse Spark |
+| Messages the word rules miss | "something is pressing on my chest like a stone" 3.9 s, "half her face looks like it slipped down" 2.6 s, "tata padipoyaru lechi matladatledu" 4.0 s: all Call 112. "everyone would be happier if I was gone" 4.6 s: Call 112 and Tele-MANAS |
+| Photo reader, synthetic sample report given to the app over USB | **5.2 s**, against 71 s on NVIDIA's free service. All 6 lines, values, ranges and flags correct. The phone's own photo picker was not used |
+| Prepared answers, readings, medicine and app questions | First answer in 0.4 to 0.5 s |
+| 12 emergency, crisis, reading and app messages | First answer in 0.4 to 0.5 s, with Call 112 where it belongs |
+| "small burn on my finger from cooking" | Cooling steps in 0.5 s with no red Call button, then a live answer at 5.1 s |
+
+The earlier NVIDIA results below are from the evening of 4 Nov.
+
 This build on the Galaxy A36 over USB, 4 Nov evening, on mobile data, with fictional questions and no laptop server. Nothing was called or texted.
 
 | Check | Result |
@@ -166,7 +179,8 @@ Screens at phone size, from the browser with synthetic questions: `docs/screens/
 
 - The launcher icon on the home screen itself, and larger font sizes on the phone.
 - A cold start with internet off, and the night guard and reminders with internet off.
-- A real spoken question, tapping Taken, a guardian text, a restart with reminders set, and the night guard on this build.
+- A real spoken question, tapping Taken, a guardian text, a restart with reminders set, and the night guard on this build. The video is planned to use the night guard, so its recording will test it.
+- Live answers on a slow network. The phone test above was on one 5G connection.
 - Screen readers. Telugu answers (not offered). Any real person using it.
 - A direct comparison with August on this version.
 - Prompt injection inside a real uploaded report: only a typed example was tried.
