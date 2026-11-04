@@ -2,6 +2,9 @@ import type { AnswerKind } from './chatlocal'
 import type { SourceRef } from './knowledge'
 import type { Handoff, Health, Session } from './types'
 
+// The web demo is a plain page with no server behind it, so nothing typed into it ever leaves the browser.
+export const WEB_DEMO = import.meta.env.VITE_WEB_DEMO === '1'
+
 export class ApiError extends Error {
   status: number
   constructor(message: string, status: number) {
@@ -11,6 +14,7 @@ export class ApiError extends Error {
 }
 
 async function call<T>(path: string, init?: RequestInit, timeoutMs = 20000): Promise<T> {
+  if (WEB_DEMO) throw new ApiError('There is no server behind the web demo.', 0)
   const ctrl = new AbortController()
   const timer = window.setTimeout(() => ctrl.abort(), timeoutMs)
   try {

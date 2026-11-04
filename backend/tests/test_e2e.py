@@ -197,18 +197,31 @@ def test_phone_back_key_closes_the_menu_and_the_sheet_first(phone):
     expect(page.get_by_test_id("sos-call")).to_have_count(0)
 
 
-def test_home_question_is_answered_from_the_saved_source_when_the_ai_cannot_answer(phone):
+def test_home_question_is_answered_at_once_with_no_ai(phone):
     page, _, base = phone
     page.route("**/api/chat", lambda route: route.abort())
     page.goto(base)
     page.get_by_test_id("home-ask").fill("What does HbA1c mean?")
     page.get_by_test_id("home-send").click()
     answer = page.get_by_test_id("bubble-aura").first
-    expect(answer).to_contain_text("average blood glucose", timeout=15000)
-    expect(answer).to_contain_text("Not written by AI")
+    expect(answer).to_contain_text("average blood", timeout=5000)
+    expect(answer).to_contain_text("Written in advance")
     answer.locator("summary").click()
     link = answer.get_by_role("link", name="A1C")
     assert link.get_attribute("href").startswith("https://medlineplus.gov/")
+
+
+def test_call_now_answers_are_only_for_what_is_happening_now(phone):
+    page, _, base = phone
+    page.route("**/api/chat", lambda route: route.abort())
+    page.goto(base + "#chat")
+    page.get_by_test_id("chat-text").fill("my mother had a stroke two years ago, what diet is good")
+    page.get_by_test_id("chat-send").click()
+    expect(page.get_by_test_id("bubble-aura").first).to_contain_text("Written in advance", timeout=5000)
+    expect(page.get_by_test_id("chat-call")).to_have_count(0)
+    page.get_by_test_id("chat-text").fill("my uncle has tetanus and his jaw is locked")
+    page.get_by_test_id("chat-send").click()
+    expect(page.get_by_test_id("chat-call")).to_have_count(1, timeout=5000)
 
 
 def test_talk_of_suicide_gets_people_to_call_at_once(phone):
@@ -243,6 +256,26 @@ def test_phone_rules_answer_without_the_ai_and_ignore_numbers_that_are_not_readi
     assert "213" not in fever and "38.3" in fever
     what = ask("what are the signs of a stroke")
     assert what.get_by_test_id("chat-call").count() == 0
+
+
+def test_phone_record_lists_what_was_done_with_no_laptop(phone):
+    page, _, base = phone
+    page.route("**/api/**", lambda route: route.abort())
+    page.goto(base)
+    page.get_by_test_id("menu-button").click()
+    page.get_by_test_id("drawer-card").click()
+    expect(page.get_by_test_id("phone-card")).to_be_visible(timeout=15000)
+    assert "not a diagnosis" in page.get_by_test_id("phone-card").inner_text()
+
+
+def test_hba1c_reading_is_answered_at_once(phone):
+    page, _, base = phone
+    page.route("**/api/chat", lambda route: route.abort())
+    page.goto(base)
+    page.get_by_test_id("home-ex1").click()
+    answer = page.get_by_test_id("bubble-aura").first
+    expect(answer).to_contain_text("diabetes", timeout=5000)
+    assert "7.5%" in answer.inner_text() and page.get_by_test_id("chat-busy").count() == 0
 
 
 def test_emergency_still_works_when_the_laptop_is_unreachable(phone):
@@ -322,7 +355,8 @@ def test_guide_finder_suggests_with_the_persons_words_and_opens_nothing_by_itsel
     page.get_by_test_id("finder-open").click()
     page.locator("#finder-text").fill("kid choking on a grape")
     page.get_by_test_id("finder-go").click()
-    expect(page.get_by_test_id("finder-matches").or_(page.get_by_test_id("finder-message"))).to_be_visible(timeout=60_000)
+    # The app itself waits up to 100 s for the free AI service (frontend/src/api.ts).
+    expect(page.get_by_test_id("finder-matches").or_(page.get_by_test_id("finder-message"))).to_be_visible(timeout=105_000)
     _check_sos(page)
     expect(page.locator("#guide-title")).to_have_count(0)  # a suggestion never opens a guide by itself
     suggestion = page.get_by_test_id("finder-choking")

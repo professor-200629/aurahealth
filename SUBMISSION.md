@@ -1,87 +1,124 @@
-# Submission draft (Meta Global AI Developer Hackathon, indie track)
+# Submission answers (Meta Global AI Developer Hackathon, indie track)
 
-Deadline: **4 Nov 2026, 9:00 PM EST = 5 Nov 2026, 07:30 IST.** Check every claim against `QA_AND_EVALUATION.md` and
-`EVALUATION.md` before pasting. Replace the `[…]` parts yourself.
+Deadline: **4 Nov 2026, 9:00 PM ET = 5 Nov 2026, 07:30 IST.** No edits after that. The headings below follow the real form, read on 5 Nov.
+Check every number against `QA_AND_EVALUATION.md` before pasting. The submitter pastes these and presses Submit.
 
-## Name
+## Team Name
 
 AuraHealth
 
-## One line
+## Team Members
 
-A free Android app that helps families understand health information, act in the first minutes of an emergency and look after each
-other at home, using Meta's open Muse Glimmer model, with the emergency path working without AI or internet.
+Balu Thota, alone.
 
-## The problem
+## Which track?
 
-When someone collapses or falls at home, the nearest person is often untrained, alone and scared. On ordinary days, families get a
-report, a number or a symptom and have nobody to explain it. Most apps either answer vaguely or sound more certain than they should.
+Indie Developer Track
 
-## What it does
+## Which problem statement?
 
-- **Ask anything, in everyday words.** "His HbA1c is 7.5", "loose motions since yesterday". Aura answers directly, then gives the next
-  step, the warning signs, its reasons and sources you can open.
-- **Answers that work without AI.** Emergency words, readings (temperature, BP, sugar, oxygen) and first-aid steps are answered on the
-  phone at once. If the AI is slow or down, it shows MedlinePlus's own words from the phone and says so.
-- **SOS on every screen.** It opens Call 112, location sharing and the health card to read aloud. It takes a second tap, so a pocket press
-  calls nobody, and the app never calls 112 by itself.
-- **17 first-aid guides** adapted from the Red Cross (IFRC 2020) and read aloud step by step.
-- **Medicine reminders** that text a chosen guardian if a dose is not marked taken.
-- **Night guard (optional).** Knock three times: if nobody taps "I'm OK", it phones and texts the people you chose.
-- **Handoff card** with a timed record for the doctor or the ambulance crew (needs the optional laptop server).
+Build for Your World
 
-## How we built it
+## Most Viral Track: X post link (optional)
 
-Android (Java WebView), React + TypeScript, with a FastAPI server for the optional laptop features (handoff card, guide finder, report reader). With an
-NVIDIA API key saved in the app, the phone calls Muse Glimmer directly. Every AI answer goes through code checks before it is shown: only sources it really
-retrieved, sentences with medicine amounts, directions to start or stop a medicine, reassurance or a stated diagnosis removed, and Call 112 forced on
-emergency words. Fixed answers and MedlinePlus's own sentences are shown as written. The checks are word patterns and they can miss things.
-Sources come from a bundled pack of 156 MedlinePlus topic summaries, plus everyday Indian English, Hindi and Telugu words.
+[link to your own post on X. Most engagement by 8 Nov, 11:59 PM ET wins.]
 
-## Meta tools used
+## Project Description (limit 3,000 characters)
 
-**Meta Muse Glimmer 30B** (open weights, Apache 2.0), hosted by NVIDIA, for Talk to Aura, the guide finder and the report reader.
+```text
+AuraHealth is a free Android app that helps a family understand health questions and act in the first minutes of an emergency at home. Everything was built during the hackathon, from 29 October. It is a research prototype: no clinician has reviewed it and no real patient has used it.
 
-## Evidence
+THE PROBLEM
+When someone collapses at home in India, the nearest person is often untrained, alone and scared. Indian studies found bystanders started CPR in only 1.3% to 9.8% of cases. On ordinary days, families get a report, a number or a symptom and have nobody to explain it.
 
-On 60 synthetic questions, same model, before and after the rebuild: refusals to explain fell from 6 to 0, answers with a source rose from 0 to 38 of 55, and no urgent
-question that was answered missed its Call 112. Answers got slower (median 19 s to 35 s) and 5 of 60 timed out on the free API. The scores are automatic word checks written
-by us, and longer answers score higher partly for being longer.
+WHAT IT DOES
+- Ask in everyday words. "His HbA1c is 7.5" or "loose motions since yesterday" gets a direct answer, a next step, warning signs and sources you can open.
+- Instant answers, even offline. Meta's Muse Glimmer wrote 371 answers in advance for 207 health topics from MedlinePlus, and code checked each one. They open in under a second and say they were written in advance. For anything personal, the live model adds an answer for that situation.
+- Emergency words, readings (temperature, BP, sugar, HbA1c, oxygen), common medicine questions and first-aid steps are answered on the phone, with no AI and no internet.
+- Reads a photo of a report or medicine. Muse Glimmer reads each line on the phone, flags it against the report's own range and says what it measures.
+- SOS on every screen. It takes a second tap, and the app never calls 112 by itself.
+- 17 first-aid guides adapted from the Red Cross (IFRC 2020), read aloud step by step and saved with the time, which become a handoff record for the ambulance crew.
+- Medicine reminders that text a chosen guardian if a dose is not marked taken, and an optional night guard: knock three times, and if nobody taps "I'm OK", it phones and texts the people you chose.
 
-The word rules that work without AI caught 220 of 221 plain-English phrases they were tuned on, but only **22 of 49 fresh phrases**. So they are not the only safety net: the
-AI is also told to escalate, SOS is on every screen, and a Call button shows while the AI is thinking and whenever it fails.
+HOW IT IS CHECKED
+Every AI answer passes code checks before it shows: only sources it really retrieved; sentences with medicine amounts, start or stop directions, false comfort or a stated diagnosis are removed; Call 112 is forced on emergency words.
+On 60 synthetic questions, before and after my rebuild, refusals to explain fell from 6 to 0, answers with a source rose from 0 to 38 of 55, and no urgent question that was answered missed its Call 112. Live answers got slower, and 5 of 60 timed out on the free service.
+I also tried to break it. The word rules that work without AI caught only 22 of 49 fresh emergency phrases, so a Call button stays in view while the AI thinks and whenever it fails. These are my own automatic checks on one phone, not clinical results. What has and has not been run is in QA_AND_EVALUATION.md.
 
-On one phone (Galaxy A36), real AI answers took 27 to 72 s. With Airplane mode on, emergency answers, readings, SOS and the first-aid guides kept working, and a message the
-rules missed got a Call button but no first-aid steps.
+TRY IT
+No install and no key: https://professor-200629.github.io/aurahealth/ (this web demo has no live AI). The full app is the Android build in the repo.
+```
 
-No clinician or real user has judged any of this. See `QA_AND_EVALUATION.md`.
+## Public GitHub Repository
 
-## Challenges
+https://github.com/professor-200629/aurahealth
 
-- Comparing with another health app showed our answers felt less useful. The first version was vague: its rules forced three short sentences, and
-  a filter mistook "mg/dL" for a medicine dose. We rebuilt the answers and measured the same 60 questions before and after.
-- Our own review broke the rules: "has taken thirty sleeping tablets" got a reminder message, and an age was read as a blood sugar. Fresh test phrases showed that word rules miss about half of emergencies in new wording, which changed the design.
-- The free AI service can take over a minute, so nothing important waits for it.
-- Testing on a real phone found what the browser did not: the Call button was hidden behind the typing box.
+## 3-Minute Demo Video
+
+[YouTube link]
+
+## Describe your use of Meta products to build the submitted project (limit 3,000 characters)
+
+```text
+Meta Muse Glimmer 30B (open weights, Apache 2.0) is the only AI model in AuraHealth. It does three jobs.
+
+1. ANSWERS WRITTEN IN ADVANCE
+scripts/build_prepared.py gives Muse Glimmer each MedlinePlus topic and keeps 371 answers for 207 topics. Each passes the same code checks as a live answer. They ship inside the app, so common questions open in under a second with no internet.
+
+2. LIVE ANSWERS
+For anything personal, the phone calls Muse Glimmer over its own internet, with JSON output and passages retrieved from a bundled pack of 208 MedlinePlus topics. The model returns a direct answer, next step, warning signs and reasons, and code checks them before they show.
+
+3. READING PHOTOS
+Muse Glimmer's image input reads a report or medicine photo on the phone, line by line, and flags values against the report's own range. For now this is for synthetic samples only, because photos go to the AI host.
+
+WHERE IT RUNS
+On NVIDIA's free hosted API (meta/muse-glimmer-30b). No laptop or server of mine is needed. The free service took 27 to 72 seconds per live answer on one phone, which is why I rebuilt the app so that nothing important waits for it. NVIDIA's free terms are for trials, so a real launch needs a paid host or self-hosting.
+
+WHAT I DID NOT USE
+The $150 Meta Model API credits are on my account, but my card's verification hold failed, so the app does not call the Meta Model API. I did not use Muse Code. The code was written with an AI coding assistant (Claude Code), as the commit history shows.
+```
+
+## Why are Meta's models important to your solution? (limit 3,000 characters)
+
+```text
+Muse Glimmer fits this app in three ways.
+
+OPEN WEIGHTS
+A family health app should not depend on one company's service staying cheap and available. Under Apache 2.0, the same model can move to a paid host or to my own servers, with nobody's permission. That also keeps a path open to controlling where people's health questions go, which matters more here than in most apps.
+
+TEXT AND IMAGES IN ONE MODEL
+Families often hold a paper report, not typed numbers. The same 30B model answers questions and reads photos, so the app needs one prompt style and one set of checks.
+
+IT CAN WRITE AHEAD OF TIME
+The free service can take over a minute, and a scared person cannot wait. So Muse Glimmer writes clear answers in advance from a trusted source, code checks them, and they ship in the app. The model's quality reaches someone in under a second, even with no network, while the live model handles what is personal.
+
+It also changed the quality of the answers. When I stopped forcing short replies and gave Muse Glimmer MedlinePlus passages, expected concepts rose from 85% to 99% on 60 synthetic questions, and refusals to explain fell from 6 to 0. Longer answers score higher partly for being longer, and no clinician has judged them, but "His HbA1c is 7.5" went from "only his doctor can explain" to an answer a family can use, with a next step and a source.
+```
+
+## Provide feedback from your experience using partner technologies (limit 150 characters)
+
+```text
+Baseten and Modal credits had closed when I asked, so I ran Muse Glimmer on NVIDIA's free API. I can't review those partners.
+```
+
+## Rating questions and the permission box
+
+These are the submitter's own opinions. The box gives Meta and Cerebral Valley permission to use, publish, share and promote the submitted materials.
+
+## Honesty notes
+
+Research prototype. Not approved or registered as a medical device. **No clinician has reviewed it and it has not been used by real patients.** Tested with fictional
+people, on one phone (Samsung Galaxy A36). The word-check scores are not clinical performance. Telugu screens are an unreviewed draft. Asked
+questions go to NVIDIA, whose trial terms let it use what is sent.
 
 ## What's next
 
 A registered clinician's review, an AI service whose terms allow real users, native-speaker review of Telugu and Hindi, and an adviser's view
 on Indian medical-device and telemedicine rules. See `LAUNCH_PLAN.md`.
 
-## Honesty notes to include
-
-Research prototype. Not approved or registered as a medical device. **No clinician has reviewed it and it has not been used by real patients.** Tested with fictional
-people, on one phone (Samsung Galaxy A36). The word-check scores are not clinical performance. Telugu screens are an unreviewed draft. Asked
-questions go to NVIDIA, whose trial terms let it use what is sent.
-
-## Links
-
-- Code: [repo link, once you approve making it public; the hackathon requires a public repo]
-- Video: [link]
-
 ## Before you submit (your actions)
 
-- [ ] Approve making the repository public, and choose a license.
+- [x] Approve making the repository public, under the MIT License.
 - [ ] Record the video from `DEMO_SCRIPT.md`.
-- [ ] Fill in the submission form yourself.
+- [ ] Post the demo on X yourself, and put the link in the form.
+- [ ] Fill in the submission form yourself. Keep the repo public through judging.

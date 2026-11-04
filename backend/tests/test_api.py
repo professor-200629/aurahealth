@@ -36,6 +36,16 @@ def _png() -> bytes:
 
 # ---------- packs ----------
 
+def test_small_injuries_are_not_emergencies_unless_a_danger_word_is_there():
+    from aurahealth import chat
+
+    for text in ("small burn on my finger from cooking", "my hand got a minor burn", "my child bumped his head lightly and is playing fine", "small bump on my head"):
+        assert chat.red_flags(text) == (False, []), text
+    for text, guide in (("my small son burned his hand", "burns"), ("small burn on my baby's face", "burns"), ("my father is burned badly on his chest", "burns"),
+                        ("small bump on his head and now he is vomiting", "head_injury"), ("my small son fell from the stairs and hit his head", "head_injury")):
+        assert chat.red_flags(text) == (True, [guide]), text
+
+
 def test_only_implemented_region_and_languages_are_offered():
     summary = packs.summary()
     assert [r["id"] for r in summary["regions"]] == ["IN"]
@@ -740,6 +750,12 @@ def test_rules_keep_catching_the_review_phrases():
     for kind in ("dose_words", "dose_warning_bypass", "direction", "reassure", "diagnosis"):
         assert not [t for t in corpus["filters"]["unsafe"][kind] if not chat.sentence_problem(t)], kind
     assert sum(not chat.sentence_problem(t) for t in corpus["filters"]["good"]) >= len(corpus["filters"]["good"]) - 5
+
+
+def test_no_breathing_problem_is_not_an_emergency():
+    from aurahealth import chat
+    assert chat.red_flags("Itchy rash on my arm, no swelling and no breathing problem") == (False, [])
+    assert chat.red_flags("he has no breathing and no pulse")[0]
 
 
 def test_chat_keeps_warnings_and_lab_values_and_conditional_advice():

@@ -20,6 +20,8 @@ helpers only suggest, and a person confirms. NVIDIA's free terms are for trials,
 
 **Setup:** Android app. Talk to Aura needs an NVIDIA key saved on the phone. A laptop server on the same Wi-Fi is needed only for the handoff card, guide finder and report reader.
 
+**Try it with no install and no key:** [web demo](https://professor-200629.github.io/aurahealth/). It answers from what is built into the app (emergency words, readings, common medicine questions, prepared answers, first-aid guides) and sends nothing anywhere. Live AI, the photo reader, alarms, reminders and the night guard need the Android app.
+
 ## Why the first hour matters (sources)
 
 - Most cardiac arrests outside hospital happen at home: 68% in Ireland's 2024 registry
@@ -51,7 +53,9 @@ clear, timed record.
   breathing", "pain in my chest", "taken thirty tablets", some voice-typing errors and some Hindi and Telugu words) get an answer **on the
   phone at once**: a "Call 112" button and the matching first-aid guide. Talk of suicide or self-harm gets a fixed reply with Call 112 and Tele-MANAS 14416, without the AI. Questions about the family's own saved
   data ("Has today's medicine been taken?", "What is Amma's blood group?") are also answered on the phone. Anything
-  else goes to **Meta Muse Glimmer** with passages from a bundled pack of MedlinePlus topic summaries. It writes a direct answer, next step,
+  common questions open **at once and offline**, from answers Muse Glimmer wrote in advance from MedlinePlus (`scripts/build_prepared.py`), labelled as such and passed through the same
+  checks. Common medicine questions (a missed dose, how much, stopping, mixing, pregnancy) get a fixed answer that never gives an amount. Anything personal
+  also goes to **Meta Muse Glimmer** live, with passages from a bundled pack of MedlinePlus topic summaries. It writes a direct answer, next step,
   warning signs and reasons. Code removes sentences with medicine amounts, start or stop directions, reassurance or a stated diagnosis, shows only
   sources it really retrieved, and adds "Call 112" on emergency words. These are word patterns and no clinician has reviewed them. If the AI is slow or
   unavailable, MedlinePlus's own sentences can show from the phone, labelled as not written by AI.
@@ -61,6 +65,9 @@ clear, timed record.
   Results for this version: `QA_AND_EVALUATION.md`. An earlier version (2 Nov) was compared with the August health app on the same phone in
   [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_AURA.md) (10 questions, scored by AI on a rubric that favoured safety and brevity); that result does not describe this version.
   Replies can be read aloud.
+- **Reads a report or medicine photo on the phone.** Muse Glimmer reads each line, marks what the report's own range shows as high or low, and says what each line
+  measures, all from the phone with no laptop. For synthetic samples only for now, because photos go to the AI host. The sample `SAMPLE_DATA/reports/ranges_report.png` prints its own ranges.
+- **Handoff record on the phone alone.** The time log and health card become a record to read aloud or send, with no laptop. With the laptop server, the fuller handoff card is used.
 - **Health readings answered on the phone.** "Temperature 99.9", "BP 190/120", "sugar 62", "oxygen 91": Aura
   answers at once, offline, with fixed thresholds from the NHS (fever from 38°C / 100.4°F; oxygen 92% or below),
   the American Heart Association (above 180/120 with symptoms is an emergency) and the American Diabetes
@@ -289,6 +296,14 @@ EVAL_RESULTS/ JSON output of real measurement runs
 - Medicine reminders never suggest a medicine or amount; the guardian text says only what was typed:
   `android/app/src/main/java/health/aura/app/Meds.java`.
 - Pairing, security headers (CSP `connect-src 'self'`), no access logs: `backend/src/aurahealth/app.py`.
+
+## Web demo
+
+`cd frontend; npm run build:web` writes a plain page to `frontend/dist-web`, with no server and no key behind it (`VITE_WEB_DEMO`, `frontend/.env.webdemo`). In this mode the app makes no API calls, so what someone types stays in their browser. It is published on the `gh-pages` branch.
+
+## License
+
+The code is under the MIT License (`LICENSE`). The first-aid guides are adapted from the IFRC 2020 guidelines, which allow non-commercial use with credit, so they are not under MIT. See [`NOTICE.md`](NOTICE.md).
 
 ## Docs
 

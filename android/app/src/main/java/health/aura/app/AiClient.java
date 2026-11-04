@@ -27,6 +27,7 @@ import java.util.concurrent.Executors;
  */
 final class AiClient {
     static final String API = "https://integrate.api.nvidia.com/v1/chat/completions";
+    private static final String OPENROUTER_API = "https://openrouter.ai/api/v1/chat/completions";
     static final String MODEL = "meta/muse-glimmer-30b";
     private static final String KEY_FILE = "ai_key.txt";
     private static final ExecutorService POOL = Executors.newFixedThreadPool(3);
@@ -76,7 +77,7 @@ final class AiClient {
                             .put("model", MODEL)
                             .put("messages", new JSONArray()
                                     .put(new JSONObject().put("role", "system").put("content", req.optString("system")))
-                                    .put(new JSONObject().put("role", "user").put("content", req.optString("user"))))
+                                    .put(new JSONObject().put("role", "user").put("content", userContent(req))))
                             .put("temperature", 0)
                             .put("max_tokens", 1500)
                             .put("response_format", new JSONObject().put("type", "json_object"))
@@ -113,6 +114,15 @@ final class AiClient {
         });
     }
 
+    /** Plain text, or text with one photo (base64 JPEG) for reading a report or medicine. */
+    private static Object userContent(JSONObject req) throws JSONException {
+        String image = req.optString("image", "");
+        if (image.isEmpty()) return req.optString("user");
+        return new JSONArray()
+                .put(new JSONObject().put("type", "text").put("text", req.optString("user")))
+                .put(new JSONObject().put("type", "image_url").put("image_url", new JSONObject().put("url", "data:image/jpeg;base64," + image)));
+    }
+
     private static void safePut(JSONObject out, String error) {
         try {
             out.put("type", "ai").put("ok", false).put("error", error);
@@ -122,7 +132,8 @@ final class AiClient {
 
     /** POST the body; returns {status code, response text}. The key goes only in the Authorization header. */
     private static String[] post(JSONObject body, String key, int readMs) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(API).openConnection();
+        // The same model on a paid host answers much faster than NVIDIA's free queue, if a key for it is saved.
+        HttpURLConnection conn = (HttpURLConnection) new URL(key.startsWith("sk-or-") ? OPENROUTER_API : API).openConnection();
         try {
             conn.setConnectTimeout(10_000);
             conn.setReadTimeout(readMs);

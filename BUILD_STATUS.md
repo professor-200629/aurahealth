@@ -7,7 +7,7 @@ Last update: 4 Nov 2026. Branch `product-v2`, off `master`. Nothing here is prod
 | Feature | State | Notes |
 | --- | --- | --- |
 | Talk to Aura, from the phone | Real | Muse Glimmer on NVIDIA. Needs the phone's internet and a key copied over USB. Free trial terms: no production use |
-| Evidence pack, source links | Real | 156 MedlinePlus summaries in the app. Word matching, not semantic search |
+| Evidence pack, source links | Real | 208 MedlinePlus summaries in the app. Word matching, not semantic search |
 | Answer checks | Real | Word patterns, reviewed by nobody |
 | Emergency words, readings, crisis reply | Real, offline | On the phone before any AI |
 | 17 first-aid guides, read aloud | Real, offline | IFRC 2020, adapted, unreviewed |
@@ -17,8 +17,12 @@ Last update: 4 Nov 2026. Branch `product-v2`, off `master`. Nothing here is prod
 | Location share, nearby hospital | Real | Opens Maps or the share sheet. No claim about beds or ambulances |
 | Night guard, morning check | Real, off by default | A real call and text worked once on 29 Oct on an earlier build, with knocks played from a speaker. This build is untested. Open decision in `CLINICAL_SAFETY.md` |
 | Voice input | Real on Android | A spoken question is still untested. Transcript shows while listening |
-| Report reader | For synthetic samples | Needs the laptop server. Upload accepts any photo, but the screen says to use only the samples |
-| Handoff card | Needs the laptop server | Not on the phone alone |
+| Prepared answers | Real, offline | 371 answers for 207 topics, written in advance by Muse Glimmer (`scripts/build_prepared.py`), unreviewed, not personal |
+| Fixed medicine answers | Real, offline | `frontend/src/medicine.ts`. Never gives an amount. Unreviewed |
+| Report and medicine photo on the phone | Real, for synthetic samples | Muse Glimmer, online. The picker itself was opened and cancelled on the phone; the reading was tested with a sample given to the app |
+| Handoff record on the phone | Real | Built from the phone's time log and health card |
+| Fuller handoff card, guide finder, older report reader | Needs the laptop server | Optional |
+| Web demo for judges | Real, limited | A plain page with no server or key. No live AI, photo reader, alarms, reminders or night guard |
 | Telugu | Screens only, unreviewed | First aid and answers are in English |
 | Hindi | Absent | Only a few search words |
 | Login, Gmail or OTP | Absent | Profile with no login, the owner's choice |

@@ -44,6 +44,8 @@ import java.util.Locale;
  * texts and the night guard.
  */
 public class MainActivity extends Activity {
+    private static final int PICK_FILE = 41;
+    private android.webkit.ValueCallback<Uri[]> fileCallback;
     static final String LOCAL_HOST = "appassets.aura";
     static final String LOCAL = "https://" + LOCAL_HOST + "/";
     private static volatile MainActivity current;
@@ -74,7 +76,20 @@ public class MainActivity extends Activity {
         s.setMediaPlaybackRequiresUserGesture(false);
         s.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
         web.addJavascriptInterface(new AuraBridge(this), "AuraNative");
-        web.setWebChromeClient(new WebChromeClient());
+        web.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onShowFileChooser(WebView view, android.webkit.ValueCallback<Uri[]> callback, FileChooserParams params) {
+                if (fileCallback != null) fileCallback.onReceiveValue(null);
+                fileCallback = callback;
+                try {
+                    startActivityForResult(params.createIntent(), PICK_FILE);
+                    return true;
+                } catch (android.content.ActivityNotFoundException e) {
+                    fileCallback = null;
+                    return false;
+                }
+            }
+        });
         web.setWebViewClient(new Client());
 
         tts = new TextToSpeech(this, status -> {
@@ -89,13 +104,11 @@ public class MainActivity extends Activity {
         Meds.run(this);  // sets the medicine alarm again, in case Android dropped it
     }
 
-    /** Load the laptop's copy if it answers within 2.5 s, otherwise the bundled copy. */
+    /** Show the bundled copy at once, so the app never opens on a blank page. If the laptop answers, switch to its copy. */
     void loadBest() {
+        loadLocal();
         String hub = Store.hubUrl(this);
-        if (hub.isEmpty()) {
-            loadLocal();
-            return;
-        }
+        if (hub.isEmpty()) return;
         new Thread(() -> {
             boolean up = reachable(hub);
             runOnUiThread(() -> {
@@ -103,8 +116,6 @@ public class MainActivity extends Activity {
                     loadedHub = hub;
                     triedPairing = true;
                     web.loadUrl(hub + "/pair?code=" + Uri.encode(Store.hubCode(this)));
-                } else {
-                    loadLocal();
                 }
             });
         }).start();
@@ -416,6 +427,15 @@ public class MainActivity extends Activity {
         current = this;
         sendToWeb("{\"type\":\"queue\"}");
         sendToWeb("{\"type\":\"guard\",\"on\":" + Store.guardOn(this) + "}");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_FILE && fileCallback != null) {
+            fileCallback.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, data));
+            fileCallback = null;
+        }
     }
 
     @Override

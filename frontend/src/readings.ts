@@ -9,6 +9,8 @@
 //   symptoms, wait a minute and measure again, then contact the doctor (https://www.heart.org/)
 // - blood sugar: American Diabetes Association levels (below 70 mg/dL low, below 54 serious; confused or needing help
 //   = severe) with the IFRC 2020 first aid (sugar if awake and able to swallow, again after 15 minutes)
+// - HbA1c: American Diabetes Association cut-offs (below 5.7% usual, 5.7-6.4% prediabetes, 6.5% or more in the diabetes range; many
+//   adults with diabetes aim below 7%)
 // - oxygen: NHS home pulse-oximeter leaflets (written for COVID-19): 92% or below after a re-check → 999 / A&E;
 //   93-94% → contact a doctor soon
 // A number counts only when it sits right next to its keyword, so ages, durations, prices and tablet counts are ignored.
@@ -147,6 +149,18 @@ function sugar(s: string): AuraAnswer | null {
   return answer(`${r} is not low. If they still feel unwell, tell me what else you notice.`)
 }
 
+function hba1c(s: string): AuraAnswer | null {
+  const hit = near(s, 'hba-one-c|a1c')
+  if (!hit) return null
+  const v = num(hit.value)
+  if (v < 3 || v > 20) return null
+  const what = 'HbA1c shows average blood sugar over about the past 3 months.'
+  const ask = "Ask their doctor what this means for them and what target is right, within the next few days. The report's own range and their doctor's plan come first."
+  if (v >= 6.5) return answer(`${what} ${v}% is in the range used for diabetes (6.5% or more, by American Diabetes Association cut-offs). If they already have diabetes, many adults aim below 7%. ${ask}`)
+  if (v >= 5.7) return answer(`${what} ${v}% is in the prediabetes range (5.7 to 6.4%, by American Diabetes Association cut-offs), which is above usual but below the diabetes range. ${ask}`)
+  return answer(`${what} ${v}% is in the usual range (below 5.7%, by American Diabetes Association cut-offs). ${ask}`)
+}
+
 function oxygen(s: string): AuraAnswer | null {
   const hit = near(s, 'oxygen|saturation|oximeter', true)
   if (!hit) return null
@@ -165,7 +179,7 @@ function oxygen(s: string): AuraAnswer | null {
 export function readingAnswer(text: string): AuraAnswer | null {
   // Digits that are part of a word ("spo2", "o2", "hba1c") are not the reading.
   const s = text.toLowerCase().replace(/\bsp\s?o2\b|\bo2\b/g, 'oxygen').replace(/\bhba1c\b|\bhb a1c\b/g, 'hba-one-c')
-  const found = [pressure(s), temperature(s), oxygen(s), sugar(s)].filter((a): a is AuraAnswer => !!a)
+  const found = [pressure(s), temperature(s), oxygen(s), sugar(s), hba1c(s)].filter((a): a is AuraAnswer => !!a)
   if (!found.length) return null
   found.sort((a, b) => Number(b.action === 'call_emergency') - Number(a.action === 'call_emergency'))
   return {
@@ -178,6 +192,6 @@ export function readingAnswer(text: string): AuraAnswer | null {
 /** Is there more to the message than the reading? Then the AI is asked as well, because the reading alone may mislead. */
 export function hasMoreThanReading(text: string): boolean {
   const words = text.toLowerCase().match(/[a-z]{3,}/g) ?? []
-  const filler = /^(temp|temperature|fever|sugar|glucose|oxygen|spo|pressure|the|was|his|her|she|and|but|for|mine|checked|showing|shows|show|hey|reading|level|low|high|after|before|food|lunch|breakfast|dinner|fasting|that|bad|good|normal|okay|what|does|mean|right|now|today|mmol|have|has|had|with|this|can|you|tell|from|meter|machine|thermometer)$/
+  const filler = /^(temp|temperature|fever|sugar|glucose|oxygen|spo|hba|one|pressure|the|was|his|her|she|and|but|for|mine|checked|showing|shows|show|hey|reading|level|low|high|after|before|food|lunch|breakfast|dinner|fasting|that|bad|good|normal|okay|what|does|mean|right|now|today|mmol|have|has|had|with|this|can|you|tell|from|meter|machine|thermometer)$/
   return words.filter((w) => !filler.test(w)).length > 2
 }

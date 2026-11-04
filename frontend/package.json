@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:web": "tsc -b && vite build --mode webdemo --base=./ --outDir dist-web --emptyOutDir",
     "lint": "oxlint",
     "preview": "vite preview"
   },

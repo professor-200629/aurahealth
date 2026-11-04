@@ -20,7 +20,7 @@ const ITEMS: { id: DrawerTarget; icon: string; key: string }[] = [
 
 /** The side menu: every part of the app, the language, and settings. */
 export function Drawer({ name, onGo, onClose, onLang }: { name: string; onGo: (t: DrawerTarget) => void; onClose: () => void; onLang: (l: Lang) => void }) {
-  const { t, serverDown } = useUi()
+  const { t } = useUi()
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
     ref.current?.focus()
@@ -43,7 +43,7 @@ export function Drawer({ name, onGo, onClose, onLang }: { name: string; onGo: (t
           </span>
         </button>
         <nav className="drawer-list">
-          {ITEMS.filter((it) => it.id !== 'card' || !serverDown).map((it) => (
+          {ITEMS.map((it) => (
             <button key={it.id} className="drawer-item" onClick={() => onGo(it.id)} data-testid={`drawer-${it.id}`}>
               <Icon name={it.icon as never} size={22} />
               <span>{t(it.key)}</span>

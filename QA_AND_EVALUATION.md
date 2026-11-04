@@ -34,6 +34,24 @@ Held-out 15 only: 24/27 concepts before, 24/25 after, 14 of 15 answered after. T
 
 Example, "his hba1c is 7.5". Before: *"Only his doctor can explain what 7.5 means for him."* After: *"An A1C of 7.5% is above the usual target range for people with diabetes"*, with a next step and the MedlinePlus source.
 
+## Instant answers with the AI blocked (5 Nov)
+
+The free AI service takes 27 to 72 s, so common questions now open from 371 answers Muse Glimmer wrote in advance for 207 of the 208 MedlinePlus topics (`scripts/build_prepared.py`). They passed the same code checks as live answers and no clinician has read them. The suicide topic has none on purpose: crisis words get a fixed reply.
+
+| Check | Result |
+| --- | --- |
+| The same 60 questions (`scripts/eval_instant.py`; used for tuning) | 60/60 real answers, 37 prepared, 97/113 expected concepts. First answer: median 0.1 s, slowest 0.4 s. Missed urgent 0, unneeded Call 112 0, reassurance, stated diagnosis or dose (by pattern) 0, 0, 0 |
+| 30 everyday questions I wrote | 17/30 had a prepared answer at first. After adding topics for the gaps, **28/30**. The second number is tuned on these questions. The two still with no answer: "why is my urine yellow", "my son has worms" |
+| Fresh emergency phrases, AI blocked | **22/49 get the red Call 112 at the top, 27/49 a softer Call button, 0/49 nothing.** Most of the softer ones say only that the AI could not answer, so offline these get a button and no first-aid steps. This is the weak spot |
+| Fresh ordinary messages, AI blocked | 1/25 false alarms ("we watched a movie about a snake bite") |
+| 18 small everyday questions I wrote (small burn, stroke two years ago, tetanus shot) | Red Call 112: **9 of 18 before the fix, 1 of 18 after** ("pain on my right side for a week, is it appendicitis", left as it is). Tuned on these questions. 5 serious versions kept the red button |
+
+A topic's "call now" answer now shows only when the message seems to be happening now. A past event, a small injury, or a question about diet or a vaccine gets the general answer and a softer button. These are word patterns too, and they can be wrong in both directions.
+
+## Web demo (5 Nov)
+
+`npm run build:web`, served as plain files from a sub-folder with no server, in Edge at phone size, on the final build. 6 questions and 5 other screens: 0 console errors, and **no request called a server or left the page**. No live AI, photo reader, alarms, reminders or night guard there.
+
 ## Rules that run without the AI
 
 `uv run python scripts/eval_rules.py`. These decide what gets an instant Call 112 answer, including when the AI is down.
@@ -69,8 +87,8 @@ Not fixed: see "Known problems" in `BUILD_STATUS.md`. The rest of the low-severi
 
 ## Automated tests
 
-- `tests/test_api.py`: 59 passed.
-- `tests/test_e2e.py` (Edge, phone size, including the guide finder with the live model): 12 passed. A small change to the AI status check and one placeholder came after this run.
+- `tests/test_api.py`: 61 passed, 5 Nov.
+- `tests/test_e2e.py` (Edge, phone size, including the guide finder with the live model): 15 passed, 5 Nov. The guide finder first failed its 60 s test limit, because the free service took 49 to 69 s and answered correctly. The app itself waits 100 s, so the test now does too.
 - Colour contrast computed for the main colour pairs: `docs/brand/BRAND.md`.
 
 ## On the phone

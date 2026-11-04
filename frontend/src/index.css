@@ -484,3 +484,13 @@ select.input { min-height: 52px; }
 .btn svg { flex: none; }
 .bottom-nav > * { min-width: 0; }
 .nav-item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Answers written in advance, photos and the phone's own record */
+.answer-label { font-size: 14px; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.03em; }
+.chat-photo { max-height: 180px; border-radius: 10px; margin-bottom: 6px; }
+.photo-items { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.photo-items li { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 8px 10px; background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 16px; }
+.photo-items li.flagged { border-color: var(--warn); background: var(--warn-soft); }
+.photo-items small { grid-column: 1 / -1; font-size: 14px; color: var(--ink-2); }
+.pcard-times { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; font-size: 16px; }
+label.btn { cursor: pointer; }

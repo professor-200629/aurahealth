@@ -10,6 +10,10 @@ __pycache__/
 # Node / build output (rebuilt with: cd frontend; npm run build)
 node_modules/
 frontend/dist/
+frontend/dist-web/
+
+# Working file for scripts/build_prepared.py, so a stopped run can resume
+EVAL_RESULTS/prepared_work.json
 
 # Secrets, if any are ever added (use environment variables instead)
 .env

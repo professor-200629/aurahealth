@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { api } from '../api'
+import { api, WEB_DEMO } from '../api'
 import IN from '../../../packs/regions/IN.json'
-import { askFromPhone, crisisText, phoneAiReady } from '../aura'
-import { guideHints, isGeneralQuestion, localAnswer, redFlags } from '../chatlocal'
+import { askFromPhone, crisisText, phoneAiReady, readPhoto, shrinkPhoto } from '../aura'
+import { STEPS_FIRST, guideHints, isGeneralQuestion, localAnswer, redFlags } from '../chatlocal'
+import { medicineAnswer } from '../medicine'
+import { answersEnough, bestWhenAiFails, isSimple, preparedFor } from '../prepared'
 import { hasMoreThanReading, readingAnswer } from '../readings'
 import type { AuraAnswer, ChatAction } from '../chatlocal'
 import { PhoneAiKey } from '../components/PhoneAiKey'
@@ -23,6 +25,7 @@ interface Msg {
   text: string
   answer?: AuraAnswer
   phoneOnly?: boolean // saved details and crisis words: never sent to the AI service with a later question
+  photo?: string // a small copy of the photo the person sent, shown in the chat
 }
 
 // Kept while the app is open, so going to a guide and back keeps the conversation, and an answer that arrives
@@ -35,12 +38,15 @@ const listeners = new Set<() => void>()
 const publish = () => listeners.forEach((fn) => fn())
 
 // Home's ask box hands its question (or a request to start listening) to this screen.
-let pending: { text?: string; voice?: boolean } = {}
+let pending: { text?: string; voice?: boolean; photo?: File } = {}
 export const askOnOpen = (text: string) => {
   pending = { text }
 }
 export const listenOnOpen = () => {
   pending = { voice: true }
+}
+export const photoOnOpen = (photo: File) => {
+  pending = { photo }
 }
 
 export type ChatTarget = 'help' | 'meds' | 'guard' | 'family' | 'card'
@@ -57,6 +63,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
   const [shareNote, setShareNote] = useState('')
   const [thinking, setThinking] = useState('chat.thinking')
   const [waitingOnPerson, setWaitingOnPerson] = useState(false)
+  const [photoError, setPhotoError] = useState('')
   const latest = useRef({ readAloud })
   latest.current = { readAloud }
   // While the first status check is still loading, try the laptop anyway: a failed try falls back like any other.
@@ -95,7 +102,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     return () => window.removeEventListener('aura-ai-key', again)
   }, [])
 
-  const ask = async (question: string, spoken: boolean) => {
+  const ask = async (question: string, spoken: boolean, live = false) => {
     const q = question.trim().split(/\s+/).join(' ')
     if (!q) return
     const thisRound = round
@@ -108,30 +115,38 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
       }
     }
     const asked: Msg = { id: nextId++, role: 'user', text: q }
-    history = [...history, asked]
+    if (!live) history = [...history, asked]
     setText('')
-    const instant = onPhone(q)
+    const instant = live ? null : onPhone(q)
     if (instant) {
       // Saved details and crisis words stay on the phone, also when the next question goes to the AI.
       const stay = instant.crisis || instant.kind === 'app'
       if (stay) asked.phoneOnly = true
-      say(instant, !!stay)
+      say(instant.kind === 'medicine' && aiReady ? { ...instant, askAbout: q } : instant, !!stay)
       publish()
       if (instant.kind !== 'reading' || instant.action === 'call_emergency' || !hasMoreThanReading(q)) return
     }
     const convo = history
     // Everyday symptoms ("fever", "dizzy"): the guide's first steps at once; the AI adds to them when it can.
-    const hints = guideHints(q)
-    if (hints.length) say({ text: emergencyText(hints, t), guides: hints, action: 'none', source: 'phone' })
+    const hints = live ? [] : guideHints(q)
     const people = convo.filter((m) => m.role === 'user' && !m.phoneOnly).map((m) => m.text)
     const direct = retrieve(q)
+    // An answer written in advance opens at once. A short question stops there, with a live answer one tap away; a question
+    // with personal details also goes to the AI, which adds to it when it can.
+    const ready = instant || live || hints.some((g) => STEPS_FIRST.includes(g)) ? null : preparedFor(direct, isGeneralQuestion(q), q)
+    if (ready) {
+      const aboutPerson = !isGeneralQuestion(q) && !isSimple(q) && ready.action !== 'call_emergency'
+      say({ ...ready, guides: [...new Set([...ready.guides, ...hints])].slice(0, 2), askAbout: aiReady ? q : undefined, softCall: aboutPerson })
+      publish()
+      if ((isSimple(q) && answersEnough(q, ready)) || !aiReady) return
+    } else if (hints.length) say({ text: emergencyText(hints, t), guides: hints, action: 'none', source: 'phone' })
     const evidence = direct.length ? direct : people.length > 1 ? retrieve(people.slice(-2).join(' ')) : []
     // MedlinePlus's own words, from the phone: while the AI is slow for a general question, and if the AI cannot answer.
     // Someone describing what is happening to a person gets them only with a way to call, never a topic's cheerful opening.
     const general = isGeneralQuestion(q)
     let factsShown = false
     const showFacts = () => {
-      if (factsShown || hints.length || instant || !direct.length || thisRound !== round) return
+      if (factsShown || hints.length || instant || ready || !direct.length || thisRound !== round) return
       const facts = factsAnswer(direct[0], q, general)
       if (!facts) return
       factsShown = true
@@ -149,13 +164,39 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     window.clearTimeout(early)
     if (thisRound !== round) return // the conversation was cleared while this was waiting
     waiting = Math.max(0, waiting - 1)
-    if (answer.source === 'ai' || answer.crisis) say({ ...answer, guides: answer.guides.filter((g) => !hints.includes(g)) })
-    else {
-      showFacts()
-      // The word rules miss many emergencies, so someone describing a person always gets a way to call when the AI fails.
-      if (!hints.length && !instant) say(factsShown ? { ...answer, action: 'none' } : { ...answer, softCall: !general })
+    if (answer.source === 'ai' || answer.crisis) say({ ...answer, forYou: !!ready || live, guides: answer.guides.filter((g) => !hints.includes(g) && !ready?.guides.includes(g)) })
+    else if (ready) {
+      // The prepared answer is already there, so the AI's failure needs no bubble of its own.
+    } else {
+      // The word rules miss many emergencies, so someone describing a person gets what the app has for the closest topic and a way to call.
+      const closest = general || live || instant || hints.length ? null : bestWhenAiFails(direct, q)
+      if (closest) say({ ...closest, softCall: closest.action !== 'call_emergency' })
+      else showFacts()
+      if (!hints.length && !instant) say(factsShown || closest ? { ...answer, action: 'none' } : { ...answer, softCall: !general })
     }
     publish()
+  }
+
+  /** Read a photo of a report or medicine with Muse Glimmer, from the phone. The photo and its reading stay out of later questions. */
+  const askPhoto = async (file: File) => {
+    const thisRound = round
+    setPhotoError('')
+    try {
+      const base64 = await shrinkPhoto(file)
+      history = [...history, { id: nextId++, role: 'user', text: t('chat.photoSent'), photo: `data:image/jpeg;base64,${base64}`, phoneOnly: true }]
+      waiting++
+      setThinking('chat.photoReading')
+      setWaitingOnPerson(false)
+      publish()
+      const r = await readPhoto(base64)
+      if (thisRound !== round) return
+      waiting = Math.max(0, waiting - 1)
+      if ('answer' in r) history = [...history, { id: nextId++, role: 'aura', text: r.answer.text, answer: r.answer, phoneOnly: true }]
+      else setPhotoError(t(r.error === 'timeout' ? 'chat.aiSlow' : r.error === 'network' ? 'chat.noInternet' : 'chat.aiFailed'))
+      publish()
+    } catch {
+      setPhotoError(t('chat.photoBad'))
+    }
   }
 
   const factsAnswer = (e: Evidence, q: string, general: boolean): AuraAnswer | null => {
@@ -170,7 +211,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     // Emergency words get the phone's own answer at once (call button + guide): waiting ~10 s for the AI costs time.
     const flags = redFlags(q)
     if (flags.found) return { text: emergencyText(flags.guides, t), guides: flags.guides, action: 'call_emergency', source: 'phone' }
-    const reading = readingAnswer(q)
+    const reading = readingAnswer(q) ?? medicineAnswer(q)
     if (reading) return reading
     const local = localAnswer(q, household, loadDoses(), t)
     return local && { ...local, kind: 'app' }
@@ -213,16 +254,20 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
       : phoneError === 'timeout' ? 'chat.aiSlow'
       : phoneError ? 'chat.noInternet'
       : aiReady ? 'chat.aiFailed'
+      : WEB_DEMO ? 'web.noAi'
       : 'chat.offline'
     return { text: t(why), guides: [], action: 'open_help', source: 'phone' }
   }
 
   const askRef = useRef(ask)
   askRef.current = ask
+  const photoRef = useRef(askPhoto)
+  photoRef.current = askPhoto
   useEffect(() => {
     const open = pending
     pending = {}
-    if (open.text) void askRef.current(open.text, false)
+    if (open.photo) void photoRef.current(open.photo)
+    else if (open.text) void askRef.current(open.text, false)
     else if (open.voice && native()?.startVoice) native()!.startVoice!()
   }, [])
   useEffect(
@@ -285,7 +330,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
         <span>{t('chat.readAloud')}</span>
       </label>
       <p className="tiny muted" style={{ margin: 0 }}>
-        {phoneAi ? t('chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
+        {WEB_DEMO ? t('web.chatNote') : phoneAi ? t('chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
       </p>
       <PhoneAiKey />
       {msgs.length > 0 && (
@@ -322,10 +367,11 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
                 <Icon name="phone" /> {t('emergency.short')}
               </a>
             )}
+            {m.photo && <img className="chat-photo" src={m.photo} alt={t('chat.photoSent')} />}
             {m.answer ? <AnswerBody answer={m.answer} /> : <p>{m.text}</p>}
-            {m.answer && <AnswerActions answer={m.answer} onGuide={onGuide} onAct={act} />}
+            {m.answer && <AnswerActions answer={m.answer} onGuide={onGuide} onAct={act} onMore={(q) => void ask(q, false, true)} />}
             {m.answer && <AnswerMore answer={m.answer} />}
-            {m.answer && <span className="bubble-source">{m.answer.facts ? t('chat.sourceFacts') : m.answer.source === 'ai' ? t('chat.sourceAi') : t('chat.sourcePhone')}</span>}
+            {m.answer && <span className="bubble-source">{m.answer.prepared ? t('chat.sourcePrepared') : m.answer.facts ? t('chat.sourceFacts') : m.answer.source === 'ai' ? t('chat.sourceAi') : t('chat.sourcePhone')}</span>}
           </div>
         ))}
         {busy && (
@@ -339,6 +385,11 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
           </div>
         )}
       </div>
+      {photoError && (
+        <p className="small" role="alert" style={{ margin: 0 }}>
+          {photoError}
+        </p>
+      )}
       {shareNote && (
         <p className="small" role="status" style={{ margin: 0 }}>
           {shareNote}
@@ -409,7 +460,27 @@ function AnswerBody({ answer }: { answer: AuraAnswer }) {
   const { t } = useUi()
   return (
     <div className="answer">
+      {answer.forYou && <p className="answer-label">{t('chat.forYou')}</p>}
       <p className="answer-lead">{answer.text}</p>
+      {!!answer.items?.length && (
+        <>
+          <ul className="photo-items" data-testid="photo-items">
+            {answer.items.map((row, i) => (
+              <li key={i} className={row.flag === 'high' || row.flag === 'low' ? 'flagged' : ''}>
+                <span>{row.name}</span>
+                <b>{row.value}</b>
+                {(row.range || row.flag === 'high' || row.flag === 'low') && (
+                  <small>
+                    {row.flag === 'high' ? t('chat.flagHigh') : row.flag === 'low' ? t('chat.flagLow') : ''} {row.range}
+                  </small>
+                )}
+                {row.meaning && <small>{row.meaning}</small>}
+              </li>
+            ))}
+          </ul>
+          <p className="tiny muted">{t('chat.photoCheck')}</p>
+        </>
+      )}
       {answer.nextStep && (
         <p className="answer-next">
           <strong>{t('chat.nextStep')}</strong> {answer.nextStep}
@@ -454,7 +525,7 @@ function AnswerMore({ answer }: { answer: AuraAnswer }) {
   )
 }
 
-function AnswerActions({ answer, onGuide, onAct }: { answer: AuraAnswer; onGuide: (id: string) => void; onAct: (a: ChatAction) => void }) {
+function AnswerActions({ answer, onGuide, onAct, onMore }: { answer: AuraAnswer; onGuide: (id: string) => void; onAct: (a: ChatAction) => void; onMore: (q: string) => void }) {
   const { t } = useUi()
   const [household] = useHousehold()
   const key = ACTION_KEYS[answer.action]
@@ -463,7 +534,7 @@ function AnswerActions({ answer, onGuide, onAct }: { answer: AuraAnswer; onGuide
   const cards = answer.action === 'call_emergency'
     ? household.people.filter((p) => p.name.trim()).sort((a, b) => Number(b.id === main?.id) - Number(a.id === main?.id)).slice(0, 3)
     : []
-  if (!answer.crisis && !answer.softCall && !cards.length && !answer.guides.length && !key) return null
+  if (!answer.crisis && !answer.softCall && !cards.length && !answer.guides.length && !key && !answer.askAbout) return null
   return (
     <div className="bubble-actions">
       {answer.softCall && (
@@ -485,6 +556,11 @@ function AnswerActions({ answer, onGuide, onAct }: { answer: AuraAnswer; onGuide
       {key && (
         <button className="btn secondary" onClick={() => onAct(answer.action)} data-testid={`chat-act-${answer.action}`}>
           {t(key)}
+        </button>
+      )}
+      {answer.askAbout && (
+        <button className="btn secondary" onClick={() => onMore(answer.askAbout as string)} data-testid="chat-more">
+          <Icon name="chat" /> {t('chat.askMore')}
         </button>
       )}
       {cards.map((card) => (

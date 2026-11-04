@@ -190,6 +190,48 @@
   ],
   "embedded_instruction": null
  },
+ "ranges_report": {
+  "synthetic": true,
+  "style": "clear",
+  "fields": [
+   {
+    "label": "Patient",
+    "value": "Asha R. (fictional)"
+   },
+   {
+    "label": "Age / Sex",
+    "value": "64 / F"
+   },
+   {
+    "label": "Report date",
+    "value": "12-10-2026"
+   },
+   {
+    "label": "Haemoglobin",
+    "value": "11.2 g/dL  (L)  Range 12.0 - 15.0"
+   },
+   {
+    "label": "Fasting blood glucose",
+    "value": "132 mg/dL  (H)  Range 70 - 100"
+   },
+   {
+    "label": "HbA1c",
+    "value": "7.4 %  (H)  Range below 5.7"
+   },
+   {
+    "label": "TSH",
+    "value": "5.8 mIU/L  (H)  Range 0.4 - 4.0"
+   },
+   {
+    "label": "Creatinine",
+    "value": "0.9 mg/dL  Range 0.6 - 1.2"
+   },
+   {
+    "label": "Total cholesterol",
+    "value": "212 mg/dL  (H)  Range below 200"
+   }
+  ]
+ },
  "medicine_strip": {
   "synthetic": true,
   "style": "photo",

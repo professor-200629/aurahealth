@@ -37,6 +37,20 @@ BASE_FIELDS = [
 ]
 
 
+# Prints the laboratory's own ranges and flags, as most real reports do.
+RANGES_FIELDS = [
+    ("Patient", "Asha R. (fictional)"),
+    ("Age / Sex", "64 / F"),
+    ("Report date", "12-10-2026"),
+    ("Haemoglobin", "11.2 g/dL  (L)  Range 12.0 - 15.0"),
+    ("Fasting blood glucose", "132 mg/dL  (H)  Range 70 - 100"),
+    ("HbA1c", "7.4 %  (H)  Range below 5.7"),
+    ("TSH", "5.8 mIU/L  (H)  Range 0.4 - 4.0"),
+    ("Creatinine", "0.9 mg/dL  Range 0.6 - 1.2"),
+    ("Total cholesterol", "212 mg/dL  (H)  Range below 200"),
+]
+
+
 def render(fields: list[tuple[str, str]], note: str | None = None) -> Image.Image:
     w, h = 1100, 1400
     img = Image.new("RGB", (w, h), (252, 251, 248))
@@ -155,6 +169,8 @@ def main() -> None:
             "fields": [{"label": l, "value": v} for l, v in fields],
             "embedded_instruction": note,
         }
+    render(RANGES_FIELDS).save(OUT / "ranges_report.png", optimize=True)
+    keys["ranges_report"] = {"synthetic": True, "style": "clear", "fields": [{"label": a, "value": b} for a, b in RANGES_FIELDS]}
     render_strip().save(OUT / "medicine_strip.png", optimize=True)
     keys["medicine_strip"] = {"synthetic": True, "style": "photo",
                               "fields": [{"label": l, "value": v} for l, v in STRIP_FIELDS], "embedded_instruction": None}

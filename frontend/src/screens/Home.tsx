@@ -4,7 +4,9 @@ import { NearbyHelp } from '../components/NearbyHelp'
 import { clockOf, loadDoses, personName, today, useHousehold } from '../household'
 import { isNativeApp, native } from '../native'
 import { Icon, useUi } from '../ui'
-import { askOnOpen, listenOnOpen } from './Chat'
+import { WEB_DEMO } from '../api'
+import { phoneAiReady } from '../aura'
+import { askOnOpen, listenOnOpen, photoOnOpen } from './Chat'
 import { Moon } from './Guard'
 
 interface Props {
@@ -28,7 +30,7 @@ interface Props {
 
 export function Home(props: Props) {
   const { hasSession, busy, error, notice, guardOn, inApp, ownerName, onStart, onHelp, onGuard, onChat, onMeds, onFamily, onResume, onAbout, onProfile } = props
-  const { t, serverDown } = useUi()
+  const { t } = useUi()
   const [h] = useHousehold()
   const next = today(h, loadDoses()).find((d) => d.status === 'upcoming' || d.status === 'due' || d.status === 'scheduled')
   const hour = new Date().getHours()
@@ -100,9 +102,40 @@ export function Home(props: Props) {
             </button>
           )}
         </form>
+        <div className="chat-examples" style={{ marginTop: 0 }}>
+          {['home.ex1', 'home.ex2', 'home.ex3'].map((k) => (
+            <button
+              key={k}
+              className="chip-btn"
+              onClick={() => {
+                askOnOpen(t(k))
+                onChat()
+              }}
+              data-testid={`home-${k.slice(5)}`}
+            >
+              {t(k)}
+            </button>
+          ))}
+        </div>
         <p className="tiny muted" style={{ margin: 0 }}>
-          {t('home.askNote')}
+          {t(WEB_DEMO ? 'web.askNote' : 'home.askNote')}
         </p>
+        {phoneAiReady() && (
+          <label className="btn talk block" data-testid="home-photo">
+            <Icon name="doc" size={22} /> {t('home.photo')}
+            <input
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const file = e.target.files?.[0]
+                if (!file) return
+                photoOnOpen(file)
+                onChat()
+              }}
+            />
+          </label>
+        )}
         <button className="btn talk block" onClick={onHelp} data-testid="help-now">
           <HeartPulse /> {t('home.help')}
         </button>
@@ -146,12 +179,12 @@ export function Home(props: Props) {
           <span className="tile-title">{t('home.family')}</span>
           <span className="tile-sub">{t('home.familySub')}</span>
         </button>
-        <button className="tile" onClick={hasSession ? onResume : onStart} disabled={busy || serverDown} data-testid={hasSession ? 'tile-resume' : 'start'}>
+        <button className="tile" onClick={hasSession ? onResume : onStart} disabled={busy} data-testid={hasSession ? 'tile-resume' : 'start'}>
           <span className="tile-icon">
             <Icon name="doc" />
           </span>
           <span className="tile-title">{t('home.card')}</span>
-          <span className="tile-sub">{serverDown ? t('home.cardLaptop') : busy ? t('common.loading') : hasSession ? t('home.resume') : t('home.cardNote')}</span>
+          <span className="tile-sub">{busy ? t('common.loading') : hasSession ? t('home.resume') : t('home.cardNote')}</span>
         </button>
       </div>
       {hasSession && (

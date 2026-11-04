@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { JSX } from 'react'
-import { api } from './api'
+import { api, WEB_DEMO } from './api'
 import { clearPending, flush, pendingCount, setSessionListener } from './eventlog'
 import { GUIDES } from './guides'
 import { AlertOverlay } from './components/AlertOverlay'
@@ -19,6 +19,7 @@ import { Chat } from './screens/Chat'
 import type { ChatTarget } from './screens/Chat'
 import { Family } from './screens/Family'
 import { Meds } from './screens/Meds'
+import { PhoneCard } from './screens/PhoneCard'
 import { Profile } from './screens/Profile'
 import { DocumentStep } from './screens/DocumentStep'
 import { Guard } from './screens/Guard'
@@ -31,7 +32,7 @@ import type { StepProps } from './screens/Steps'
 import type { Health, Lang, Session } from './types'
 import { UiContext } from './ui'
 
-type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide' | 'guard' | 'family' | 'meds' | 'chat' | 'profile'
+type Screen = 'home' | 'who' | 'age' | 'what' | 'onset' | 'details' | 'doc' | 'review' | 'about' | 'help' | 'guide' | 'guard' | 'family' | 'meds' | 'chat' | 'profile' | 'phonecard'
 const FLOW: Screen[] = ['who', 'age', 'what', 'onset', 'details', 'doc', 'review']
 const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   who: Who,
@@ -41,7 +42,7 @@ const STEPS: Partial<Record<Screen, (p: StepProps) => JSX.Element>> = {
   details: Details,
   doc: DocumentStep,
 }
-const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help', 'guard', 'family', 'meds', 'chat', 'profile']
+const SCREENS: Screen[] = ['home', ...FLOW, 'about', 'help', 'guard', 'family', 'meds', 'chat', 'profile', 'phonecard']
 // Screens a notification may open (for example a medicine reminder opens "meds").
 const OPENABLE: Screen[] = ['meds', 'guard', 'family', 'chat', 'help']
 interface Route {
@@ -71,7 +72,7 @@ export default function App() {
     }
   })
   const [health, setHealth] = useState<Health | null>(null)
-  const [serverDown, setServerDown] = useState(false)
+  const [serverDown, setServerDown] = useState(WEB_DEMO)
   const [session, setSession] = useState<Session | null>(null)
   const [route, setRoute] = useState<Route>(fromHash)
   const screen = route.screen
@@ -211,6 +212,8 @@ export default function App() {
   }
 
   const start = async () => {
+    // With no laptop server, the record is built on the phone from its own time log.
+    if (serverDown) return go('phonecard')
     if (session && !window.confirm(t('home.replaceConfirm'))) return
     setBusy(true)
     setError('')
@@ -218,7 +221,7 @@ export default function App() {
       setSession((await api.newSession('IN', lang)).session)
       go('who')
     } catch {
-      setError(t('server.down'))
+      go('phonecard')
     } finally {
       setBusy(false)
     }
@@ -252,7 +255,12 @@ export default function App() {
       <TopBar onMenu={() => setMenuOpen(true)} onHome={() => go('home')} onProfile={() => go('profile')} initial={ownerName ? ownerName[0].toUpperCase() : ''} />
       <main className={wide ? 'wide' : ''}>
         {/* In the Android app everything that matters works without the laptop, so its absence is shown only in Settings. */}
-        {serverDown && !isNativeApp() && (
+        {WEB_DEMO && screen === 'home' && (
+          <div className="banner" style={{ marginBottom: 16 }} data-testid="web-demo">
+            {t('web.demo')}
+          </div>
+        )}
+        {serverDown && !isNativeApp() && !WEB_DEMO && (
           <div className="banner error" role="alert" style={{ marginBottom: 16 }} data-testid="server-down">
             {t('server.down')}
           </div>
@@ -281,6 +289,7 @@ export default function App() {
           <Step key={screen} session={session} onSaved={setSession} onNext={() => go(FLOW[flowIndex + 1])} onBack={() => go(flowIndex <= 0 ? 'home' : FLOW[flowIndex - 1])} />
         )}
         {screen === 'profile' && <Profile onGo={goTo} onLang={changeLang} />}
+        {screen === 'phonecard' && <PhoneCard onHelp={openHelp} />}
         {screen === 'review' && session && <Review session={session} onEdit={() => go('who')} onDeleted={deleted} />}
         {screen === 'about' && <About hasSession={!!session} onBack={() => go('home')} onDeleted={deleted} />}
         {screen === 'help' && <Help onPick={(id) => go('guide', id)} />}
@@ -305,7 +314,7 @@ export default function App() {
             guideId={route.guide}
             onGuide={(id) => go('guide', id)}
             onList={() => go('help')}
-            onCard={() => go('review')}
+            onCard={() => go(session ? 'review' : 'phonecard')}
           />
         )}
       </main>

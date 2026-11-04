@@ -43,6 +43,10 @@ Antibiotics|Drug Reactions|Over-the-Counter Medicines|Blood Thinners|Blood Press
 Peptic Ulcer|Appendicitis|Gallstones|Food Poisoning|Heat Illness|Animal Bites|Rabies|Cuts and Puncture Wounds|Burns|Fractures
 Sprains and Strains|Head Injuries|Nosebleeds|Eye Infections|Cataract|Tooth Disorders|Sepsis|Nutrition|Vitamin D|Vitamins|Iron
 Exercise and Physical Fitness|Obesity|Blood Count Tests|Laboratory Tests|Liver Function Tests|Kidney Tests|Urinalysis
+Acne|Hair Loss|Snoring|Edema|Pulse|Shoulder Injuries and Disorders|Foot Injuries and Disorders|Hand Injuries and Disorders|Hip Injuries and Disorders|Leg Injuries and Disorders
+Mouth Disorders|Canker Sores|Pink Eye|Urine and Urination|Bladder Diseases|Memory|Skin Infections|Boils|Warts|Sunburn|Insect Bites and Stings|Bedwetting|Nail Diseases|Tonsillitis
+Hearing Disorders|Tinnitus|Vision Problems|Glaucoma|Varicose Veins|Irritable Bowel Syndrome|Lactose Intolerance|Hernia|Prostate Diseases|Infertility|Premenstrual Syndrome|Uterine Fibroids
+Morning Sickness|Measles|Mumps|Meningitis|Swine Flu|Zika Virus|Sickle Cell Disease|Thalassemia|Tetanus|Vitamin B12|Water|Hydration|Weight Loss|Appetite|Sneezing|Numbness|Swelling|Bad Breath|Gum Disease|Foot Health|Corns and Calluses
 Vitamin B|Calcium|Chickenpox|Shingles|Fungal Infections|Scabies|Head Lice|Dry Mouth|Ear Infections|Sinusitis|Coronavirus Infections|Older Adults
 """.replace("\n", "|").split("|")
 

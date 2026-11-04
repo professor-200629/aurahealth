@@ -19,6 +19,14 @@ export type ChatAction =
   | 'open_family'
   | 'open_card'
 
+export interface PhotoItem {
+  name: string
+  value: string
+  range: string
+  flag: string
+  meaning: string
+}
+
 export type AnswerKind = 'education' | 'reading' | 'symptom' | 'medicine' | 'urgent' | 'app' | 'support'
 
 /** What Talk to Aura shows for one answer. `text` is always the direct answer; the rest is optional detail. */
@@ -36,6 +44,10 @@ export interface AuraAnswer {
   limits?: string[] // no_source: no approved source supports this answer
   facts?: boolean // words copied from the evidence pack, not written by AI
   softCall?: boolean // facts shown to someone describing a person: a plain way to call goes with them
+  prepared?: boolean // written in advance by the model (packs/knowledge/prepared_en.json), not about this person
+  askAbout?: string // the question, so that the person can ask the live AI about their own situation
+  forYou?: boolean // the live AI adding to a prepared answer
+  items?: PhotoItem[] // lines read from a photo of a report or medicine
   crisis?: boolean
 }
 
@@ -49,6 +61,7 @@ const RESOLVED = new RegExp(rules.resolved, 'i')
 const PAST = new RegExp(rules.past, 'i')
 const STILL = new RegExp(rules.still_now, 'i')
 const SEVERE = new RegExp(rules.severe, 'i')
+const NOT_NOW = new RegExp(rules.not_now, 'i')
 const NOT_BREATHING = /\b(not|stopped|stop|no longer)\s+breath|\bbreathing\s+(has\s+)?stopped/i
 const RED_FLAGS = rules.rules.map((r) => ({ pattern: new RegExp(r.pattern, 'gi'), guide: r.guide, minor: r.minor ? new RegExp(r.minor, 'i') : null }))
 
@@ -65,12 +78,23 @@ export function isGeneralQuestion(text: string): boolean {
   return GENERAL.test(t) && !PERSONAL.test(t)
 }
 
+/** A stroke years ago, a small burn, or a question about diet or a vaccine: not something needing a call right now. */
+export function notHappeningNow(text: string): boolean {
+  const t = normalize(text)
+  return RESOLVED.test(t) || (PAST.test(t) && !STILL.test(t)) || NOT_NOW.test(t)
+}
+
 // Words that point to a guide but are not an emergency by themselves: the AI answers (it can name warning signs),
 // with the guide attached; if the AI cannot answer, the guide's own first steps are shown.
 const HINTS: [RegExp, string][] = [
   [/\bfever\b|\bhigh temperature\b|\bbukhar\b/i, 'fever'],
   [/\bdizz(y|iness)\b|\blight-?headed\b/i, 'faint'],
+  [/^(?!.*\b(chapati|roti|rice|food|toast|milk|dal|calories|bread|dosa|fat|weight)\b).*(?<!heart )(?<!sun )\bburn(t|ed|s)?\b|\bscald\w*/i, 'burns'],
+  [/\b(bump\w*|hit|bang\w*|knock\w*)\b[^.?!]{0,20}\bhead\b|\bbump on (his|her|my|the) head\b/i, 'head_injury'],
 ]
+
+/** Injuries whose first-aid steps say more than a general answer about the topic. */
+export const STEPS_FIRST = ['burns', 'head_injury']
 
 export function guideHints(text: string): string[] {
   return HINTS.filter(([re]) => {

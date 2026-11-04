@@ -346,11 +346,12 @@
   "resolved": "\\b(gone|fine|okay|ok|better) now\\b|\\bwent away\\b|\\bnow (she|he) is (fine|okay|ok)\\b|\\bnow i am (fine|okay|ok)\\b",
   "past": "\\b(last|previous) (year|month|week|night|time)\\b|\\b\\w+ (years?|months?|weeks?) ago\\b|\\bin (19|20)\\d\\d\\b|\\bas a child\\b|\\bhistory of\\b|\\bwhen i was\\b|(?<!since )\\byesterday\\b|\\bsince \\d+ years\\b",
   "still_now": "\\b(right now|still|again|just now|currently|at the moment|is now|now he|now she|now i)\\b",
+  "not_now": "\\b(small|minor|tiny|mild|slight|slightly|lightly|a little|playing)\\b|\\b(diet|foods?|exercise|yoga|prevent\\w*|avoid|vaccin\\w*|booster|shots?|injections?|recover\\w*|risk|chances?)\\b|\\bcan (he|she|i|they|we|you)\\b[^.?!]{0,20}\\b(eat|drink|walk|swim|run|work|travel|play|drive|fly)\\b|\\b(good|safe|bad|ok|okay) (to|for)\\b|\\b(dog|cat|monkey|bat)\\b[^.?!]{0,20}\\b(bit|bite|bitten|scratch\\w*)\\b",
   "severe": "\\b(heavy|heavily|badly|lot|lots|won'?t stop|not stop\\w*|does not stop|pouring|spurting|gushing|pregnan\\w*)\\b",
   "rules": [
     {
       "guide": "check",
-      "pattern": "\\b(not|isn'?t|is not|stopped|stop|stops|no longer|hasn'?t been)\\s+(breathing|breathe|breath)\\b|\\bbreathing\\s+(has\\s+)?stopped\\b|\\bno breath(ing)?\\b|\\bno pulse\\b|\\b(heart|heartbeat)\\s+(has\\s+)?stopped\\b|\\bno heartbeat\\b|\\bcardiac arrest\\b|\\blifeless\\b|\\bunconscious|\\bnot conscious\\b|\\bnot (responding|answering|waking|getting up|moving)\\b|\\b(won'?t|will not|can'?t|cannot|can not|unable to|does not|doesn'?t|did not|didn'?t) (wake|answer me|respond|get up)\\b|\\bno response\\b|\\bunresponsive\\b|\\bcollaps(e|ed|es|ing)\\b|\\bfaint(ed|ing)\\b|\\bpass(ed|ing) out\\b|\\bblack(ed|ing) out\\b|\\bfell down (suddenly|and (is )?(not|can'?t|cannot|unable))|\\bsuddenly fell\\b|\\bdropped to the floor\\b|\\bslumped\\b|\\beyes (are )?not opening\\b|\\bdrown\\w*|\\belectric(al)? shock\\b|\\bcurrent (laga|kottindi)\\b|\\bfell in the (water|well|tank|pond|river)\\b"
+      "pattern": "\\b(not|isn'?t|is not|stopped|stop|stops|no longer|hasn'?t been)\\s+(breathing|breathe|breath)\\b|\\bbreathing\\s+(has\\s+)?stopped\\b|\\bno breath(ing)?\\b(?!\\s+(problem|trouble|difficulty|issue))|\\bno pulse\\b|\\b(heart|heartbeat)\\s+(has\\s+)?stopped\\b|\\bno heartbeat\\b|\\bcardiac arrest\\b|\\blifeless\\b|\\bunconscious|\\bnot conscious\\b|\\bnot (responding|answering|waking|getting up|moving)\\b|\\b(won'?t|will not|can'?t|cannot|can not|unable to|does not|doesn'?t|did not|didn'?t) (wake|answer me|respond|get up)\\b|\\bno response\\b|\\bunresponsive\\b|\\bcollaps(e|ed|es|ing)\\b|\\bfaint(ed|ing)\\b|\\bpass(ed|ing) out\\b|\\bblack(ed|ing) out\\b|\\bfell down (suddenly|and (is )?(not|can'?t|cannot|unable))|\\bsuddenly fell\\b|\\bdropped to the floor\\b|\\bslumped\\b|\\beyes (are )?not opening\\b|\\bdrown\\w*|\\belectric(al)? shock\\b|\\bcurrent (laga|kottindi)\\b|\\bfell in the (water|well|tank|pond|river)\\b"
     },
     {
       "guide": "choking",
@@ -399,11 +400,11 @@
     {
       "guide": "burns",
       "pattern": "(?<!heart )(?<!sun )\\bburn(t|ed|s)?\\b(?!\\s+(\\w+\\s+)?(calor\\w*|fat|rice|food|weight))|\\bscald\\w*|\\b(spilled|spilt|poured|fell)\\b[^.?!]{0,25}\\b(hot|boiling)\\b|\\bcaught fire\\b|\\bfire accident\\b|\\b(hot|boiling)\\b[^.?!]{0,15}\\b(fell|spilled|spilt|poured)\\b|\\bacid\\b[^.?!]{0,15}\\bfell\\b",
-      "minor": "\\b(chapati|roti|rice|food|toast|milk|dal|calories|bread|dosa|fat)\\b"
+      "minor": "\\b(chapati|roti|rice|food|toast|milk|dal|calories|bread|dosa|fat)\\b|^(?!.*\\b(face|chest|eyes?|neck|acid|electric\\w*|fire|large|big|whole|baby|infant|newborn)\\b).*(\\b(small|minor|tiny|slight)\\s+(burn\\w*|scald\\w*)\\b|\\bburn\\w*\\b[^.?!]{0,25}\\b(finger\\w*|fingertip)\\b|\\b(finger\\w*|fingertip)\\b[^.?!]{0,25}\\bburn\\w*)"
     },
     {
       "guide": "head_injury",
-      "pattern": "\\b(hit|bang\\w*|bump\\w*|knock\\w*|struck)\\b[^.?!]{0,20}\\bhead\\b(?!\\s+(nurse|of|doctor|teacher|office))|\\bhurt (his|her|my|the) head\\b|\\bhead (injury|wound)\\b|\\bfell\\b[^.?!]{0,40}\\bhead\\b|\\bfell (from|off)\\b[^.?!]{0,20}\\b(terrace|roof|stairs|height|bike|tree|building)\\b|\\bhead\\b[^.?!]{0,15}\\b(hit|injur\\w*|struck|bang\\w*)\\b|\\binjury on the head\\b"
+      "pattern": "\\b(hit|bang\\w*|bump\\w*|knock\\w*|struck)\\b[^.?!]{0,20}\\bhead\\b(?!\\s+(nurse|of|doctor|teacher|office))|\\bhurt (his|her|my|the) head\\b|\\bhead (injury|wound)\\b|\\bfell\\b[^.?!]{0,40}\\bhead\\b|\\bfell (from|off)\\b[^.?!]{0,20}\\b(terrace|roof|stairs|height|bike|tree|building)\\b|\\bhead\\b[^.?!]{0,15}\\b(hit|injur\\w*|struck|bang\\w*)\\b|\\binjury on the head\\b", "minor": "^(?!.*\\b(vomit\\w*|unconscious|passed out|knocked out|faint\\w*|drows\\w*|sleepy|confus\\w*|seizure|fits?|bleed\\w*|blood|not waking|terrace|roof|stairs|height|bike|accident)\\b).*\\b(small bump|small knock|light bump|little bump|minor|lightly|slightly|playing|is fine|seems fine|is okay|seems okay)\\b"
     },
     {
       "guide": "faint",
