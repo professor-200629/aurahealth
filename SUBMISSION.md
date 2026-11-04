@@ -46,7 +46,8 @@ On 60 synthetic questions, before and after my rebuild, refusals to explain fell
 I also tried to break it. The word rules that work without AI caught only 22 of 49 fresh emergency phrases, so a Call button stays in view while the AI thinks and whenever it fails. These are my own automatic checks on one phone, not clinical results. What has and has not been run is in QA_AND_EVALUATION.md.
 
 TRY IT
-No install and no key: https://professor-200629.github.io/aurahealth/ (this web demo has no live AI). The full app is the Android build in the repo.
+No install and no key: https://professor-200629.github.io/aurahealth/ (this web demo has no live AI).
+Android app: https://github.com/professor-200629/aurahealth/releases/latest/download/AuraHealth-prototype.apk (no key inside; live AI needs your own free NVIDIA key).
 ```
 
 ## Public GitHub Repository

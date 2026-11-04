@@ -22,6 +22,8 @@ helpers only suggest, and a person confirms. NVIDIA's free terms are for trials,
 
 **Try it with no install and no key:** [web demo](https://professor-200629.github.io/aurahealth/). It answers from what is built into the app (emergency words, readings, common medicine questions, prepared answers, first-aid guides) and sends nothing anywhere. Live AI, the photo reader, alarms, reminders and the night guard need the Android app.
 
+**Android app:** [download the APK](https://github.com/professor-200629/aurahealth/releases/latest/download/AuraHealth-prototype.apk) (a debug build with no key inside; install steps are in the [release](https://github.com/professor-200629/aurahealth/releases/latest)). Live answers and the photo reader need your own free NVIDIA key, saved in the chat screen.
+
 ## Why the first hour matters (sources)
 
 - Most cardiac arrests outside hospital happen at home: 68% in Ireland's 2024 registry
