@@ -85,7 +85,7 @@ A topic's "call now" answer now shows only when the message seems to be happenin
 
 ## Web demo (5 Nov)
 
-`npm run build:web`, served as plain files from a sub-folder with no server, in Edge at phone size, on the final build. 6 questions and 5 other screens: 0 console errors, and **no request called a server or left the page**. No live AI, photo reader, alarms, reminders or night guard there.
+`npm run build:web`, served as plain files from a sub-folder with no server, in Edge at phone size, on the final build. 6 questions and 5 other screens: 0 console errors, and **no request called a server or left the page**. No alarms, reminders or night guard there. That run had no judge code entered, so it covers the page with no live AI.
 
 ## Rules that run without the AI
 

@@ -47,8 +47,8 @@ On 60 synthetic questions, moving live answers from a free host to Muse Spark to
 I also tried to break it with 49 fresh emergency phrases never used for tuning. With no internet, word rules put Call 112 on top for only 22, and the others get a softer Call button. With live Muse Spark, 47 of 49 got Call 112, with 1 false alarm in 25 ordinary messages. These are my own automatic checks, not clinical results. What has and has not been run is in QA_AND_EVALUATION.md.
 
 TRY IT
-No install and no key: https://professor-200629.github.io/aurahealth/ (this web demo has no live AI).
-Android app: https://github.com/professor-200629/aurahealth/releases/latest/download/AuraHealth-prototype.apk (no key inside; live AI needs your own key).
+No install: https://professor-200629.github.io/aurahealth/ . For live AI, enter this code on its home screen: [JUDGE CODE]
+Android app: https://github.com/professor-200629/aurahealth/releases/latest/download/AuraHealth-prototype.apk (no key inside).
 ```
 
 ## Public GitHub Repository
@@ -72,7 +72,7 @@ I chose the version by testing. On 60 questions, Muse Spark 1.1 at low effort be
 scripts/build_prepared.py gives Muse Glimmer each MedlinePlus topic and keeps 371 answers for 207 topics. Each passes the same code checks as a live answer. They ship inside the app, so common questions open in under a second with no internet. Muse Glimmer ran on NVIDIA's hosted copy, because it does not fit my laptop. With an NVIDIA key instead of a Meta key, the app also uses it for live answers, which took 27 to 72 s on one phone.
 
 WHERE THE KEY STAYS
-The Meta key is saved only in the app's private storage on the phone. It is not in the repo or the public APK, so the public builds have no live AI unless you add your own key.
+The Meta key is saved in the app's private storage on my phone, and on a small Vercel server (live-server/) that lets judges try live AI from the web demo with a code. That server has fixed prompts, rate limits and a stop date. The key is not in the repo or the public APK.
 
 WHAT I DID NOT USE
 I did not use Muse Code. The code was written with an AI coding assistant (Claude Code), as the commit history shows.
@@ -102,6 +102,10 @@ Two fresh emergencies still got no Call 112: "there is blood in what she coughed
 ```text
 Baseten and Modal credits had closed when I asked, so I used the Meta Model API and NVIDIA's free host. I can't review those partners.
 ```
+
+## The judge code
+
+Replace `[JUDGE CODE]` above with the code yourself, in the form only. Do not put the code in this public file or in the video.
 
 ## Rating questions and the permission box
 

@@ -19,7 +19,7 @@ helpers only suggest, and a person confirms. NVIDIA's free terms are for trials,
 
 **Setup:** Android app. Live answers need a Meta Model API key or an NVIDIA key saved on the phone. A laptop server on the same Wi-Fi is needed only for the handoff card, guide finder and report reader.
 
-**Try it with no install and no key:** [web demo](https://professor-200629.github.io/aurahealth/). It answers from what is built into the app (emergency words, readings, common medicine questions, prepared answers, first-aid guides) and sends nothing anywhere. Live AI, the photo reader, alarms, reminders and the night guard need the Android app.
+**Try it with no install:** [web demo](https://professor-200629.github.io/aurahealth/). It answers from what is built into the app (emergency words, readings, common medicine questions, prepared answers, first-aid guides) and sends nothing anywhere. Judges can turn on live AI and the photo reader with the code from the submission form. Alarms, reminders and the night guard need the Android app.
 
 **Android app:** [download the APK](https://github.com/professor-200629/aurahealth/releases/latest/download/AuraHealth-prototype.apk) (a debug build with no key inside; install steps are in the [release](https://github.com/professor-200629/aurahealth/releases/latest)). Live answers and the photo reader need your own key, a Meta Model API key or a free NVIDIA key, saved in the chat screen.
 
@@ -302,7 +302,9 @@ EVAL_RESULTS/ JSON output of real measurement runs
 
 ## Web demo
 
-`cd frontend; npm run build:web` writes a plain page to `frontend/dist-web`, with no server and no key behind it (`VITE_WEB_DEMO`, `frontend/.env.webdemo`). In this mode the app makes no API calls, so what someone types stays in their browser. It is published on the `gh-pages` branch.
+`cd frontend; npm run build:web` writes a plain page to `frontend/dist-web`, with no key in it (`VITE_WEB_DEMO`, `frontend/.env.webdemo`). It is published on the `gh-pages` branch. With no code, the page makes no API calls, so what someone types stays in the browser.
+
+With the judge code, questions and photos go through a small Vercel function, [`live-server/`](live-server/README.md), to Muse Spark, and the answers get the same checks in the browser as on the phone. The function holds the key, with fixed prompts, short inputs, rate limits and a stop date of 10 Nov 2026. Only a hash of the code is in this repo.
 
 ## License
 

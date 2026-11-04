@@ -2,16 +2,16 @@
 //
 // What keeps the spending small, because the key has a real card behind it:
 // - a judge code is needed (only its hash is here; the code itself is given in the submission form)
-// - the system prompts are fixed in this server (prompts.json), so it cannot be used as a general AI service
+// - the system prompts are fixed (prompts.json at one commit), so it cannot be used as a general AI service
 // - short inputs, a capped answer, and rate limits below
 // - it stops by itself after the closing ceremony
 // The rate limits are kept in memory, so they apply to each running copy of this server. They are not a perfect hard cap.
-// Nothing a person types is logged or stored here, and "store: false" asks Meta not to keep the response.
+// Nothing a person types is logged or stored here, and store: false asks Meta not to keep the response.
 const crypto = require('crypto')
-const prompts = require('../prompts.json')
 
 const ORIGIN = 'https://professor-200629.github.io'
 const CODE_SHA256 = 'f470efd3e6a12d5839c34e5bdc902896787012c4ac17df2531d92b6f22f42937'
+const PROMPTS_URL = 'https://raw.githubusercontent.com/professor-200629/aurahealth/6b920d5/live-server/prompts.json'
 const STOP_AT = Date.UTC(2026, 10, 10) // 10 Nov 2026, the day after the closing ceremony
 const MODEL = 'muse-spark-1.1' // the choice measured in QA_AND_EVALUATION.md
 const MAX_USER = 9000
@@ -19,6 +19,15 @@ const MAX_IMAGE = 3500000 // characters of base64: the app shrinks photos well b
 const LIMITS = { ipPerMinute: 6, perMinute: 12, perHour: 120 }
 
 const recent = { all: [], ip: new Map() }
+let prompts = null
+
+async function getPrompts() {
+  if (prompts) return prompts
+  const resp = await fetch(PROMPTS_URL, { signal: AbortSignal.timeout(8000) })
+  if (!resp.ok) throw new Error('prompts')
+  prompts = await resp.json()
+  return prompts
+}
 
 function tooMany(ip, now) {
   recent.all = recent.all.filter((t) => now - t < 3600000)
@@ -69,16 +78,21 @@ module.exports = async function handler(req, res) {
   if (body.ping) return reply(200, { ok: true, ready: !!key })
   if (!key) return reply(503, { ok: false, error: 'not_configured' })
 
-  const system = prompts[body.kind]
   const user = typeof body.user === 'string' ? body.user : ''
   const image = typeof body.image === 'string' ? body.image : ''
-  if (!system || !user || user.length > MAX_USER || image.length > MAX_IMAGE || (image && body.kind !== 'photo')) {
+  if ((body.kind !== 'chat' && body.kind !== 'photo') || !user || user.length > MAX_USER || image.length > MAX_IMAGE || (image && body.kind !== 'photo')) {
     return reply(400, { ok: false, error: 'bad_request' })
   }
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown'
   const now = Date.now()
   if (tooMany(ip, now)) return reply(429, { ok: false, error: 'rate_limited' })
 
+  let system
+  try {
+    system = (await getPrompts())[body.kind]
+  } catch {
+    return reply(503, { ok: false, error: 'not_configured' })
+  }
   const parts = [{ type: 'input_text', text: user }]
   if (image) parts.push({ type: 'input_image', image_url: `data:image/jpeg;base64,${image}` })
   try {
