@@ -11,7 +11,7 @@ const crypto = require('crypto')
 
 const ORIGIN = 'https://professor-200629.github.io'
 const CODE_SHA256 = 'f470efd3e6a12d5839c34e5bdc902896787012c4ac17df2531d92b6f22f42937'
-const PROMPTS_URL = 'https://raw.githubusercontent.com/professor-200629/aurahealth/6b920d5/live-server/prompts.json'
+const PROMPTS_URL = 'https://raw.githubusercontent.com/professor-200629/aurahealth/53101b5/live-server/prompts.json'
 const STOP_AT = Date.UTC(2026, 10, 10) // 10 Nov 2026, the day after the closing ceremony
 const MODEL = 'muse-spark-1.1' // the choice measured in QA_AND_EVALUATION.md
 const MAX_USER = 9000
