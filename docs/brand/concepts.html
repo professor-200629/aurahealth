@@ -1,0 +1,54 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>AuraHealth icon concepts</title>
+<style>
+  body { margin: 0; padding: 24px; background: #fff; font: 15px system-ui, sans-serif; color: #12302e; }
+  .row { display: flex; align-items: center; gap: 18px; margin-bottom: 18px; }
+  .name { width: 150px; font-weight: 700; }
+  .icon { display: inline-block; overflow: hidden; flex: none; }
+  .circle { border-radius: 50%; }
+  .squircle { border-radius: 26%; }
+  .dark { background: #111; padding: 10px; border-radius: 12px; display: flex; gap: 12px; align-items: center; }
+  .mono svg { filter: none; }
+</style>
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <symbol id="a" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#0f5c56" />
+      <path d="M33 75 L54 31 L75 75" fill="none" stroke="#fffdf9" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="54" cy="66" r="7.5" fill="#f4b740" />
+    </symbol>
+    <symbol id="b" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#0f5c56" />
+      <path d="M72 58 A19 19 0 1 0 72 50 M72 34 V76" fill="none" stroke="#fffdf9" stroke-width="10" stroke-linecap="round" />
+      <circle cx="53" cy="54" r="6.5" fill="#f4b740" />
+    </symbol>
+    <symbol id="c" viewBox="0 0 108 108">
+      <rect width="108" height="108" fill="#0f5c56" />
+      <path d="M31 76 C34 56 42 41 54 29 C66 41 74 56 77 76" fill="none" stroke="#fffdf9" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="54" cy="64" r="8" fill="#f4b740" />
+    </symbol>
+    <symbol id="a-mono" viewBox="0 0 108 108">
+      <path d="M33 75 L54 31 L75 75" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="54" cy="66" r="7.5" fill="#fff" />
+    </symbol>
+    <symbol id="c-mono" viewBox="0 0 108 108">
+      <path d="M31 76 C34 56 42 41 54 29 C66 41 74 56 77 76" fill="none" stroke="#fff" stroke-width="10.5" stroke-linecap="round" stroke-linejoin="round" />
+      <circle cx="54" cy="64" r="8" fill="#fff" />
+    </symbol>
+  </defs>
+</svg>
+<div id="out"></div>
+<script>
+  const sizes = [120, 72, 48, 32, 24, 16]
+  const names = { a: 'A: Shelter', b: 'B: Open a', c: 'C: Sheltering arch' }
+  const icon = (id, s, shape) => `<span class="icon ${shape}" style="width:${s}px;height:${s}px"><svg width="${s}" height="${s}"><use href="#${id}"/></svg></span>`
+  let html = ''
+  for (const id of ['a', 'b', 'c']) {
+    html += `<div class="row"><span class="name">${names[id]}</span>` + sizes.map((s) => icon(id, s, 'circle')).join('') + sizes.slice(0, 3).map((s) => icon(id, s, 'squircle')).join('') + `<span class="dark">` + sizes.slice(1, 4).map((s) => icon(id, s, 'circle')).join('') + `</span></div>`
+  }
+  for (const id of ['a-mono', 'c-mono']) {
+    html += `<div class="row"><span class="name">${id}</span><span class="dark">` + [72, 48, 24, 16].map((s) => `<svg width="${s}" height="${s}"><use href="#${id}"/></svg>`).join('') + `</span></div>`
+  }
+  document.getElementById('out').innerHTML = html
+</script>

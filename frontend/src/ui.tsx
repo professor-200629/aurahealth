@@ -156,12 +156,13 @@ export function Icon({ name, size = 20 }: { name: keyof typeof PATHS; size?: num
   )
 }
 
+/** The AuraHealth mark: an arch that shelters a person, and also an A. See docs/brand/BRAND.md. */
 export function Logo() {
   return (
-    <svg className="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r="30" fill="#e3f0ee" />
-      <circle cx="32" cy="32" r="20" fill="none" stroke="#1f6f68" strokeWidth="5" />
-      <circle cx="32" cy="32" r="7" fill="#1f6f68" />
+    <svg className="brand-mark" viewBox="0 0 108 108" aria-hidden="true">
+      <rect width="108" height="108" rx="28" fill="#0f5c56" />
+      <path d="M31 76C34 56 42 41 54 29C66 41 74 56 77 76" fill="none" stroke="#fffdf9" strokeWidth="10.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="54" cy="64" r="8" fill="#f4b740" />
     </svg>
   )
 }

@@ -63,7 +63,13 @@ const lastCheckin = (s: Session | null) => {
 }
 
 export default function App() {
-  const [lang, setLang] = useState<Lang>('en')
+  const [lang, setLang] = useState<Lang>(() => {
+    try {
+      return localStorage.getItem('aura-lang') === 'te' ? 'te' : 'en'
+    } catch {
+      return 'en'
+    }
+  })
   const [health, setHealth] = useState<Health | null>(null)
   const [serverDown, setServerDown] = useState(false)
   const [session, setSession] = useState<Session | null>(null)
@@ -196,6 +202,11 @@ export default function App() {
 
   const changeLang = async (l: Lang) => {
     setLang(l)
+    try {
+      localStorage.setItem('aura-lang', l)
+    } catch {
+      /* the language still applies until the app closes */
+    }
     if (session) api.patchSession({ language: l }).then((r) => setSession(r.session), () => undefined)
   }
 
@@ -298,7 +309,14 @@ export default function App() {
           />
         )}
       </main>
-      <BottomNav active={tab} onTab={goTo} onSos={() => setSosOpen(true)} />
+      <BottomNav
+        active={tab}
+        onTab={(next) => {
+          setSosOpen(false)
+          goTo(next)
+        }}
+        onSos={() => setSosOpen(true)}
+      />
       {menuOpen && <Drawer name={ownerName} onGo={goTo} onClose={() => setMenuOpen(false)} onLang={changeLang} />}
       {sosOpen && <SosSheet onClose={() => setSosOpen(false)} onHelp={openHelp} />}
       <AlertOverlay onHelp={openHelp} />

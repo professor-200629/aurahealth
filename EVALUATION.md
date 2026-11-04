@@ -1,6 +1,6 @@
 # Evaluation
 
-Everything below was run on the developer laptop on **29 October 2026**. Numbers come from real runs; the raw
+Results up to 2 November 2026, mostly on earlier versions; each section gives its date. The current answer results are in `QA_AND_EVALUATION.md`. Numbers come from real runs; the raw
 output is in `EVAL_RESULTS/`. Anything not run is listed under **Not tested**. Nothing here is a clinical,
 safety or usability validation.
 

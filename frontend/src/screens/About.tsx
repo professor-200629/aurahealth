@@ -26,14 +26,9 @@ export function About({ hasSession, onBack, onDeleted }: { hasSession: boolean; 
 
       <section className="card flat">
         <h2>{t('about.models')}</h2>
-        <ul style={{ paddingLeft: 20, margin: 0 }}>
-          <li>
-            {t('status.textHelper')} — <code>{health?.models.text_model ?? 'llama3.2:3b'}</code>: {health?.models.text ? t('status.ready') : t('status.missing')}
-          </li>
-          <li>
-            {t('status.reader')} — <code>{health?.models.vision_model ?? 'llama3.2-vision:11b'}</code>: {health?.models.vision ? t('status.ready') : t('status.missing')}
-          </li>
-        </ul>
+        <p className="small" style={{ margin: 0 }}>
+          {t('about.aiModel')}
+        </p>
         <p className="small muted" style={{ marginTop: 10 }}>
           {t('status.offlineNote')}
         </p>

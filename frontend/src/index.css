@@ -8,6 +8,9 @@
   --muted: #5d6e6c;
   --line: #e4dfd5;
   --line-2: #d6d0c4;
+  --control-line: #84897f; /* at least 3:1 against the page and the card */
+  --brand: #0f5c56;
+  --brand-light: #f4b740;
   --accent: #1f6f68;
   --accent-ink: #ffffff;
   --accent-soft: #e3f0ee;
@@ -27,7 +30,7 @@
 }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: 80px; scroll-padding-bottom: 96px; }
 body {
   margin: 0;
   background: var(--bg);
@@ -41,6 +44,30 @@ button, input, textarea, select { font: inherit; color: inherit; }
 a { color: var(--accent); }
 :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- an answer reads as one short page, not a stack of cards ---------- */
+.answer p { margin: 0; }
+.answer > * + * { margin-top: 10px; }
+.answer-lead { font-size: 18px; line-height: 1.5; }
+.answer-next { background: var(--accent-soft); border-radius: var(--radius-sm); padding: 10px 12px; }
+.answer-next strong { color: var(--accent); }
+.answer-urgent { border-left: 3px solid var(--sos); padding-left: 10px; font-size: 16px; }
+.answer-urgent strong { color: var(--sos); }
+.answer-follow { font-weight: 650; }
+.answer-more { margin-top: 10px; font-size: 16px; }
+.answer-more summary { cursor: pointer; color: var(--accent); font-weight: 650; min-height: 48px; display: flex; align-items: center; gap: 6px; list-style: none; }
+.answer-more summary::-webkit-details-marker { display: none; }
+.answer-more summary::after { content: "▾"; }
+.answer-more[open] summary::after { content: "▴"; }
+.answer-call { margin-bottom: 10px; }
+.bubble { overflow-wrap: anywhere; }
+.answer-more p { margin: 6px 0; }
+.answer-sources { list-style: none; margin: 6px 0; padding: 0; display: grid; gap: 8px; }
+.answer-sources li { display: grid; }
+.answer-sources a { font-weight: 650; }
+.ask-box { display: flex; align-items: flex-end; gap: 8px; }
+.ask-box textarea.input { flex: 1; min-width: 0; min-height: 56px; resize: none; }
+.ask-box .btn { flex: none; width: 56px; height: 56px; min-height: 56px; padding: 0; }
 
 /* ---------- top bar with the always-visible emergency control ---------- */
 .topbar {
@@ -84,8 +111,8 @@ main { max-width: 760px; margin: 0 auto; padding: 20px 16px 120px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; box-shadow: var(--shadow); }
 .card.flat { box-shadow: none; }
 .muted { color: var(--muted); }
-.small { font-size: 15px; }
-.tiny { font-size: 13px; }
+.small { font-size: 16px; }
+.tiny { font-size: 14px; }
 h1 { font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; margin: 6px 0 8px; }
 h2 { font-size: 21px; margin: 0 0 8px; letter-spacing: -0.01em; }
 h3 { font-size: 17px; margin: 0 0 6px; }
@@ -173,8 +200,8 @@ textarea.input.finder-input { min-height: 88px; }
 .choice[aria-checked="true"] .radio::after { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
 .choice.unknown { border-style: dashed; color: var(--ink-2); }
 label.field { display: block; font-weight: 650; font-size: 16px; margin: 14px 0 6px; }
-input.input, textarea.input {
-  width: 100%; border: 2px solid var(--line-2); border-radius: 12px; padding: 12px 14px; background: var(--card); font-size: 18px;
+input.input, textarea.input, select.input {
+  width: 100%; border: 1.5px solid var(--control-line); border-radius: 12px; padding: 12px 14px; background: var(--card); font-size: 18px;
 }
 textarea.input { min-height: 140px; resize: vertical; }
 input.input:focus, textarea.input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(31, 111, 104, 0.18); }
@@ -449,3 +476,11 @@ main { padding-bottom: calc(var(--nav-h) + 40px + env(safe-area-inset-bottom)); 
 /* SOS stays reachable above any open sheet; sheets leave room for the bottom bar. */
 .bottom-nav { z-index: 45; }
 .sheet { padding-bottom: calc(var(--nav-h) + 20px + env(safe-area-inset-bottom)); }
+
+/* Controls and screens that must work with large text and long translations */
+select.input { min-height: 52px; }
+.alert-overlay { overflow-y: auto; }
+.nav-row { flex-wrap: wrap; }
+.btn svg { flex: none; }
+.bottom-nav > * { min-width: 0; }
+.nav-item span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

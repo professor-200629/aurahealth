@@ -1,78 +1,87 @@
 # Submission draft (Meta Global AI Developer Hackathon, indie track)
 
-Deadline: **4 Nov 2026, 9:00 PM EST = 5 Nov 2026, 07:30 IST.** Draft text below; check every claim against
+Deadline: **4 Nov 2026, 9:00 PM EST = 5 Nov 2026, 07:30 IST.** Check every claim against `QA_AND_EVALUATION.md` and
 `EVALUATION.md` before pasting. Replace the `[…]` parts yourself.
 
 ## Name
 
-AuraHealth: the Offline Emergency Bridge
+AuraHealth
 
 ## One line
 
-An offline phone + laptop assistant, powered by local Meta Llama models, that turns a panicked description into
-an honest, source-labelled handoff card for emergency services, without diagnosing anything.
+A free Android app that helps families understand health information, act in the first minutes of an emergency and look after each
+other at home, using Meta's open Muse Glimmer model, with the emergency path working without AI or internet.
 
 ## The problem
 
-When someone collapses or falls next to you, you must explain what happened to a stranger on the phone, under
-stress. People forget details, guess, or repeat advice from an app. In many places the internet is weak or
-absent exactly when it matters, and cloud AI is not an option.
+When someone collapses or falls at home, the nearest person is often untrained, alone and scared. On ordinary days, families get a
+report, a number or a symptom and have nobody to explain it. Most apps either answer vaguely or sound more certain than they should.
 
 ## What it does
 
-- A **Call 112** button is visible on every screen. It opens the dialer; it never calls by itself.
-- Short questions with "I don't know". Unknown stays unknown on the card.
-- **Llama 3.2 3B** (local, via Ollama) splits the person's own words into points. Code checks every point is
-  their exact words, and keeps any words the model left out.
-- **Llama 3.2 Vision 11B** (local, optional) reads a photo of a report and only *proposes* fields; the person
-  confirms or corrects each one next to the image. [Only if measured: "On my laptop it took … per report and read
-  … of … fields correctly on 5 synthetic reports."]
-- The handoff card shows where every line came from (*you said*, *your words split by the helper*, *from report,
-  you confirmed / corrected*) with a tap-to-see evidence view.
-- It always says "AuraHealth can't assess this situation": no diagnosis, no triage, no "safe to wait".
-- Data stays on the laptop; one tap deletes it. No accounts, no analytics.
+- **Ask anything, in everyday words.** "His HbA1c is 7.5", "loose motions since yesterday". Aura answers directly, then gives the next
+  step, the warning signs, its reasons and sources you can open.
+- **Answers that work without AI.** Emergency words, readings (temperature, BP, sugar, oxygen) and first-aid steps are answered on the
+  phone at once. If the AI is slow or down, it shows MedlinePlus's own words from the phone and says so.
+- **SOS on every screen.** It opens Call 112, location sharing and the health card to read aloud. It takes a second tap, so a pocket press
+  calls nobody, and the app never calls 112 by itself.
+- **17 first-aid guides** adapted from the Red Cross (IFRC 2020) and read aloud step by step.
+- **Medicine reminders** that text a chosen guardian if a dose is not marked taken.
+- **Night guard (optional).** Knock three times: if nobody taps "I'm OK", it phones and texts the people you chose.
+- **Handoff card** with a timed record for the doctor or the ambulance crew (needs the optional laptop server).
 
 ## How we built it
 
-React + TypeScript phone web app served by a FastAPI server on the laptop. Ollama runs the Meta models locally.
-A deterministic builder (no model) makes the card. Safety rules are enforced in code and covered by 19 API tests
-and 3 browser tests (all passing): the emergency control is reachable on every screen, all requests stay on the
-laptop, invented "split" points are rejected, model readings cannot be overwritten, embedded instructions are
-flagged and change nothing. A full run on a real Android phone (Samsung Galaxy A36, Chrome) found three problems,
-all fixed: pairing links opened from other apps failed, the keyboard pushed the call button off screen, and one
-question was misread.
+Android (Java WebView), React + TypeScript, with a FastAPI server for the optional laptop features (handoff card, guide finder, report reader). With an
+NVIDIA API key saved in the app, the phone calls Muse Glimmer directly. Every AI answer goes through code checks before it is shown: only sources it really
+retrieved, sentences with medicine amounts, directions to start or stop a medicine, reassurance or a stated diagnosis removed, and Call 112 forced on
+emergency words. Fixed answers and MedlinePlus's own sentences are shown as written. The checks are word patterns and they can miss things.
+Sources come from a bundled pack of 156 MedlinePlus topic summaries, plus everyday Indian English, Hindi and Telugu words.
 
 ## Meta tools used
 
-- Llama 3.2 3B (open weights) — text helper, measured on a laptop CPU: 1.7–5.5 s per description (8 cases).
-- Llama 3.2 Vision 11B (open weights) — report reader. [Measured: … / Not measured yet: say so.]
+**Meta Muse Glimmer 30B** (open weights, Apache 2.0), hosted by NVIDIA, for Talk to Aura, the guide finder and the report reader.
+
+## Evidence
+
+On 60 synthetic questions, same model, before and after the rebuild: refusals to explain fell from 6 to 0, answers with a source rose from 0 to 38 of 55, and no urgent
+question that was answered missed its Call 112. Answers got slower (median 19 s to 35 s) and 5 of 60 timed out on the free API. The scores are automatic word checks written
+by us, and longer answers score higher partly for being longer.
+
+The word rules that work without AI caught 220 of 221 plain-English phrases they were tuned on, but only **22 of 49 fresh phrases**. So they are not the only safety net: the
+AI is also told to escalate, SOS is on every screen, and a Call button shows while the AI is thinking and whenever it fails.
+
+On one phone (Galaxy A36), real AI answers took 27 to 72 s. With Airplane mode on, emergency answers, readings, SOS and the first-aid guides kept working, and a message the
+rules missed got a Call button but no first-aid steps.
+
+No clinician or real user has judged any of this. See `QA_AND_EVALUATION.md`.
 
 ## Challenges
 
-- Making a model useful without letting it decide anything: every model output is a proposal checked by code.
-- Measuring honestly: our own test found the 3B model silently dropped a sentence ("I don't know her
-  temperature"); we changed the server so the user's words can never be lost.
-- No reusable medical guidance source with suitable terms, so we show an honest "can't assess" instead.
+- Comparing with another health app showed our answers felt less useful. The first version was vague: its rules forced three short sentences, and
+  a filter mistook "mg/dL" for a medicine dose. We rebuilt the answers and measured the same 60 questions before and after.
+- Our own review broke the rules: "has taken thirty sleeping tablets" got a reminder message, and an age was read as a blood sugar. Fresh test phrases showed that word rules miss about half of emergencies in new wording, which changed the design.
+- The free AI service can take over a minute, so nothing important waits for it.
+- Testing on a real phone found what the browser did not: the Call button was hidden behind the typing box.
 
 ## What's next
 
-Clinical and native-language review, a licensed guidance source, real-phone offline testing, encrypted storage.
-See `ROADMAP.md`.
+A registered clinician's review, an AI service whose terms allow real users, native-speaker review of Telugu and Hindi, and an adviser's view
+on Indian medical-device and telemedicine rules. See `LAUNCH_PLAN.md`.
 
 ## Honesty notes to include
 
-Research prototype, simulation only, fictional people and synthetic reports. Not a medical device, not
-clinically validated. Telugu UI is an unreviewed AI-assisted draft. Setup: phone interface + local laptop server.
+Research prototype. Not approved or registered as a medical device. **No clinician has reviewed it and it has not been used by real patients.** Tested with fictional
+people, on one phone (Samsung Galaxy A36). The word-check scores are not clinical performance. Telugu screens are an unreviewed draft. Asked
+questions go to NVIDIA, whose trial terms let it use what is sent.
 
 ## Links
 
-- Code: [repo link, after you decide to publish it]
+- Code: [repo link, once you approve making it public; the hackathon requires a public repo]
 - Video: [link]
 
 ## Before you submit (your actions)
 
-- [ ] Decide whether to publish the repository, and add a license if you do.
-- [ ] Install and measure the vision model, or keep the "not measured" wording.
-- [ ] Run the manual offline check on your phone and note the result.
+- [ ] Approve making the repository public, and choose a license.
 - [ ] Record the video from `DEMO_SCRIPT.md`.
 - [ ] Fill in the submission form yourself.

@@ -659,9 +659,96 @@ def test_chat_endpoint_sends_the_conversation_and_saves_nothing(client, monkeypa
                                                     {"role": "user", "text": "How do I add a reminder?"}]}).json()
     assert r["status"] == "ok" and r["action"] == "open_medicines"
     assert "Person: How do I add a reminder?" in seen["user"] and "Aura: I can't do that." in seen["user"]
-    assert "Never give an amount or dose" not in seen["user"] and "never give an amount or dose" in seen["system"]
+    assert "Never give an amount or dose" not in seen["user"] and "Never give an amount or dose" in seen["system"]
     assert client.get("/api/session").json()["session"] is None
     assert client.post("/api/chat", json={"messages": []}).json()["status"] == "empty"
+
+
+def test_chat_lab_units_are_not_doses_and_a_warning_about_doubling_is_kept():
+    from aurahealth import chat
+    assert not chat.DOSE.search("Sugar of 210 mg/dL is high") and not chat.DOSE.search("Hemoglobin 11 g/dL")
+    assert chat.DOSE.search("Take 500 mg") and chat.DOSE.search("about 2 tablets")
+    raw = json.dumps({"type": "medicine", "answer": "Do not take two tablets to make up for it. Take 2 tablets at night.", "action": "none", "guides": []})
+    out = chat.check(raw, "I forgot my tablet", "112")
+    assert out["reply"] == "Do not take two tablets to make up for it." and "dose_removed" in out["checks"]
+
+
+def test_chat_removes_directions_reassurance_diagnosis_and_links_sentence_by_sentence():
+    from aurahealth import chat
+    raw = json.dumps({"type": "symptom", "answer": "Rest and drink water. You have dengue. Don't worry, it is nothing. See https://example.com/x for more.",
+                      "next_step": "Stop your BP tablets today.", "why": "It is not serious.", "urgent_if": ["trouble breathing"], "action": "none", "guides": []})
+    out = chat.check(raw, "fever and body pain", "112")
+    assert out["reply"].startswith("Rest and drink water.") and "dengue" not in out["reply"] and "worry" not in out["reply"]
+    assert "https" not in out["reply"] and out["next_step"] == "" and out["why"] == "" and out["urgent_if"] == ["trouble breathing"]
+    assert {"diagnosis_removed", "reassurance_removed", "direction_removed", "link_removed"} <= set(out["checks"])
+
+
+def test_chat_shows_only_sources_it_retrieved_and_that_share_words_with_the_answer():
+    from aurahealth import chat, knowledge
+    evidence = knowledge.retrieve("What does HbA1c mean?")
+    assert evidence[0]["title"] == "A1C" and evidence[0]["url"].startswith("https://medlineplus.gov/")
+    good = json.dumps({"type": "education", "answer": "A1C is a blood test that measures your average blood glucose over the past 3 months.",
+                       "sources": ["K1", "K9"], "guides": [], "action": "none"})
+    out = chat.check(good, "What does HbA1c mean?", "112", evidence)
+    assert [s["title"] for s in out["sources"]] == ["A1C"] and "source_unknown" in out["checks"] and not out["limits"]
+    assert out["sources"][0]["url"] == evidence[0]["url"] and "MedlinePlus" in out["sources"][0]["publisher"]
+    weak = json.dumps({"type": "education", "answer": "Try yoga on Sunday.", "sources": ["K1"], "guides": [], "action": "none"})
+    out = chat.check(weak, "What does HbA1c mean?", "112", evidence)
+    assert not out["sources"] and "source_weak" in out["checks"] and out["limits"] == ["no_source"]
+
+
+def test_chat_urgent_answers_always_lead_with_the_call(monkeypatch):
+    from aurahealth import chat
+    out = chat.check(json.dumps({"type": "urgent", "answer": "This could be serious.", "guides": [], "action": "none"}), "she looks strange", "112")
+    assert out["action"] == "call_emergency" and out["reply"].startswith("Call 112 now.")
+
+
+def test_chat_talk_of_suicide_gets_people_to_call_without_the_model(client, monkeypatch):
+    def never(*a, **k):
+        raise AssertionError("the model must not be called")
+    monkeypatch.setattr(ollama, "chat_json", never)
+    r = client.post("/api/chat", json={"messages": [{"role": "user", "text": "I don't want to live anymore"}]}).json()
+    assert r["status"] == "ok" and r["action"] == "call_emergency" and "14416" in r["reply"] and "112" in r["reply"]
+    assert r["crisis"]["number"] == "14416" and r["crisis"]["tel_uri"] == "tel:14416"
+
+
+def test_evidence_pack_holds_only_medlineplus_topic_summaries_and_finds_everyday_words():
+    from aurahealth import knowledge
+    titles = {t["title"] for t in knowledge.TOPICS}
+    assert not {v for v in knowledge.ALIASES.values() if v not in titles}  # every alias points to a real topic
+    for t in knowledge.TOPICS:
+        assert t["url"].startswith("https://medlineplus.gov/") and "/ency/" not in t["url"] and "/druginfo/" not in t["url"], t["url"]
+        assert "911" not in t["summary"]
+    assert knowledge.META["review"] == "unreviewed" and "MedlinePlus" in knowledge.META["attribution"]
+    for words, want in [("My husband has loose motions since yesterday", "Diarrhea"), ("his hba1c is 7.5", "A1C"),
+                        ("what is acidity", "Heartburn"), ("Naku bukhar undi", "Fever"), ("TSH is 8.2 in the blood test", "Thyroid Tests")]:
+        assert want in [e["title"] for e in knowledge.retrieve(words)], words
+    assert knowledge.retrieve("Thank you Aura") == []
+
+
+def test_rules_keep_catching_the_review_phrases():
+    """Rules were tuned against this set, so this guards against going backwards; it does not predict new wording."""
+    from aurahealth import chat
+
+    corpus = json.loads((config.ROOT / "backend" / "eval" / "rules_corpus.json").read_text(encoding="utf-8"))
+    plain = [t for group in corpus["emergency"].values() for t in group.get("plain", [])]
+    assert sum(chat.red_flags(t)[0] for t in plain) >= len(plain) - 3
+    for kind in ("past_event", "negation"):
+        assert not [t for t in corpus["false_alarm"][kind] if chat.red_flags(t)[0]]
+    for kind in ("direct", "misspelled_voice", "third_person"):
+        assert all(chat.crisis_text(t, "112") for t in corpus["crisis"][kind])
+    for kind in ("dose_words", "dose_warning_bypass", "direction", "reassure", "diagnosis"):
+        assert not [t for t in corpus["filters"]["unsafe"][kind] if not chat.sentence_problem(t)], kind
+    assert sum(not chat.sentence_problem(t) for t in corpus["filters"]["good"]) >= len(corpus["filters"]["good"]) - 5
+
+
+def test_chat_keeps_warnings_and_lab_values_and_conditional_advice():
+    from aurahealth import chat
+    for good in ("It is not safe to wait.", "If you have diabetes, check your feet every day.", "Do you have diabetes?",
+                 "Do not stop your tablets without asking your doctor.", "A blood sugar of 250 mg/dL is high.", "Your doctor may start a medicine."):
+        assert chat.sentence_problem(good) is None, good
+    assert chat.sentence_problem("Call the helpline on 98765 now.") == "number_removed"
+    assert chat.sentence_problem("Call Tele-MANAS on 14416.") is None
 
 
 def test_chat_without_the_model_still_points_to_help(client, monkeypatch):
@@ -679,7 +766,7 @@ def test_phone_and_laptop_send_aura_the_same_rules():
     assert set(guidefinder.CHOICES) <= set(pack["choices"]) <= set(packs.guides()["guides"])
     assert not {"cpr", "recovery"} & set(pack["choices"]) and tuple(pack["actions"]) == chat.ACTIONS
     prompt = chat.system_prompt("112")
-    assert "{" + "number}" not in prompt and "Call 112 now." in prompt and "never give an amount or dose" in prompt
+    assert "{" + "number}" not in prompt and "Call 112 now." in prompt and "Never give an amount or dose" in prompt
 
 
 def test_a_fit_points_to_the_seizure_guide_not_the_collapse_one():

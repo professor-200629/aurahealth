@@ -47,6 +47,11 @@ export function SosSheet({ onClose, onHelp }: { onClose: () => void; onHelp: () 
         <button className="btn secondary block" onClick={share} data-testid="sos-share">
           <Icon name="share" /> {t('nearby.share')}
         </button>
+        {note && (
+          <p className="small" role="status" style={{ margin: 0 }}>
+            {note}
+          </p>
+        )}
         {[...people]
           .sort((a, b) => Number(b.id === main?.id) - Number(a.id === main?.id))
           .slice(0, 3)
@@ -64,11 +69,6 @@ export function SosSheet({ onClose, onHelp }: { onClose: () => void; onHelp: () 
         >
           <Icon name="aid" /> {t('home.help')}
         </button>
-        {note && (
-          <p className="small" role="status" style={{ margin: 0 }}>
-            {note}
-          </p>
-        )}
         <p className="tiny muted" style={{ margin: 0 }}>
           {t('emergency.needsNetwork')}
         </p>

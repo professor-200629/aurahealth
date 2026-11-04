@@ -21,5 +21,62 @@
     "te"
   ],
   "guidance_cards": [],
-  "guidance_note": "No India-specific guidance cards are bundled. The general first-aid guides come from the IFRC 2020 guidelines (packs/guides), adapted in plain English and not yet reviewed by a clinician."
+  "guidance_note": "No India-specific guidance cards are bundled. The general first-aid guides come from the IFRC 2020 guidelines (packs/guides), adapted in plain English and not yet reviewed by a clinician.",
+  "crisis_line": {
+    "name": "Tele-MANAS",
+    "number": "14416",
+    "tel_uri": "tel:14416",
+    "source": {
+      "title": "Tele-MANAS, the National Tele Mental Health Programme, Ministry of Health and Family Welfare",
+      "reference_url": "https://telemanas.mohfw.gov.in/",
+      "fact_used": "Free national mental-health helpline on 14416, with a choice of language.",
+      "checked": "2026-11-04",
+      "check_note": "Confirmed from web search results of government and news pages. The official pages did not load as text, so a person must confirm the number by calling it before any pilot."
+    }
+  },
+  "capabilities": {
+    "version": "2026-11-04",
+    "note": "What AuraHealth actually offers for this country. Language is separate from country: choosing Telugu does not change the medical rules.",
+    "units": {
+      "temperature": [
+        "C",
+        "F"
+      ],
+      "glucose": "mg/dL",
+      "blood_pressure": "mmHg"
+    },
+    "languages": {
+      "en": {
+        "ui": true,
+        "first_aid": true,
+        "chat": true,
+        "review": "unreviewed"
+      },
+      "te": {
+        "ui": true,
+        "first_aid": false,
+        "chat": false,
+        "review": "unreviewed; labelled in the app"
+      }
+    },
+    "age_scope": "Adults and family caregivers. Children, pregnancy and older adults get general information and a push to get care, with no individual dosing.",
+    "evidence": [
+      "packs/knowledge/medlineplus_en.json (written for the US)",
+      "packs/guides/en.json (IFRC 2020, adapted)"
+    ],
+    "clinical_review": "none yet",
+    "enabled": {
+      "chat_education": true,
+      "chat_symptoms": true,
+      "report_reader": "synthetic samples only",
+      "medicine_doses": false,
+      "diagnosis": false,
+      "automatic_ambulance": false
+    },
+    "integrations": {
+      "emergency_dispatch_api": false,
+      "hospital_availability": false,
+      "abdm": false
+    }
+  }
 }

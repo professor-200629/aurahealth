@@ -4,9 +4,7 @@ Ordered by what most reduces risk. Nothing here is done unless `CHECKLIST.md` sa
 
 ## Before the hackathon deadline (5 Nov 2026, 07:30 IST)
 
-- Measure the report reader: install `llama3.2-vision:11b`, run `backend/scripts/eval_reader.py`, put the real
-  numbers in `EVALUATION.md` (or say clearly that it was not measured).
-- Run the manual offline check on a real phone with no internet and write down the result.
+- Make the repository public, with the owner's approval.
 - Record the demo video with fictional data only (`DEMO_SCRIPT.md`).
 
 ## Next (needs other people)

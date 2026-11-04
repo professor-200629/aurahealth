@@ -9,6 +9,8 @@ interface AlertState {
   seconds: number
   test: boolean
   silence: boolean
+  called: boolean
+  texted: boolean
 }
 
 /** The "Are you OK?" screen. The Android night-guard service runs the countdown and makes the call; this only
@@ -22,7 +24,7 @@ export function AlertOverlay({ onHelp }: { onHelp: () => void }) {
       onNativeEvent((e) => {
         if (e.type !== 'alert') return
         if (e.stage === 'cancelled') setAlert(null)
-        else setAlert({ stage: e.stage, seconds: e.seconds ?? 0, test: !!e.test, silence: e.reason === 'silence' })
+        else setAlert({ stage: e.stage, seconds: e.seconds ?? 0, test: !!e.test, silence: e.reason === 'silence', called: !!e.called, texted: !!e.texted })
       }),
     [],
   )
@@ -44,7 +46,7 @@ export function AlertOverlay({ onHelp }: { onHelp: () => void }) {
             <div className="alert-count" aria-live="assertive">
               {alert.seconds}
             </div>
-            <p>{t('alert.body', { neighbour, family, seconds: alert.seconds })}</p>
+            <p>{contacts.length ? t('alert.body', { neighbour, family, seconds: alert.seconds }) : t('alert.noContacts')}</p>
             {alert.test && <p className="alert-test">{t('alert.test')}</p>}
             <button className="btn alert-ok block" onClick={() => native()?.cancelAlert?.()} data-testid="alert-ok">
               {t('alert.ok')}
@@ -52,7 +54,13 @@ export function AlertOverlay({ onHelp }: { onHelp: () => void }) {
           </>
         ) : (
           <>
-            <h1 id="alert-title">{t(alert.test ? 'alert.callingTest' : 'alert.calling', { neighbour, family })}</h1>
+            <h1 id="alert-title">
+              {alert.test ? t('alert.callingTest', { neighbour, family })
+                : alert.called && alert.texted ? t('alert.calling', { neighbour, family })
+                : alert.called ? t('alert.calledOnly', { neighbour })
+                : alert.texted ? t('alert.textedOnly', { neighbour, family })
+                : t('alert.nobody')}
+            </h1>
             {alert.test && <p className="alert-test">{t('alert.test')}</p>}
             <button
               className="btn alert-ok block"

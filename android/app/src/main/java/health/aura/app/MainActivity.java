@@ -67,6 +67,8 @@ public class MainActivity extends Activity {
         web = new WebView(this);
         setContentView(web);
         WebSettings s = web.getSettings();
+        // Follow the phone's font size, up to a point where the screens still fit.
+        s.setTextZoom(Math.round(Math.min(getResources().getConfiguration().fontScale, 1.3f) * 100));
         s.setJavaScriptEnabled(true);
         s.setDomStorageEnabled(true);
         s.setMediaPlaybackRequiresUserGesture(false);
@@ -152,7 +154,11 @@ public class MainActivity extends Activity {
             String scheme = url.getScheme() == null ? "" : url.getScheme();
             if (scheme.equals("tel")) {
                 // Opens the dialer with the number filled in. It never calls by itself.
-                startActivity(new Intent(Intent.ACTION_DIAL, url));
+                try {
+                    startActivity(new Intent(Intent.ACTION_DIAL, url));
+                } catch (android.content.ActivityNotFoundException e) {
+                    android.widget.Toast.makeText(MainActivity.this, url.getSchemeSpecificPart(), android.widget.Toast.LENGTH_LONG).show();
+                }
                 return true;
             }
             String host = url.getHost() == null ? "" : url.getHost();

@@ -128,6 +128,8 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       health readings answered on the phone (NHS / AHA / ADA thresholds), 7 more IFRC guides (17 in all)
 - [x] 4 Nov: this build tested on the Galaxy A36. Fixed what that found: Call button hidden behind the typing box,
       Back key leaving the app with the menu open, fever and dizzy answered at once with the AI added after
+- [x] 4 Nov evening (branch `product-v2`): answers rebuilt with a MedlinePlus evidence pack and a structured reply, shared rules and filters, crisis reply with Tele-MANAS,
+      new icon, Home ask box, truthful alert screen, saved details kept out of AI requests. Results and limits: `QA_AND_EVALUATION.md`. Not yet on the phone
 - [ ] Country choice: only India (112) is set up; other countries need a sourced emergency number first
 
 ## Open decisions for the developer

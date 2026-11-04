@@ -11,7 +11,8 @@
 //   = severe) with the IFRC 2020 first aid (sugar if awake and able to swallow, again after 15 minutes)
 // - oxygen: NHS home pulse-oximeter leaflets (written for COVID-19): 92% or below after a re-check → 999 / A&E;
 //   93-94% → contact a doctor soon
-// It never says what illness someone has. Amounts of medicine are never given.
+// A number counts only when it sits right next to its keyword, so ages, durations, prices and tablet counts are ignored.
+// It never says what illness someone has. Amounts of medicine are never given. No clinician has reviewed these answers.
 import type { AuraAnswer } from './chatlocal'
 
 const num = (s: string) => Number(s.replace(',', '.'))
@@ -19,18 +20,41 @@ const f2c = (f: number) => Math.round(((f - 32) * 5) / 9 * 10) / 10
 const c2f = (c: number) => Math.round((c * 9) / 5 * 10 + 320) / 10
 
 function answer(text: string, emergency = false, guides: string[] = []): AuraAnswer {
-  return { text, guides, action: emergency ? 'call_emergency' : 'none', source: 'phone' }
+  return { text, guides, action: emergency ? 'call_emergency' : 'none', source: 'phone', kind: 'reading' }
 }
 
-function temperature(s: string, n: string): AuraAnswer | null {
-  if (!/\b(temp(erature)?|fever|thermometer|bukhar|jwaram)\b/.test(s)) return null
-  const v = num(n)
+// Words allowed between a keyword and its number: "temperature it showing 99.9", "sugar level is 62".
+const LINK = String.raw`(?:\s*(?:is|was|of|at|level|reading|now|showing|shows|show|it|came|comes|to|about|around|checked|measured|today|:|=|-|,)\s*)*\s*`
+const NOT_A_READING = /^\s*(?:years?|yrs?|yo\b|days?|hours?|hrs?|weeks?|months?|mins?|minutes?|am\b|pm\b|rupees|rs\b|tablets?|tabs?|pills?|capsules?|spoons?|times\b|kg\b|kilos?|lakhs?|units?\b)/i
+
+/** The number right after this keyword, or right before it. */
+function near(s: string, keyword: string, before = false): { value: string; rest: string } | null {
+  const after = new RegExp(String.raw`\b(?:${keyword})\b${LINK}(\d{1,3}(?:[.,]\d+)?)(?!\d)`, 'i').exec(s)
+  if (after) {
+    const rest = s.slice(after.index + after[0].length)
+    if (!NOT_A_READING.test(rest)) return { value: after[1], rest }
+  }
+  if (before) {
+    const m = new RegExp(String.raw`(?<![\d.,/])(\d{2,3}(?:[.,]\d+)?)\s*%?\s*(?:${keyword})\b`, 'i').exec(s)
+    if (m) return { value: m[1], rest: s.slice(m.index + m[0].length) }
+  }
+  return null
+}
+
+function temperature(s: string): AuraAnswer | null {
+  if (/\b(no|not|without)\s+(a\s+|any\s+)?(fever|temperature)\b/.test(s) || /\b(ac|outside|weather|room|water|oven|fridge)\b[^.?!]{0,20}\btemp/.test(s)) return null
+  const hit = near(s, 'temp|temperature|fever|thermometer|bukhar|jwaram')
+  if (!hit) return null
+  const v = num(hit.value)
+  const unit = /^\s*(?:°|deg(?:rees?)?)?\s*(c|f|celsius|fahrenheit)\b/i.exec(hit.rest)?.[1]?.[0]?.toLowerCase()
   let c: number
   let f: number
-  if (/°?\s*c\b|celsius/.test(s) || (v >= 34 && v <= 43)) {
+  if (unit === 'c' || (!unit && v >= 34 && v <= 43)) {
+    if (v < 30 || v > 45) return null
     c = v
     f = c2f(v)
-  } else if (v >= 93 && v <= 110) {
+  } else if (unit === 'f' || (v >= 93 && v <= 110)) {
+    if (v < 86 || v > 113) return null
     f = v
     c = f2c(v)
   } else return null
@@ -57,7 +81,13 @@ function temperature(s: string, n: string): AuraAnswer | null {
   )
 }
 
-function pressure(sys: number, dia: number): AuraAnswer | null {
+function pressure(s: string): AuraAnswer | null {
+  const bp = /(?<![\d/.])(\d{2,3})\s*(?:\/|over)\s*(\d{2,3})\b(?!\s*(?:mg|\/))/.exec(s)
+  if (!bp) return null
+  const sys = Number(bp[1])
+  const dia = Number(bp[2])
+  const named = /\b(bp|b\.p\.|pressure)\b/.test(s)
+  if (!named && (sys < 90 || sys > 250 || dia < 50 || dia > 150)) return null
   if (sys < 60 || sys > 280 || dia < 30 || dia > 180 || dia >= sys) return null
   const r = `${sys}/${dia}`
   if (sys > 180 || dia > 120)
@@ -79,10 +109,22 @@ function pressure(sys: number, dia: number): AuraAnswer | null {
   return answer(`${r} is in the normal range (below 120/80).`)
 }
 
-function sugar(s: string, n: string): AuraAnswer | null {
-  if (!/\b(sugar|glucose|rbs|fbs|ppbs|glucometer)\b/.test(s) || /hba-one-c|a1c/.test(s)) return null // HbA1c is a 3-month average, not today's level
-  let mg = num(n)
-  if (/mmol/.test(s) || (mg > 0 && mg < 30)) mg = Math.round(mg * 18)
+function sugar(s: string): AuraAnswer | null {
+  if (/hba-one-c|a1c/.test(s)) return null // HbA1c is a 3-month average, not today's level
+  const hit = near(s, 'sugar|glucose|rbs|fbs|ppbs|glucometer') ?? (() => {
+    const m = /(?<![\d.])(\d{2,3})\s*mg\s*\/?\s*dl\b/i.exec(s)
+    return m ? { value: m[1], rest: '' } : null
+  })()
+  if (!hit) return null
+  const raw = num(hit.value)
+  const mmol = /^\s*mmol/i.test(hit.rest)
+  if (!mmol && raw < 30) {
+    if (!hit.value.includes('.') && !hit.value.includes(',')) return null
+    return answer(
+      `${hit.value} is unclear, because it means very different things by the unit. As mmol/L it is about ${Math.round(raw * 18)} mg/dL, and as an HbA1c it is ${hit.value}%, a 3-month average. Please check the unit and the test name on the report or meter, and whether it was fasting or after food.`,
+    )
+  }
+  const mg = mmol ? Math.round(raw * 18) : raw
   if (mg < 20 || mg > 700) return null
   const r = `${mg} mg/dL`
   if (mg < 70 && /\b(confus\w*|drows\w*|unconscious|not waking|won'?t wake|(can'?t|cannot) swallow|fits?|seizure)\b/.test(s))
@@ -105,9 +147,10 @@ function sugar(s: string, n: string): AuraAnswer | null {
   return answer(`${r} is not low. If they still feel unwell, tell me what else you notice.`)
 }
 
-function oxygen(s: string, n: string): AuraAnswer | null {
-  if (!/\b(oxygen|spo2|sp o2|saturation|oximeter|o2)\b/.test(s)) return null
-  const v = num(n)
+function oxygen(s: string): AuraAnswer | null {
+  const hit = near(s, 'oxygen|saturation|oximeter', true)
+  if (!hit) return null
+  const v = num(hit.value)
   if (v < 50 || v > 100) return null
   if (v <= 92)
     return answer(
@@ -118,13 +161,23 @@ function oxygen(s: string, n: string): AuraAnswer | null {
   return answer(`${v}% is a normal oxygen level (95% or more). If they still feel breathless or unwell, tell me more.`)
 }
 
-/** A health reading in the person's message, answered with fixed thresholds; null if there is none. */
+/** Every health reading in the person's message, answered with fixed thresholds, most urgent first; null if there is none. */
 export function readingAnswer(text: string): AuraAnswer | null {
   // Digits that are part of a word ("spo2", "o2", "hba1c") are not the reading.
-  const s = text.toLowerCase().replace(/\bsp\s?o2\b|\bo2\b/g, 'oxygen').replace(/\bhba1c\b/g, 'hba-one-c')
-  const bp = s.match(/\b(\d{2,3})\s*(\/|over)\s*(\d{2,3})\b/)
-  if (bp && (/\b(bp|b\.p\.|pressure)\b/.test(s) || Number(bp[1]) >= 80)) return pressure(Number(bp[1]), Number(bp[3]))
-  const n = s.match(/(\d{1,3}(?:[.,]\d)?)/)
-  if (!n) return null
-  return temperature(s, n[1]) ?? oxygen(s, n[1]) ?? sugar(s, n[1])
+  const s = text.toLowerCase().replace(/\bsp\s?o2\b|\bo2\b/g, 'oxygen').replace(/\bhba1c\b|\bhb a1c\b/g, 'hba-one-c')
+  const found = [pressure(s), temperature(s), oxygen(s), sugar(s)].filter((a): a is AuraAnswer => !!a)
+  if (!found.length) return null
+  found.sort((a, b) => Number(b.action === 'call_emergency') - Number(a.action === 'call_emergency'))
+  return {
+    ...found[0],
+    text: found.map((a) => a.text).join(' '),
+    guides: [...new Set(found.flatMap((a) => a.guides))],
+  }
+}
+
+/** Is there more to the message than the reading? Then the AI is asked as well, because the reading alone may mislead. */
+export function hasMoreThanReading(text: string): boolean {
+  const words = text.toLowerCase().match(/[a-z]{3,}/g) ?? []
+  const filler = /^(temp|temperature|fever|sugar|glucose|oxygen|spo|pressure|the|was|his|her|she|and|but|for|mine|checked|showing|shows|show|hey|reading|level|low|high|after|before|food|lunch|breakfast|dinner|fasting|that|bad|good|normal|okay|what|does|mean|right|now|today|mmol|have|has|had|with|this|can|you|tell|from|meter|machine|thermometer)$/
+  return words.filter((w) => !filler.test(w)).length > 2
 }

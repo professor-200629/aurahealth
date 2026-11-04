@@ -29,7 +29,7 @@ final class AiClient {
     static final String API = "https://integrate.api.nvidia.com/v1/chat/completions";
     static final String MODEL = "meta/muse-glimmer-30b";
     private static final String KEY_FILE = "ai_key.txt";
-    private static final ExecutorService POOL = Executors.newSingleThreadExecutor();
+    private static final ExecutorService POOL = Executors.newFixedThreadPool(3);
 
     private AiClient() {}
 
@@ -96,7 +96,7 @@ final class AiClient {
                         JSONObject data = new JSONObject(r[1]);
                         JSONArray choices = data.optJSONArray("choices");
                         JSONObject msg = choices == null ? null : choices.optJSONObject(0).optJSONObject("message");
-                        String content = msg == null ? "" : msg.optString("content", "");
+                        String content = msg == null || msg.isNull("content") ? "" : msg.optString("content", "");
                         content = content.replaceAll("(?s)<think>.*?</think>", "").trim();
                         out.put("ok", true).put("content", content).put("ms", System.currentTimeMillis() - started)
                                 .put("model", data.optString("model", MODEL));

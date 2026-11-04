@@ -2,8 +2,9 @@
 
 ## First-aid guides (`packs/guides/en.json`)
 
-The 9 guides (a "start here" check plus CPR, recovery position, choking, heavy bleeding, chest pain, stroke
-signs, snakebite and seizure) are written in plain English by the AuraHealth developer from:
+The 17 guides (start here, CPR, recovery position, choking, heavy bleeding, chest pain, stroke signs, snakebite, seizure, low blood
+sugar, breathing difficulty, severe allergic reaction, poisoning, burns, head injury, feeling faint, fever) were prepared in plain English
+by the developer with an AI coding assistant from:
 
 - **International first aid, resuscitation and education guidelines 2020**, International Federation of Red
   Cross and Red Crescent Societies (IFRC):
@@ -14,7 +15,7 @@ signs, snakebite and seizure) are written in plain English by the AuraHealth dev
 
 Rules for these guides:
 
-- The steps are fixed text. No model writes, translates or changes them. A model may only suggest which guide
+- While the app runs, the steps are fixed text: no model writes, translates or changes them. Some wording followed suggestions from another AI app (`docs/GUIDE_CHANGES.md`). A model may only suggest which guide
   matches what a person describes, and the person confirms.
 - Medicine doses are left out on purpose (for example the aspirin step for chest pain). The guide says to ask
   the 112 operator.
@@ -26,3 +27,14 @@ Rules for these guides:
 
 None. No India-specific guidance is bundled: for example, the Ministry of Home Affairs website policy does not
 allow reproducing its content without permission. Only the emergency number and its source are used.
+
+## Talk to Aura evidence (`packs/knowledge/`)
+
+- `medlineplus_en.json`: topic summaries from MedlinePlus (National Library of Medicine), which MedlinePlus says are public domain. Credit: "Source: MedlinePlus, National Library of Medicine". Do not use its logo or imply endorsement. Its A.D.A.M. encyclopedia and drug monographs are copyrighted and must not be added. Written for the US. Built by `scripts/build_knowledge.py`.
+- `aliases.json`: everyday and Indian words pointing to topics. Written by the AI assistant. Unreviewed.
+
+## Rules and thresholds
+
+- `packs/ai/emergency_rules.json` and the filters in `packs/ai/aura_chat.json`: written by the AI assistant. Unreviewed.
+- Reading thresholds (`frontend/src/readings.ts`): see the comment at the top of that file and `CLINICAL_SAFETY.md`.
+- Crisis line: `packs/regions/IN.json`.

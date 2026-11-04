@@ -28,7 +28,7 @@ const clock = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: '2-d
 let lastOpened = { guide: '', at: 0 }
 
 export function GuidePlayer({ guideId, onGuide, onList, onCard }: Props) {
-  const { t } = useUi()
+  const { t, serverDown } = useUi()
   const guide = GUIDES[guideId]
   const [idx, setIdx] = useState(0)
   const [finished, setFinished] = useState(false)
@@ -206,9 +206,11 @@ export function GuidePlayer({ guideId, onGuide, onList, onCard }: Props) {
         <div className="card step-card" data-testid="guide-finished">
           <p className="step-text">{t('guide.finished')}</p>
           <div className="stack">
-            <button className="btn primary block" onClick={onCard} data-testid="open-card">
-              {t('guide.openCard')}
-            </button>
+            {!serverDown && (
+              <button className="btn primary block" onClick={onCard} data-testid="open-card">
+                {t('guide.openCard')}
+              </button>
+            )}
             <button className="btn secondary block" onClick={back}>
               {t('common.back')}
             </button>

@@ -53,7 +53,7 @@ interface Bridge {
 export type AlertReason = 'knock' | 'silence' | 'test'
 
 export type NativeEvent =
-  | { type: 'alert'; stage: 'countdown' | 'calling' | 'done' | 'cancelled'; seconds?: number; test?: boolean; reason?: AlertReason }
+  | { type: 'alert'; stage: 'countdown' | 'calling' | 'done' | 'cancelled'; seconds?: number; test?: boolean; reason?: AlertReason; called?: boolean; texted?: boolean }
   | { type: 'guard'; on: boolean }
   | { type: 'knock'; count: number }
   | { type: 'level'; value: number }

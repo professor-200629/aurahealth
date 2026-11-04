@@ -146,7 +146,7 @@ def test_full_handoff_keeps_emergency_reachable_and_stays_local(phone):
     assert "Someone else (neighbour)" in text
     assert "Known allergies: Penicillin" in text
     assert "Haemoglobin: 11.2 g/dL" in text
-    assert "has not assessed this situation" in text
+    assert "has not examined this person" in text
     unknowns = page.get_by_test_id("unknowns").inner_text()
     for label in ("Approximate age", "Started", "Regular medicines", "Known health conditions"):
         assert label in unknowns
@@ -195,6 +195,54 @@ def test_phone_back_key_closes_the_menu_and_the_sheet_first(phone):
     expect(page.get_by_test_id("sos-call")).to_be_visible()
     assert page.evaluate(back) is True
     expect(page.get_by_test_id("sos-call")).to_have_count(0)
+
+
+def test_home_question_is_answered_from_the_saved_source_when_the_ai_cannot_answer(phone):
+    page, _, base = phone
+    page.route("**/api/chat", lambda route: route.abort())
+    page.goto(base)
+    page.get_by_test_id("home-ask").fill("What does HbA1c mean?")
+    page.get_by_test_id("home-send").click()
+    answer = page.get_by_test_id("bubble-aura").first
+    expect(answer).to_contain_text("average blood glucose", timeout=15000)
+    expect(answer).to_contain_text("Not written by AI")
+    answer.locator("summary").click()
+    link = answer.get_by_role("link", name="A1C")
+    assert link.get_attribute("href").startswith("https://medlineplus.gov/")
+
+
+def test_talk_of_suicide_gets_people_to_call_at_once(phone):
+    page, requests, base = phone
+    page.goto(base)
+    page.get_by_test_id("nav-chat").click()
+    page.get_by_test_id("chat-text").fill("I want to end my life")
+    page.get_by_test_id("chat-send").click()
+    expect(page.get_by_test_id("chat-call")).to_have_attribute("href", "tel:112")
+    expect(page.get_by_test_id("chat-crisis")).to_have_attribute("href", "tel:14416")
+    assert not [r for r in requests if r.endswith("/api/chat")]  # the words were not sent anywhere
+
+
+def test_phone_rules_answer_without_the_ai_and_ignore_numbers_that_are_not_readings(phone):
+    page, _, base = phone
+    page.route("**/api/chat", lambda route: route.abort())
+    page.goto(base)
+    page.get_by_test_id("nav-chat").click()
+
+    def ask(words):
+        before = page.get_by_test_id("bubble-aura").count()
+        page.get_by_test_id("chat-text").fill(words)
+        page.get_by_test_id("chat-send").click()
+        page.wait_for_function("n => document.querySelectorAll('[data-testid=bubble-aura]').length > n", arg=before, timeout=15000)
+        expect(page.get_by_test_id("chat-busy")).to_have_count(0, timeout=15000)
+        return page.get_by_test_id("bubble-aura").nth(before)
+
+    assert ask("there is pain in my chest").get_by_test_id("chat-call").count() == 1
+    assert ask("my mother has taken thirty  sleeping tablets").get_by_test_id("chat-call").count() == 1
+    assert "mg/dL" not in ask("My mother is 65 and has sugar, what food should she avoid?").inner_text()
+    fever = ask("fever 101, should I go to the clinic?").inner_text()
+    assert "213" not in fever and "38.3" in fever
+    what = ask("what are the signs of a stroke")
+    assert what.get_by_test_id("chat-call").count() == 0
 
 
 def test_emergency_still_works_when_the_laptop_is_unreachable(phone):

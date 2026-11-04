@@ -259,7 +259,7 @@ final class Meds {
     private static void post(Context c, JSONObject e, String title, String text, boolean loud) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         NotificationChannel ch = new NotificationChannel(CH_MEDS, "Medicine reminders", NotificationManager.IMPORTANCE_HIGH);
-        ch.setDescription("Medicine times and missed doses");
+        ch.setDescription("Medicine times and doses not marked taken");
         ch.enableVibration(true);
         nm.createNotificationChannel(ch);
         String key = e.optString("key");

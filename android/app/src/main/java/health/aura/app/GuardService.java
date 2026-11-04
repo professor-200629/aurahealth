@@ -331,38 +331,42 @@ public class GuardService extends Service {
         alertActive = false;
         stopAlarm();
         getSystemService(NotificationManager.class).cancel(ID_ALERT);
+        boolean called = false;
+        boolean texted = false;
         if (!alertTest) {
-            callNeighbour();
-            textFamily();
+            called = callNeighbour();
+            texted = textFamily(called);
         }
-        MainActivity.sendToWeb("{\"type\":\"alert\",\"stage\":\"calling\",\"test\":" + alertTest + ",\"reason\":\"" + alertReason + "\"}");
+        MainActivity.sendToWeb("{\"type\":\"alert\",\"stage\":\"calling\",\"test\":" + alertTest + ",\"called\":" + called + ",\"texted\":" + texted + ",\"reason\":\"" + alertReason + "\"}");
         MainActivity.sendToWeb("{\"type\":\"queue\"}");
         if (!listening) stopSelf();
     }
 
     /** Phones the first contact marked "phone in an alert" (usually someone nearby, like a neighbour). */
-    private void callNeighbour() {
+    private boolean callNeighbour() {
         List<String[]> callers = Store.contactsWith(this, "call");
         if (callers.isEmpty() || !has(Manifest.permission.CALL_PHONE)) {
             Store.addEvent(this, "guard_failed", "neighbour");
-            return;
+            return false;
         }
         try {
             TelecomManager tm = getSystemService(TelecomManager.class);
             tm.placeCall(Uri.fromParts("tel", callers.get(0)[1], null), new Bundle());
             Store.addEvent(this, "guard_call", "neighbour");
-        } catch (SecurityException e) {
+            return true;
+        } catch (RuntimeException e) {
             Store.addEvent(this, "guard_failed", "neighbour");
+            return false;
         }
     }
 
     /** Texts every contact marked "text in an alert": what happened, who was phoned, and where the phone is. */
-    private void textFamily() {
+    private boolean textFamily(boolean called) {
         List<String[]> family = Store.contactsWith(this, "text");
         List<String[]> callers = Store.contactsWith(this, "call");
         if (family.isEmpty() || !has(Manifest.permission.SEND_SMS)) {
             Store.addEvent(this, "guard_failed", "family");
-            return;
+            return false;
         }
         String time = new SimpleDateFormat("HH:mm", Locale.US).format(new Date());
         JSONObject person = Store.mainPerson(this);
@@ -371,7 +375,10 @@ public class GuardService extends Service {
                 ? "there was no \"Good morning\" check-in by " + time
                 : "3 knocks for help were heard at " + time;
         String msg = "AuraHealth alert" + (name.isEmpty() ? "" : " for " + name) + ": " + what + " and nobody tapped \"I'm OK\". ";
-        if (!callers.isEmpty()) msg += (callers.get(0)[0].isEmpty() ? "The first contact" : callers.get(0)[0]) + " was phoned. ";
+        if (!callers.isEmpty()) {
+            String who = callers.get(0)[0].isEmpty() ? "the first contact" : callers.get(0)[0];
+            msg += called ? "A call to " + who + " was started. " : "AuraHealth could not phone " + who + ". ";
+        }
         msg += "Please check now or call 112.";
         Location where = alertLocation != null ? alertLocation : Store.locationInAlerts(this) ? Locator.last(this) : null;
         if (where != null) msg += " Phone location: " + Locator.describe(where) + ".";
@@ -387,6 +394,7 @@ public class GuardService extends Service {
             Log.w("AuraGuard", "text not sent: " + e.getClass().getSimpleName());
         }
         Store.addEvent(this, any ? "guard_sms" : "guard_failed", "family");
+        return any;
     }
 
     private void playAlarm() {

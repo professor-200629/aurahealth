@@ -1,3 +1,5 @@
+import type { AnswerKind } from './chatlocal'
+import type { SourceRef } from './knowledge'
 import type { Handoff, Health, Session } from './types'
 
 export class ApiError extends Error {
@@ -57,7 +59,7 @@ export const api = {
       100000,
     ),
   chat: (messages: { role: string; text: string }[]) =>
-    call<{ status: string; reply: string; guides: string[]; action: string; checks: string[]; model?: string }>(
+    call<{ status: string; reply: string; type?: AnswerKind; next_step?: string; why?: string; urgent_if?: string[]; follow_up?: string; sources?: SourceRef[]; limits?: string[]; guides: string[]; action: string; crisis?: unknown; checks: string[]; model?: string | null }>(
       '/api/chat',
       json('POST', { messages, region: 'IN' }),
       100000,

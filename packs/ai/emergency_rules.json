@@ -1,0 +1,421 @@
+{
+  "note": "Emergency words, read by frontend/src/chatlocal.ts and backend/src/aurahealth/chat.py, so the phone and the laptop behave the same. These patterns decide what gets an instant Call 112 answer with no AI. They will miss some wording and raise some false alarms. Hindi and Telugu words are in Latin letters, written by the developer's AI assistant, and need checking by native speakers.",
+  "version": "2026-11-04-c",
+  "review": "unreviewed",
+  "typos": [
+    [
+      "\\bchess pain\\b",
+      "chest pain"
+    ],
+    [
+      "\\b(hart attack|heartattack|heart atack|hartattack)\\b",
+      "heart attack"
+    ],
+    [
+      "\\b(seizer|sezure|seisure|siezure|seizur)\\b",
+      "seizure"
+    ],
+    [
+      "\\bchocking\\b",
+      "choking"
+    ],
+    [
+      "\\b(unconcious|unconsious|unconscius|uncounscious|in conscious)\\b",
+      "unconscious"
+    ],
+    [
+      "\\bsnack bite\\b",
+      "snake bite"
+    ],
+    [
+      "\\bcolapsed\\b",
+      "collapsed"
+    ],
+    [
+      "\\bbreathin\\b",
+      "breathing"
+    ],
+    [
+      "\\bbrea thing\\b",
+      "breathing"
+    ],
+    [
+      "\\bnot breeding\\b",
+      "not breathing"
+    ],
+    [
+      "\\bbreeding (a lot|heavily|badly|too much)\\b",
+      "bleeding heavily"
+    ],
+    [
+      "\\bpainted and fell\\b",
+      "fainted and fell"
+    ],
+    [
+      "\\bsu[ie]?c[ie]?de\\b",
+      "suicide"
+    ],
+    [
+      "\\b(saans|sans|swas)( [a-z]+){0,2} (nahi|nahin|band|ruk)[a-z ]*",
+      "not breathing "
+    ],
+    [
+      "\\b(oopiri|upiri|swasa)( [a-z]+){0,2} (aadatledu|adatledu|ledu|aagipoyindi|agipoyindi|aagindi|radam ledu|raavatledu)\\b",
+      "not breathing"
+    ],
+    [
+      "\\baagipoyindi\\b",
+      "stopped"
+    ],
+    [
+      "\\bdhadkan nahi\\w*",
+      "no pulse"
+    ],
+    [
+      "\\b(behosh|behoshi|hosh nahi\\w*)\\b",
+      "unconscious"
+    ],
+    [
+      "\\bspruha( [a-z]+)? (ledu|tappi\\w*|poyindi)\\b",
+      "unconscious"
+    ],
+    [
+      "\\bgir gaye aur uth nahi\\w*",
+      "fell down and not getting up"
+    ],
+    [
+      "\\b(khoon|khun)( [a-z]+){0,2} (nahi ruk\\w*|ruk nahi\\w*|beh raha\\w*|bah raha\\w*)",
+      "bleeding heavily"
+    ],
+    [
+      "\\braktam( [a-z]+)? (aagadam ledu|agadam ledu|aagatledu|agatledu|potundi|vastundi)\\b",
+      "bleeding heavily"
+    ],
+    [
+      "\\b(seene|sine|chhati|chati|chhaati)( [a-z]+){0,2} (dard|dukh)\\w*",
+      "chest pain"
+    ],
+    [
+      "\\b(gunde|chaathi|chati)( lo)? ?(noppi|pattesindi)\\b",
+      "chest pain"
+    ],
+    [
+      "\\bdil ka daura\\b",
+      "heart attack"
+    ],
+    [
+      "\\b(saanp|sanp|paamu|pamu|naagu)( [a-z]+){0,2} (kaat\\w*|karich\\w*)",
+      "snake bite"
+    ],
+    [
+      "\\b(zeher|zehar|visham|poochi mandu|purugula mandu|keetnashak)\\b",
+      "poison"
+    ],
+    [
+      "\\b(mirgi|daura pada|fits vach\\w*)\\b",
+      "seizure"
+    ],
+    [
+      "\\b(laqwa|lakwa|pakshavatam|paksha vatam)\\b",
+      "stroke"
+    ],
+    [
+      "\\b(chalking|joking) on\\b",
+      "choking on"
+    ],
+    [
+      "\\bbleading\\b",
+      "bleeding"
+    ],
+    [
+      "\\bnot stoping\\b",
+      "not stopping"
+    ],
+    [
+      "\\bheart a tack\\b",
+      "heart attack"
+    ],
+    [
+      "\\bchest pane\\b",
+      "chest pain"
+    ],
+    [
+      "\\bstrok\\b",
+      "stroke"
+    ],
+    [
+      "\\bface is dropping\\b",
+      "face is drooping"
+    ],
+    [
+      "\\bface has fallen\\b",
+      "face is drooping"
+    ],
+    [
+      "\\blurred\\b",
+      "slurred"
+    ],
+    [
+      "\\bfitz\\b",
+      "having fits"
+    ],
+    [
+      "\\bsnack bit\\b",
+      "snake bit"
+    ],
+    [
+      "\\bsneak bite\\b",
+      "snake bite"
+    ],
+    [
+      "\\bpest aside\\b",
+      "pesticide"
+    ],
+    [
+      "\\bpoisson\\b",
+      "poison"
+    ],
+    [
+      "\\bkerosine\\b",
+      "kerosene"
+    ],
+    [
+      "\\btook over those\\b",
+      "took an overdose"
+    ],
+    [
+      "\\b(anafilaxis|anaphalaxis)\\b",
+      "anaphylaxis"
+    ],
+    [
+      "\\balergic\\b",
+      "allergic"
+    ],
+    [
+      "\\bre action\\b",
+      "reaction"
+    ],
+    [
+      "\\bbreating\\b",
+      "breathing"
+    ],
+    [
+      "\\bshort of breathe\\b",
+      "short of breath"
+    ],
+    [
+      "\\bworse headache\\b",
+      "worst headache"
+    ],
+    [
+      "\\bhead egg\\b",
+      "headache"
+    ],
+    [
+      "\\bblud\\b",
+      "blood"
+    ],
+    [
+      "\\bbourns\\b",
+      "burns"
+    ],
+    [
+      "\\bhead in jury\\b",
+      "head injury"
+    ],
+    [
+      "\\b(gale mein|gontulo)\\b[^.?!]{0,30}\\b(atak|phans|irukk)\\w*",
+      "stuck in the throat"
+    ],
+    [
+      "\\braktham chala pothundi\\b|\\bkhoon band nahi\\w*( ho raha)?",
+      "bleeding heavily"
+    ],
+    [
+      "\\bdil mein dard\\b|\\bchest lo noppi\\b",
+      "chest pain"
+    ],
+    [
+      "\\bgundepotu\\b",
+      "heart attack"
+    ],
+    [
+      "\\b(muh|munh) (tedha|ek taraf)\\w*|\\bmootiki vankara\\w*",
+      "mouth crooked"
+    ],
+    [
+      "\\bek taraf ka haath nahi chal\\w*|\\boka vaipu kaalu cheyyi aadatledu\\b",
+      "arm weak"
+    ],
+    [
+      "\\bbolne mein dikkat\\b|\\bmaata raavatledu\\b",
+      "cannot speak"
+    ],
+    [
+      "\\bfit aa gaya\\b|\\bfits vastunnayi\\b|\\bhaath pair akad gaye\\b|\\bnoti nundi nurugu\\b|\\bbody antha vanukutundi\\b",
+      "having fits"
+    ],
+    [
+      "\\bsaap ne kata\\b|\\bpaamu kattindi\\b|\\bnaagupaamu\\b",
+      "snake bite"
+    ],
+    [
+      "\\bneend ki goliyan kha li\\b|\\bsaari goliyan kha li\\b|\\bnidra maatralu ekkuva\\b",
+      "took too many tablets"
+    ],
+    [
+      "\\b(phenyl|matti tel) pi\\w*( \\w+)?",
+      "drank kerosene"
+    ],
+    [
+      "\\b(gala|honth|body) sooj\\w*|\\bpedavulu vachayi\\b|\\bgontu vachindi\\b|\\bmokham vachindi\\b",
+      "throat swollen"
+    ],
+    [
+      "\\bsaans lene mein\\b|\\bsaans phool\\w*|\\bdam ghut\\w*|\\baayasam\\b|\\boopiri tiskovadam kashtam\\b|\\bswasa teesukolekapot\\w*",
+      "trouble breathing"
+    ],
+    [
+      "\\b(bachcha|paapa|bachche) (hil nahi|kadalatledu)\\w*|\\bpet mein bachcha hil nahi\\w*",
+      "baby not moving"
+    ],
+    [
+      "\\bpani mein gir\\w*|\\bneellalo paddadu\\b",
+      "fell in the water"
+    ],
+    [
+      "\\bchhat se gir\\w*|\\bmedha nundi paddadu\\b",
+      "fell from the terrace"
+    ],
+    [
+      "\\bgarbhavati\\b|\\bgarbhini\\b",
+      "pregnant"
+    ],
+    [
+      "\\bpregnant hoon aur khoon\\b",
+      "pregnant bleeding"
+    ],
+    [
+      "\\brakthasravam\\b",
+      "bleeding"
+    ],
+    [
+      "\\bkadupu noppi ekkuva\\b",
+      "severe pain"
+    ],
+    [
+      "\\bsir mein bahut tez dard\\b|\\bsir fat raha\\b|\\bthala noppi chala ekkuva\\b|\\bbhayankaramaina thala noppi\\b",
+      "sudden worst headache"
+    ],
+    [
+      "\\bkhoon ki ulti\\b|\\bulti mein khoon\\b|\\braktham vanthi\\b|\\bvanthilo raktam\\b",
+      "vomiting blood"
+    ],
+    [
+      "\\bpehchan nahi\\w*|\\bgurthupattatledu\\b",
+      "does not recognize"
+    ],
+    [
+      "\\bbahki bahki\\b|\\bemi matladutunnado teliyatledu\\b",
+      "talking nonsense"
+    ],
+    [
+      "\\bjal gay[ai]\\b|\\bkaalipoyindi\\b|\\bkaalindi\\b|\\bnippu antukundi\\b|\\b(garam tel|garam pani|vedi neellu) (gir|padd)\\w*",
+      "burned"
+    ],
+    [
+      "\\b(sir|sar|thala|thalaki)\\b[^.?!]{0,10}\\b(chot|phat|debba)\\w*",
+      "head injury"
+    ],
+    [
+      "\\baccident ho gaya\\b",
+      "road accident"
+    ],
+    [
+      "\\bkindapadipoyadu lechatledu\\b|\\bchakkar aake gir\\w*",
+      "fell down and not getting up"
+    ],
+    [
+      "\\bachanak\\b",
+      "suddenly"
+    ]
+  ],
+  "negation": "\\b(not|no|never|isn'?t|wasn'?t|doesn'?t|didn'?t|don'?t|hasn'?t|haven'?t|without|denies)\\s+(have\\s+|has\\s+|had\\s+|having\\s+|any\\s+|a\\s+|an\\s+|signs?\\s+of\\s+|been\\s+)*$",
+  "general_question": "^(please )?(what|why|which|how|when|where|is|are|does|do|can|could|should|will|who|tell me|explain|define|meaning of)\\b",
+  "personal": "\\b(my|mine|he|she|him|her|his|hers|this|someone|somebody|we|our|us|i|i'm|im|me|amma|nanna|papa|mummy|mom|dad|mother|father|son|daughter|wife|husband|baby|child|brother|sister|uncle|aunt|grandma|grandpa|grandmother|grandfather|right now)\\b",
+  "resolved": "\\b(gone|fine|okay|ok|better) now\\b|\\bwent away\\b|\\bnow (she|he) is (fine|okay|ok)\\b|\\bnow i am (fine|okay|ok)\\b",
+  "past": "\\b(last|previous) (year|month|week|night|time)\\b|\\b\\w+ (years?|months?|weeks?) ago\\b|\\bin (19|20)\\d\\d\\b|\\bas a child\\b|\\bhistory of\\b|\\bwhen i was\\b|(?<!since )\\byesterday\\b|\\bsince \\d+ years\\b",
+  "still_now": "\\b(right now|still|again|just now|currently|at the moment|is now|now he|now she|now i)\\b",
+  "severe": "\\b(heavy|heavily|badly|lot|lots|won'?t stop|not stop\\w*|does not stop|pouring|spurting|gushing|pregnan\\w*)\\b",
+  "rules": [
+    {
+      "guide": "check",
+      "pattern": "\\b(not|isn'?t|is not|stopped|stop|stops|no longer|hasn'?t been)\\s+(breathing|breathe|breath)\\b|\\bbreathing\\s+(has\\s+)?stopped\\b|\\bno breath(ing)?\\b|\\bno pulse\\b|\\b(heart|heartbeat)\\s+(has\\s+)?stopped\\b|\\bno heartbeat\\b|\\bcardiac arrest\\b|\\blifeless\\b|\\bunconscious|\\bnot conscious\\b|\\bnot (responding|answering|waking|getting up|moving)\\b|\\b(won'?t|will not|can'?t|cannot|can not|unable to|does not|doesn'?t|did not|didn'?t) (wake|answer me|respond|get up)\\b|\\bno response\\b|\\bunresponsive\\b|\\bcollaps(e|ed|es|ing)\\b|\\bfaint(ed|ing)\\b|\\bpass(ed|ing) out\\b|\\bblack(ed|ing) out\\b|\\bfell down (suddenly|and (is )?(not|can'?t|cannot|unable))|\\bsuddenly fell\\b|\\bdropped to the floor\\b|\\bslumped\\b|\\beyes (are )?not opening\\b|\\bdrown\\w*|\\belectric(al)? shock\\b|\\bcurrent (laga|kottindi)\\b|\\bfell in the (water|well|tank|pond|river)\\b"
+    },
+    {
+      "guide": "choking",
+      "pattern": "\\bchok(e|es|ed|ing)\\b(?!\\s+up\\b)|\\bstuck in (his|her|my|the|their) throat\\b|\\bstuck in\\b[^.?!]{0,25}\\bthroat\\b|\\bswallowed a (coin|button|marble|bone|seed|toy)\\b"
+    },
+    {
+      "guide": "bleeding",
+      "pattern": "\\bbleed(s|ing)?\\b|\\blots? of blood\\b|\\bblood\\b[^.?!]{0,20}\\b(pouring|flowing|everywhere|won'?t stop|not stopping|not stop|spurting|gushing|coming out)\\b|\\b(too much|so much|a lot of) blood\\b|\\bblood keeps coming\\b|\\b(hand|finger|leg|arm)\\b[^.?!]{0,15}\\bcut (off|in the machine)\\b",
+      "minor": "\\b(gums?|nose|nosebleed|periods?|menstrual|piles|stool|spotting|pimple|tooth|teeth|scratch)\\b"
+    },
+    {
+      "guide": "chest_pain",
+      "pattern": "\\bchest\\b[^.?!]{0,30}\\b(pain\\w*|pressure|tight\\w*|hurt\\w*|heav\\w*|squeez\\w*|discomfort)\\b|\\b(pain\\w*|pressure|tight\\w*|heav\\w*|squeez\\w*|hurt\\w*)\\b[^.?!]{0,30}\\bchest\\b|\\bheart (pain|paining|ache)\\b|\\bheart attack\\b|\\bchest ache\\b|\\bheart\\b[^.?!]{0,12}\\b(pain\\w*|ache)\\b|\\b(arm|jaw)\\b[^.?!]{0,25}\\bsweat\\w*",
+      "minor": "\\b(x.?ray|size|shirt|workout|gym)\\b"
+    },
+    {
+      "guide": "stroke",
+      "pattern": "\\bstroke\\b(?!\\s+of\\b)|\\bface\\b[^.?!]{0,20}\\bdroop\\w*|\\bdroop\\w*\\b[^.?!]{0,15}\\bface\\b|\\bmouth\\b[^.?!]{0,25}\\b(crooked|one side|twisted|droop\\w*)\\b|\\bslurr\\w*|\\b(can'?t|cannot|unable to)\\s+(speak|talk)\\b|\\b(arm|leg|side|hand)\\b[^.?!]{0,20}\\b(weak\\w*|numb\\w*|can'?t (move|lift)|cannot (move|lift)|paraly\\w*)\\b|\\b(weak\\w*|numb\\w*|can'?t (move|lift)|cannot (move|lift))\\b[^.?!]{0,25}\\b(arm|leg|hand|side)\\b|\\bparaly\\w*|\\b(worst|sudden\\w*|thunderclap)\\b[^.?!]{0,25}\\b(headache|head pain|pain in (my|his|her) head)\\b|\\bsudden\\w*\\b[^.?!]{0,25}\\b(confus\\w*|not making sense|talking nonsense)\\b|\\b(not|doesn'?t|does not) recogni[sz]e\\b|\\bone side of (his|her|my|the) face\\b|\\bwords\\b[^.?!]{0,20}\\bnot coming\\b|\\btalking (strangely|nonsense)\\b|\\bhalf of (his|her|my|the) body\\b|\\bheadache\\b[^.?!]{0,25}\\bstiff neck\\b|\\b(doesn'?t|does not) know where (he|she)\\b",
+      "minor": "\\b(sitting|sleeping on|slept on|cross legged|gym|exercise|workout)\\b"
+    },
+    {
+      "guide": "snakebite",
+      "pattern": "\\bsnake\\s*bite|\\bbitten by\\b[^.?!]{0,12}\\b(snake|cobra|viper|krait)\\b|\\b(snake|cobra|viper|krait)\\b[^.?!]{0,25}\\b(bit|bitten|bite|bites)\\b"
+    },
+    {
+      "guide": "seizure",
+      "pattern": "\\bseizures?\\b|\\bconvuls\\w*|\\b(is|are|was|started|keeps?) fitting\\b|\\b(having|had|getting|got|has|have) (a )?fits?\\b|\\bshaking all over\\b|\\bwhole body\\b[^.?!]{0,15}\\b(jerk\\w*|shak\\w*)|\\bjerking\\b|\\beyes rolled\\b|\\bfoam\\b[^.?!]{0,20}\\bmouth\\b|\\bepilep\\w* attack\\b"
+    },
+    {
+      "guide": "low_sugar",
+      "pattern": "\\blow (blood )?sugar\\b(?!\\s+(diet|biscuit|food|fruit|snack))|\\bsugar (is |has gone |went )?(very )?low\\b|\\bsugar (has )?(dropped|crashed)\\b|\\bhypo(glyc\\w*)?\\b|\\bdiabet\\w*\\b[^.?!]{0,60}\\b(sweat\\w*|shak\\w*|confus\\w*|drows\\w*|dizzy|faint\\w*|weak)\\b|\\b(sweat\\w*|shak\\w*|confus\\w*|drows\\w*)\\b[^.?!]{0,60}\\bdiabet\\w*"
+    },
+    {
+      "guide": "breathing",
+      "pattern": "\\b(can'?t|cannot|can not|unable to|not able to|trouble|difficulty( in)?|struggling( to)?|hard to|problem in)\\s*(for )?(breath|breathe|breathing)\\b|\\bbreathing\\s+(difficulty|trouble|problem|very fast|fast|hard)\\b|\\bbreathless\\b|\\bshort(ness)? of breath\\b|\\bout of breath\\b|\\bgasping\\b|\\bsuffocat\\w*|\\basthma\\b[^.?!]{0,25}\\b(attack|bad|severe|worse|can'?t|cannot)\\b|\\bwheez\\w*|\\b(blue|bluish)\\b[^.?!]{0,15}\\blips\\b|\\blips\\b[^.?!]{0,25}\\b(blue|bluish)\\b|\\b(chest|ribs)\\b[^.?!]{0,15}\\bpulling\\b|\\bcatch (his|her|my) breath\\b",
+      "minor": "\\b(blocked nose|nose is blocked|through (it|my nose)|stuffy)\\b"
+    },
+    {
+      "guide": "allergy",
+      "pattern": "\\banaphyla\\w*|\\ballergic reaction\\b|\\b(lips?|tongue|throat|face)\\b[^.?!]{0,25}\\b(swell\\w*|swollen|clos\\w*|tight\\w*|block\\w*|thick)\\b|\\b(swell\\w*|swollen)\\b[^.?!]{0,20}\\b(lips?|tongue|throat|face)\\b|\\bhives\\b[^.?!]{0,30}\\b(breath\\w*|swell\\w*|throat)\\b|\\ballerg\\w*\\b[^.?!]{0,30}\\b(attack|severe|can'?t (breathe|talk|swallow)|cannot (breathe|talk|swallow)|throat|breath\\w*)\\b|\\b(severe|bad)\\b[^.?!]{0,10}\\ballerg\\w*|\\bsting\\b[^.?!]{0,30}\\b(swallow|breath\\w*|face|swell\\w*|puffed)\\b|\\binjection\\b[^.?!]{0,30}\\b(swell\\w*|swollen)\\b"
+    },
+    {
+      "guide": "poisoning",
+      "pattern": "(?<!food )\\bpoison\\w*(?!\\s+ivy)|\\boverdos\\w*|\\b(swallowed|drank|drunk|ate|consumed|taken|took|had|drinking)\\b[^.?!]{0,40}\\b(kerosene|pesticide|bleach|acid|phenyl|harpic|toilet cleaner|cleaner|insecticide|chemical|detergent)\\b|\\b(swallowed|ate|consumed|taken|took)\\b[^.?!]{0,20}\\b(\\d{2,}|five|six|seven|eight|nine|ten|fifteen|twenty|thirty|forty|fifty|many|several|lots? of|a lot of|all|whole|entire|too many|too much|double)\\b[^.?!]{0,25}\\b(pills?|tablets?|medicines?|insulin|sleeping)\\b|\\b(pills?|tablets?|medicines?|insulin)\\b[^.?!]{0,30}\\bby mistake\\b|\\bby mistake\\b[^.?!]{0,30}\\b(pills?|tablets?|medicines?|insulin)\\b|\\bwrong (medicine|tablets?|pills?|insulin)\\b|\\b(child|baby|kid|toddler|son|daughter)\\b[^.?!]{0,15}\\b(ate|swallowed|drank)\\b[^.?!]{0,30}\\b(tablets?|pills?|medicines?|syrup|battery|strip|cleaner)\\b|\\bwhole (bottle|strip)\\b|\\bover dose\\b|\\brat kill\\b|\\bgas (smell|leak)\\b|\\bcarbon monoxide\\b"
+    },
+    {
+      "guide": "burns",
+      "pattern": "(?<!heart )(?<!sun )\\bburn(t|ed|s)?\\b(?!\\s+(\\w+\\s+)?(calor\\w*|fat|rice|food|weight))|\\bscald\\w*|\\b(spilled|spilt|poured|fell)\\b[^.?!]{0,25}\\b(hot|boiling)\\b|\\bcaught fire\\b|\\bfire accident\\b|\\b(hot|boiling)\\b[^.?!]{0,15}\\b(fell|spilled|spilt|poured)\\b|\\bacid\\b[^.?!]{0,15}\\bfell\\b",
+      "minor": "\\b(chapati|roti|rice|food|toast|milk|dal|calories|bread|dosa|fat)\\b"
+    },
+    {
+      "guide": "head_injury",
+      "pattern": "\\b(hit|bang\\w*|bump\\w*|knock\\w*|struck)\\b[^.?!]{0,20}\\bhead\\b(?!\\s+(nurse|of|doctor|teacher|office))|\\bhurt (his|her|my|the) head\\b|\\bhead (injury|wound)\\b|\\bfell\\b[^.?!]{0,40}\\bhead\\b|\\bfell (from|off)\\b[^.?!]{0,20}\\b(terrace|roof|stairs|height|bike|tree|building)\\b|\\bhead\\b[^.?!]{0,15}\\b(hit|injur\\w*|struck|bang\\w*)\\b|\\binjury on the head\\b"
+    },
+    {
+      "guide": "faint",
+      "pattern": "\\b(feel(s|ing)?|felt|about to|going to) faint\\b"
+    },
+    {
+      "guide": null,
+      "pattern": "\\b(vomit\\w*|vommit\\w*|cough\\w*|throw\\w* up|ulti)\\b[^.?!]{0,20}\\bblood\\b|\\bblood\\b[^.?!]{0,15}\\b(vomit\\w*|ulti|vanthi)\\b|\\bblack (tarry )?stools?\\b|\\b(road|bike|car|bus) accident\\b|\\bmet with an accident\\b"
+    },
+    {
+      "guide": null,
+      "pattern": "\\bpregnan\\w*\\b[^.?!]{0,60}\\b(bleed\\w*|blood|severe|fits?|blurred|not moving|no movement|water broke)\\b|\\bbaby\\b[^.?!]{0,25}\\b(not moving|no movement|blue|floppy|limp|not crying|not feeding|ribs)\\b|\\bno baby movement\\b|\\bnewborn\\b[^.?!]{0,25}\\b(not crying|limp|blue|floppy)\\b|\\bbaby is coming\\b|\\bwater broke\\b|\\bbaby fell\\b"
+    }
+  ]
+}

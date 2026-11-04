@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { HealthCard } from '../components/HealthCard'
 import { NearbyHelp } from '../components/NearbyHelp'
 import { clockOf, loadDoses, personName, today, useHousehold } from '../household'
+import { isNativeApp, native } from '../native'
 import { Icon, useUi } from '../ui'
+import { askOnOpen, listenOnOpen } from './Chat'
 import { Moon } from './Guard'
 
 interface Props {
@@ -25,11 +28,18 @@ interface Props {
 
 export function Home(props: Props) {
   const { hasSession, busy, error, notice, guardOn, inApp, ownerName, onStart, onHelp, onGuard, onChat, onMeds, onFamily, onResume, onAbout, onProfile } = props
-  const { t } = useUi()
+  const { t, serverDown } = useUi()
   const [h] = useHousehold()
   const next = today(h, loadDoses()).find((d) => d.status === 'upcoming' || d.status === 'due' || d.status === 'scheduled')
   const hour = new Date().getHours()
   const hello = hour < 12 ? 'home.morning' : hour < 17 ? 'home.afternoon' : 'home.evening'
+  const [question, setQuestion] = useState('')
+  const canVoice = isNativeApp() && !!native()?.canListen?.()
+  const ask = () => {
+    if (!question.trim()) return
+    askOnOpen(question.trim())
+    onChat()
+  }
 
   return (
     <div className="stack">
@@ -48,11 +58,53 @@ export function Home(props: Props) {
             {error}
           </div>
         )}
-        <button className="btn help block" onClick={onHelp} data-testid="help-now">
+        <form
+          className="ask-box"
+          onSubmit={(e) => {
+            e.preventDefault()
+            ask()
+          }}
+        >
+          <textarea
+            className="input"
+            value={question}
+            maxLength={500}
+            rows={question.length > 60 ? 3 : question.length > 25 ? 2 : 1}
+            placeholder={t('home.askPlaceholder')}
+            aria-label={t('home.question')}
+            onChange={(e) => setQuestion(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                ask()
+              }
+            }}
+            data-testid="home-ask"
+          />
+          {canVoice && !question.trim() ? (
+            <button
+              type="button"
+              className="btn mic"
+              aria-label={t('chat.speak')}
+              onClick={() => {
+                listenOnOpen()
+                onChat()
+              }}
+              data-testid="home-mic"
+            >
+              <Icon name="mic" size={24} />
+            </button>
+          ) : (
+            <button type="submit" className="btn primary" disabled={!question.trim()} aria-label={t('chat.send')} data-testid="home-send">
+              <Icon name="send" size={22} />
+            </button>
+          )}
+        </form>
+        <p className="tiny muted" style={{ margin: 0 }}>
+          {t('home.askNote')}
+        </p>
+        <button className="btn talk block" onClick={onHelp} data-testid="help-now">
           <HeartPulse /> {t('home.help')}
-        </button>
-        <button className="btn talk block" onClick={onChat} data-testid="talk-aura">
-          <Icon name="mic" size={24} /> {t('home.talk')}
         </button>
       </section>
 
@@ -94,12 +146,12 @@ export function Home(props: Props) {
           <span className="tile-title">{t('home.family')}</span>
           <span className="tile-sub">{t('home.familySub')}</span>
         </button>
-        <button className="tile" onClick={hasSession ? onResume : onStart} disabled={busy} data-testid={hasSession ? 'tile-resume' : 'start'}>
+        <button className="tile" onClick={hasSession ? onResume : onStart} disabled={busy || serverDown} data-testid={hasSession ? 'tile-resume' : 'start'}>
           <span className="tile-icon">
             <Icon name="doc" />
           </span>
           <span className="tile-title">{t('home.card')}</span>
-          <span className="tile-sub">{busy ? t('common.loading') : hasSession ? t('home.resume') : t('home.cardNote')}</span>
+          <span className="tile-sub">{serverDown ? t('home.cardLaptop') : busy ? t('common.loading') : hasSession ? t('home.resume') : t('home.cardNote')}</span>
         </button>
       </div>
       {hasSession && (
@@ -108,7 +160,7 @@ export function Home(props: Props) {
         </button>
       )}
 
-      <HealthCard onEdit={onFamily} />
+      {h.people.some((p) => p.name.trim()) && <HealthCard onEdit={onFamily} />}
 
       <NearbyHelp />
 
