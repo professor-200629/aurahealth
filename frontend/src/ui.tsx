@@ -116,6 +116,30 @@ const PATHS: Record<string, ReactNode> = {
       <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
     </>
   ),
+  send: <path d="M4 12l16-8-6 16-2.6-6.4z" fill="currentColor" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" />,
+  menu: <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />,
+  home: (
+    <path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />
+  ),
+  user: (
+    <>
+      <circle cx="12" cy="8.5" r="4" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M4.5 20.5c.8-4 3.8-6.2 7.5-6.2s6.7 2.2 7.5 6.2" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </>
+  ),
+  aid: (
+    <>
+      <rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 8v8M8 12h8" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    </>
+  ),
+  gear: (
+    <>
+      <circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" strokeWidth="2" />
+      <path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.9 1.9M16.6 16.6l1.9 1.9M5.5 18.5l1.9-1.9M16.6 7.4l1.9-1.9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </>
+  ),
+  moon: <path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />,
   speaker: (
     <>
       <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="none" stroke="currentColor" strokeWidth="2" strokeLinejoin="round" />

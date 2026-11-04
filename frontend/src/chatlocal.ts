@@ -24,10 +24,10 @@ export interface AuraAnswer {
   source: 'phone' | 'ai'
 }
 
-const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure', 'low_sugar']
+const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure', 'low_sugar', 'breathing', 'allergy', 'poisoning', 'burns', 'head_injury', 'faint', 'fever']
 const NEG = /\b(not|no|never|isn'?t|wasn'?t|doesn'?t|didn'?t)\s+(\w+\s+){0,2}$/i
-const RED_FLAGS: [RegExp, string | null][] = [
-  [/\b(not|isn'?t|stopped|no longer)\s+(breathing|breathe)|\bunconscious|\bnot (responding|answering|waking)|\bwon'?t wake|\bcollapsed?\b|\bfainted\b|\bpassed out\b|\bblacked out\b/gi, 'check'],
+const RED_FLAGS: [RegExp, string][] = [
+  [/\b(not|isn'?t|stopped|no longer)\s+(breathing|breathe)|\bunconscious|\bnot (responding|answering|waking)|\bwon'?t wake|\bcollapsed?\b|\bfainted\b|\bpassed out\b|\bblacked out\b|\bunresponsive\b/gi, 'check'],
   [/\bchok(e|es|ed|ing)\b/gi, 'choking'],
   [/\bbleed(s|ing)?\b|\blots? of blood\b|\bblood (is )?(pouring|flowing|everywhere|won'?t stop)/gi, 'bleeding'],
   [/\bchest\b[^.?!]{0,30}\b(pain|pressure|tight|hurts?|heavy)|\bheart attack\b/gi, 'chest_pain'],
@@ -35,8 +35,24 @@ const RED_FLAGS: [RegExp, string | null][] = [
   [/\bsnake/gi, 'snakebite'],
   [/\bseizures?\b|\bfitting\b|\b(a|the) fit\b|\bfits\b|\bshaking all over\b|\bjerking\b|\bconvuls/gi, 'seizure'],
   [/\blow (blood )?sugar\b|\bsugar (is |has gone |went )?(very )?(low|down)\b|\bhypo(glyc\w*)?\b|\bdiabet\w*\b[^.?!]{0,60}\b(sweat\w*|shak\w*|confus\w*|drows\w*|dizzy|faint\w*|weak)\b|\b(sweat\w*|shak\w*|confus\w*|drows\w*)\b[^.?!]{0,60}\bdiabet\w*/gi, 'low_sugar'],
-  [/\bpoison|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|chemical|bleach|acid|kerosene)|\btoo many\b[^.?!]{0,20}\b(pills|tablets|medicines?)|\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bunresponsive\b/gi, null],
+  [/\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bshort(ness)? of breath\b|\basthma\b|\bwheez\w*/gi, 'breathing'],
+  [/\banaphyla\w*|\ballergic reaction\b|\b(lips?|tongue|throat|face)\b[^.?!]{0,25}\b(swell\w*|swollen)\b|\b(swell\w*|swollen)\b[^.?!]{0,20}\b(lips?|tongue|throat|face)\b|\bhives\b/gi, 'allergy'],
+  [/\bpoison\w*|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|medicines?|chemical|bleach|acid|kerosene|pesticide|phenyl)|\btoo many\b[^.?!]{0,20}\b(pills|tablets|medicines?)|\bdrank\b[^.?!]{0,30}\b(kerosene|pesticide|bleach|acid|phenyl)/gi, 'poisoning'],
+  [/\bburn(t|ed|s)?\b|\bscald\w*|\b(spilled|spilt|poured)\b[^.?!]{0,25}\b(hot|boiling)\b/gi, 'burns'],
+  [/\b(hit|bang\w*|bump\w*|knock\w*|struck|hurt)\b[^.?!]{0,20}\bhead\b|\bhead (injury|wound)\b|\bfell\b[^.?!]{0,40}\bhead\b/gi, 'head_injury'],
+  [/\b(feel(s|ing)?|felt|about to|going to) faint\b|\blight-?headed\b/gi, 'faint'],
 ]
+
+// Words that point to a guide but are not an emergency by themselves: the AI answers (it can name warning signs),
+// with the guide attached; if the AI cannot answer, the guide's own first steps are shown.
+const HINTS: [RegExp, string][] = [
+  [/\bfever\b|\bhigh temperature\b|\bbukhar\b/i, 'fever'],
+  [/\bdizz(y|iness)\b/i, 'faint'],
+]
+
+export function guideHints(text: string): string[] {
+  return HINTS.filter(([re]) => re.test(text)).map(([, g]) => g)
+}
 
 export function redFlags(text: string): { found: boolean; guides: string[] } {
   let found = false
@@ -45,7 +61,7 @@ export function redFlags(text: string): { found: boolean; guides: string[] } {
     for (const m of text.matchAll(pattern)) {
       if (NEG.test(text.slice(Math.max(0, (m.index ?? 0) - 25), m.index))) continue
       found = true
-      if (guide && !guides.includes(guide)) guides.push(guide)
+      if (!guides.includes(guide)) guides.push(guide)
       break
     }
   }
@@ -81,6 +97,7 @@ export function localAnswer(text: string, h: Household, doses: Dose[], t: T): Au
     if (has(s, /\bblood group\b/)) return say(p.blood ? 'chat.local.blood' : 'chat.local.bloodUnknown', 'open_family', { name: p.name, blood: p.blood })
     return say(p.allergies.trim() ? 'chat.local.allergies' : 'chat.local.allergiesUnknown', 'open_family', { name: p.name, text: p.allergies.trim() })
   }
+  if (has(s, /\b(how|where|can i|want to|need to)\b.*\b(add|save)\b.*\b(mother|mom|mum|amma|father|dad|nanna|parents?|son|daughter|wife|husband|child|children|family|person|people|member|someone)\b/)) return say('chat.local.addPerson', 'open_family')
   if (has(s, /\b(night guard|knock|knocks)\b/)) return say('chat.local.guard', 'open_guard')
   if (has(s, /\b(handoff|operator card)\b/)) return say('chat.local.card', 'open_card')
   if (has(s, /\b(what can you do|what do you do|who are you|what are you|how (does|do) (this|the) app|how to use)\b/)) return say('chat.local.about', 'none')

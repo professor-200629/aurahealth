@@ -55,9 +55,9 @@ DOSE = re.compile(
 # Emergency signs in the person's own words → the guide that fits (None: call only). Kept in step with the phone's
 # offline copy in frontend/src/chatlocal.ts.
 _NEG = re.compile(r"\b(not|no|never|isn'?t|wasn'?t|doesn'?t|didn'?t)\s+(\w+\s+){0,2}$", re.IGNORECASE)
-RED_FLAGS: list[tuple[re.Pattern, str | None]] = [
+RED_FLAGS: list[tuple[re.Pattern, str]] = [
     (re.compile(r"\b(not|isn'?t|stopped|no longer)\s+(breathing|breathe)|\bunconscious|\bnot (responding|answering|waking)"
-                r"|\bwon'?t wake|\bcollapsed?\b|\bfainted\b|\bpassed out\b|\bblacked out\b", re.I), "check"),
+                r"|\bwon'?t wake|\bcollapsed?\b|\bfainted\b|\bpassed out\b|\bblacked out\b|\bunresponsive\b", re.I), "check"),
     (re.compile(r"\bchok(e|es|ed|ing)\b", re.I), "choking"),
     (re.compile(r"\bbleed(s|ing)?\b|\blots? of blood\b|\bblood (is )?(pouring|flowing|everywhere|won'?t stop)", re.I), "bleeding"),
     (re.compile(r"\bchest\b[^.?!]{0,30}\b(pain|pressure|tight|hurts?|heavy)|\bheart attack\b", re.I), "chest_pain"),
@@ -67,9 +67,17 @@ RED_FLAGS: list[tuple[re.Pattern, str | None]] = [
     (re.compile(r"\blow (blood )?sugar\b|\bsugar (is |has gone |went )?(very )?(low|down)\b|\bhypo(glyc\w*)?\b"
                 r"|\bdiabet\w*\b[^.?!]{0,60}\b(sweat\w*|shak\w*|confus\w*|drows\w*|dizzy|faint\w*|weak)\b"
                 r"|\b(sweat\w*|shak\w*|confus\w*|drows\w*)\b[^.?!]{0,60}\bdiabet\w*", re.I), "low_sugar"),
-    (re.compile(r"\bpoison|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|chemical|bleach|acid|kerosene)"
+    (re.compile(r"\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bshort(ness)? of breath\b"
+                r"|\basthma\b|\bwheez\w*", re.I), "breathing"),
+    (re.compile(r"\banaphyla\w*|\ballergic reaction\b|\b(lips?|tongue|throat|face)\b[^.?!]{0,25}\b(swell\w*|swollen)\b"
+                r"|\b(swell\w*|swollen)\b[^.?!]{0,20}\b(lips?|tongue|throat|face)\b|\bhives\b", re.I), "allergy"),
+    (re.compile(r"\bpoison\w*|\boverdose|\bswallowed\b[^.?!]{0,30}\b(pills|tablets|medicines?|chemical|bleach|acid|kerosene|pesticide|phenyl)"
                 r"|\btoo many\b[^.?!]{0,20}\b(pills|tablets|medicines?)"
-                r"|\b(can'?t|cannot|trouble|struggling to|hard to)\s+breathe?\b|\bbreathless\b|\bunresponsive\b", re.I), None),
+                r"|\bdrank\b[^.?!]{0,30}\b(kerosene|pesticide|bleach|acid|phenyl)", re.I), "poisoning"),
+    (re.compile(r"\bburn(t|ed|s)?\b|\bscald\w*|\b(spilled|spilt|poured)\b[^.?!]{0,25}\b(hot|boiling)\b", re.I), "burns"),
+    (re.compile(r"\b(hit|bang\w*|bump\w*|knock\w*|struck|hurt)\b[^.?!]{0,20}\bhead\b|\bhead (injury|wound)\b"
+                r"|\bfell\b[^.?!]{0,40}\bhead\b", re.I), "head_injury"),
+    (re.compile(r"\b(feel(s|ing)?|felt|about to|going to) faint\b|\blight-?headed\b", re.I), "faint"),
 ]
 
 
@@ -82,7 +90,7 @@ def red_flags(text: str) -> tuple[bool, list[str]]:
             if _NEG.search(text[max(0, m.start() - 25):m.start()]):
                 continue  # "she is not bleeding"
             found = True
-            if guide and guide not in guides:
+            if guide not in guides:
                 guides.append(guide)
             break
     order = list(packs.guides()["guides"])

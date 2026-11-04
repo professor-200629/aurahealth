@@ -414,8 +414,12 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (web.canGoBack()) web.goBack();
-        else super.onBackPressed();
+        // An open menu or sheet closes first; then back one screen; then out of the app.
+        web.evaluateJavascript("window.auraBack ? window.auraBack() : false", closed -> {
+            if ("true".equals(closed)) return;
+            if (web.canGoBack()) web.goBack();
+            else super.onBackPressed();
+        });
     }
 
     @Override

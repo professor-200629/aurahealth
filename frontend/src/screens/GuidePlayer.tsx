@@ -227,7 +227,7 @@ export function GuidePlayer({ guideId, onGuide, onList, onCard }: Props) {
           <h3>{t('guide.doNot')}</h3>
           <ul>
             {guide.do_not.map((d) => (
-              <li key={d}>{d}</li>
+              <li key={d}>{fill(d)}</li>
             ))}
           </ul>
         </section>
@@ -237,7 +237,7 @@ export function GuidePlayer({ guideId, onGuide, onList, onCard }: Props) {
           <summary>{t('guide.goodToKnow')}</summary>
           <ul>
             {guide.notes.map((n) => (
-              <li key={n}>{n}</li>
+              <li key={n}>{fill(n)}</li>
             ))}
           </ul>
         </details>

@@ -38,9 +38,15 @@ export interface Med {
   since: number
 }
 
+export interface Owner {
+  name: string // the person using this phone (often the carer); shown on the profile and the home greeting
+  phone: string
+}
+
 export interface Household {
   version: 1
   country: string
+  owner: Owner
   people: Person[]
   contacts: HouseContact[]
   meds: Med[]
@@ -61,7 +67,7 @@ export interface Dose {
 }
 
 const KEY = 'aura.household'
-const EMPTY: Household = { version: 1, country: 'IN', people: [], contacts: [], meds: [] }
+const EMPTY: Household = { version: 1, country: 'IN', owner: { name: '', phone: '' }, people: [], contacts: [], meds: [] }
 
 export const newPerson = (main: boolean): Person => ({
   id: `p${rid()}`,
@@ -97,6 +103,7 @@ function normalise(h: Partial<Household> | null): Household {
   return {
     version: 1,
     country: h.country || 'IN',
+    owner: { name: h.owner?.name ?? '', phone: h.owner?.phone ?? '' },
     people: Array.isArray(h.people) ? h.people.map((p) => ({ ...newPerson(false), ...p })) : [],
     contacts: Array.isArray(h.contacts) ? h.contacts.map((c) => ({ ...newContact(), ...c })) : [],
     meds: Array.isArray(h.meds) ? h.meds.map((m) => ({ ...newMed(''), ...m, times: Array.isArray(m.times) ? m.times : [] })) : [],

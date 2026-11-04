@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { api } from '../api'
 import { askFromPhone, phoneAiReady } from '../aura'
-import { localAnswer, redFlags } from '../chatlocal'
+import { guideHints, localAnswer, redFlags } from '../chatlocal'
+import { readingAnswer } from '../readings'
 import type { AuraAnswer, ChatAction } from '../chatlocal'
 import { PhoneAiKey } from '../components/PhoneAiKey'
 import { healthSpeech } from '../components/HealthCard'
@@ -23,7 +24,7 @@ interface Msg {
 // Kept while the app is open, so going to a guide and back keeps the conversation, and an answer that arrives
 // after the person left this screen is still there when they come back. Never saved.
 let history: Msg[] = []
-let waiting = false
+let waiting = 0 // questions still waiting for the AI; a new question is never blocked by them
 let nextId = 1
 const listeners = new Set<() => void>()
 const publish = () => listeners.forEach((fn) => fn())
@@ -35,12 +36,12 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
   const [household] = useHousehold()
   const [msgs, setMsgs] = useState<Msg[]>(history)
   const [text, setText] = useState('')
-  const [busy, setBusy] = useState(waiting)
+  const [busy, setBusy] = useState(waiting > 0)
   const [voice, setVoice] = useState<'' | 'listening' | 'processing'>('')
   const [voiceNote, setVoiceNote] = useState('')
   const [readAloud, setReadAloud] = useState(false)
   const [shareNote, setShareNote] = useState('')
-  const endRef = useRef<HTMLDivElement>(null)
+  const [thinking, setThinking] = useState('chat.thinking')
   const latest = useRef({ readAloud })
   latest.current = { readAloud }
   const laptopAi = !!health?.models.text && !serverDown
@@ -51,7 +52,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
   useEffect(() => {
     const update = () => {
       setMsgs(history)
-      setBusy(waiting)
+      setBusy(waiting > 0)
     }
     listeners.add(update)
     return () => {
@@ -59,8 +60,10 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
     }
   }, [])
   useEffect(() => {
-    endRef.current?.scrollIntoView({ block: 'end' })
-  }, [msgs])
+    // The very end of the page: the newest answer and its Call button then sit fully above the typing box.
+    const frame = requestAnimationFrame(() => window.scrollTo(0, document.documentElement.scrollHeight))
+    return () => cancelAnimationFrame(frame)
+  }, [msgs, busy])
   useEffect(() => () => stopSpeaking(), [])
   useEffect(() => {
     const again = () => setPhoneAi(phoneAiReady())
@@ -70,29 +73,49 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
 
   const ask = async (question: string, spoken: boolean) => {
     const q = question.trim()
-    if (!q || waiting) return
+    if (!q) return
+    const say = (answer: AuraAnswer) => {
+      history = [...history, { id: nextId++, role: 'aura', text: answer.text, answer }]
+      if (spoken || latest.current.readAloud) speak(answer.text)
+    }
     history = [...history, { id: nextId++, role: 'user', text: q }]
-    waiting = true
+    const convo = history
     setText('')
+    const instant = onPhone(q)
+    if (instant) {
+      say(instant)
+      publish()
+      return
+    }
+    // Everyday symptoms ("fever", "dizzy"): the guide's first steps at once; the AI adds to them when it can.
+    const hints = guideHints(q)
+    if (hints.length) say({ text: emergencyText(hints, t), guides: hints, action: 'none', source: 'phone' })
+    waiting++
+    setThinking('chat.thinking')
     publish()
-    const answer = await respond(history, q)
-    history = [...history, { id: nextId++, role: 'aura', text: answer.text, answer }]
-    waiting = false
+    const slow = window.setTimeout(() => setThinking('chat.slow'), 12000)
+    const answer = await fromAi(convo)
+    window.clearTimeout(slow)
+    waiting = Math.max(0, waiting - 1)
+    if (answer.source === 'ai') say({ ...answer, guides: answer.guides.filter((g) => !hints.includes(g)) })
+    else if (!hints.length) say(answer) // "the AI could not answer" is not worth saying when the guide is already there
     publish()
-    if (spoken || latest.current.readAloud) speak(answer.text)
   }
 
-  const respond = async (convo: Msg[], q: string): Promise<AuraAnswer> => {
+  /** What the phone can answer by itself, with no waiting. */
+  const onPhone = (q: string): AuraAnswer | null => {
     // Emergency words get the phone's own answer at once (call button + guide): waiting ~10 s for the AI costs time.
     const flags = redFlags(q)
     if (flags.found) return { text: emergencyText(flags.guides, t), guides: flags.guides, action: 'call_emergency', source: 'phone' }
-    const local = localAnswer(q, household, loadDoses(), t)
-    if (local) return local
+    return readingAnswer(q) ?? localAnswer(q, household, loadDoses(), t)
+  }
+
+  const fromAi = async (convo: Msg[]): Promise<AuraAnswer> => {
     const turns = convo.slice(-10).map((m) => ({ role: m.role, text: m.text }))
     let phoneError = ''
     if (phoneAi) {
       // The phone calls Muse Glimmer itself with its own internet: no laptop needed.
-      const r = await askFromPhone(turns)
+      const r = await askFromPhone(turns, () => setThinking('chat.retrying'))
       if ('answer' in r) return r.answer
       phoneError = r.error
     }
@@ -171,6 +194,26 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
           {t('chat.lead')}
         </p>
       </div>
+      <label className="row small" style={{ gap: 8 }}>
+        <input type="checkbox" checked={readAloud} onChange={(e) => setReadAloud(e.target.checked)} />
+        <span>{t('chat.readAloud')}</span>
+      </label>
+      <p className="tiny muted" style={{ margin: 0 }}>
+        {phoneAi ? t('chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
+      </p>
+      <PhoneAiKey />
+      {msgs.length > 0 && (
+        <button
+          className="btn ghost"
+          onClick={() => {
+            stopSpeaking()
+            history = []
+            publish()
+          }}
+        >
+          {t('chat.clear')}
+        </button>
+      )}
       <div className="chat-log" aria-live="polite" data-testid="chat-log">
         {msgs.length === 0 && (
           <div className="bubble aura">
@@ -193,14 +236,19 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
         ))}
         {busy && (
           <div className="bubble aura" data-testid="chat-busy">
-            <p className="muted">{t('chat.thinking')}</p>
+            <p className="muted">{t(thinking)}</p>
           </div>
         )}
-        <div ref={endRef} />
       </div>
       {shareNote && (
         <p className="small" role="status" style={{ margin: 0 }}>
           {shareNote}
+        </p>
+      )}
+      {voice && <p className="small" style={{ margin: 0 }}>{voice === 'listening' ? t('chat.listening') : t('chat.processing')}</p>}
+      {voiceNote && (
+        <p className="small" role="status" style={{ margin: 0 }}>
+          {voiceNote}
         </p>
       )}
       <form
@@ -214,7 +262,7 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
           className="input"
           value={text}
           maxLength={500}
-          rows={2}
+          rows={text.length > 70 ? 3 : text.length > 30 ? 2 : 1}
           placeholder={voice === 'listening' ? t('chat.listening') : t('chat.placeholder')}
           aria-label={t('chat.placeholder')}
           onChange={(e) => setText(e.target.value)}
@@ -226,43 +274,15 @@ export function Chat({ onGuide, onOpen }: { onGuide: (id: string) => void; onOpe
           }}
           data-testid="chat-text"
         />
-        <div className="chat-buttons">
-          {canVoice && (
-            <button type="button" className={`btn mic ${voice ? 'on' : ''}`} onClick={mic} aria-pressed={!!voice} aria-label={voice ? t('chat.stopVoice') : t('chat.speak')} data-testid="chat-mic">
-              <Icon name="mic" size={24} />
-            </button>
-          )}
-          <button type="submit" className="btn primary" disabled={busy || !text.trim()} data-testid="chat-send">
-            {t('chat.send')}
+        {canVoice && (
+          <button type="button" className={`btn mic ${voice ? 'on' : ''}`} onClick={mic} aria-pressed={!!voice} aria-label={voice ? t('chat.stopVoice') : t('chat.speak')} data-testid="chat-mic">
+            <Icon name="mic" size={24} />
           </button>
-        </div>
-      </form>
-      {voice && <p className="small" style={{ margin: 0 }}>{voice === 'listening' ? t('chat.listening') : t('chat.processing')}</p>}
-      {voiceNote && (
-        <p className="small" role="status" style={{ margin: 0 }}>
-          {voiceNote}
-        </p>
-      )}
-      <label className="row small" style={{ gap: 8 }}>
-        <input type="checkbox" checked={readAloud} onChange={(e) => setReadAloud(e.target.checked)} />
-        <span>{t('chat.readAloud')}</span>
-      </label>
-      <p className="tiny muted" style={{ margin: 0 }}>
-        {phoneAi ? t('chat.notePhone') : laptopAi ? t('chat.noteOnline') : t('chat.noteOffline')}
-      </p>
-      <PhoneAiKey />
-      {msgs.length > 0 && (
-        <button
-          className="btn ghost"
-          onClick={() => {
-            stopSpeaking()
-            history = []
-            publish()
-          }}
-        >
-          {t('chat.clear')}
+        )}
+        <button type="submit" className="btn primary" disabled={!text.trim()} aria-label={t('chat.send')} data-testid="chat-send">
+          <Icon name="send" size={22} />
         </button>
-      )}
+      </form>
     </div>
   )
 }

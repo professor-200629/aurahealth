@@ -59,6 +59,14 @@ clear, timed record.
   Measured in `EVALUATION.md` section 2e; compared with the August health app on the same phone in
   [`docs/AUGUST_VS_AURA.md`](docs/AUGUST_VS_AURA.md) (Aura 75–76/80, August 25–44/80 on 10 questions, scored by AI).
   Replies can be read aloud.
+- **Health readings answered on the phone.** "Temperature 99.9", "BP 190/120", "sugar 62", "oxygen 91": Aura
+  answers at once, offline, with fixed thresholds from the NHS (fever from 38°C / 100.4°F; oxygen 92% or below),
+  the American Heart Association (above 180/120 with symptoms is an emergency) and the American Diabetes
+  Association (sugar below 70 mg/dL is low, below 54 serious), and says when to call 112
+  (`frontend/src/readings.ts`).
+- **A real app layout.** A side menu, a profile (no account and no login: it stays on the phone), and a bottom bar
+  with Home, Aura, Medicines, Family and a red **SOS** button in the middle. SOS opens the emergency sheet (Call 112,
+  share location, read the health card aloud); the call needs that second tap, so a pocket press calls nobody.
 - **Family & health.** The people at home (name, age, blood group, conditions, allergies, regular medicines,
   notes) and the contacts: who is phoned first in an alert, who is texted, and who is the medicine guardian.
   Kept on the phone only. The **health card** on the home screen shows what to tell the operator and can read it
@@ -70,8 +78,9 @@ clear, timed record.
   restart, with no laptop and no internet.
 - **Help nearby.** "Nearest hospital" and "Nearest medical store" open Google Maps near the phone (needs internet);
   "Share my location" finds the phone with GPS and opens the share sheet with a map link.
-- **"Help someone now": step-by-step first aid while waiting for help.** 10 guides (start here, CPR, recovery
-  position, choking, heavy bleeding, chest pain, stroke signs, snakebite, seizure, low blood sugar in diabetes), adapted in plain English
+- **"Help someone now": step-by-step first aid while waiting for help.** 17 guides (start here, CPR, recovery
+  position, choking, heavy bleeding, chest pain, stroke signs, snakebite, seizure, low blood sugar in diabetes,
+  breathing difficulty or asthma, severe allergic reaction, poisoning, burns, head injury, feeling faint, fever), adapted in plain English
   from the IFRC 2020 first aid guidelines, one big step per screen, read aloud, with a 110-per-minute beat for
   chest compressions. **Every step tapped is saved with the phone's time** and appears on the handoff card,
   so the doctor sees what was done and when. It works with the laptop out of reach; the log is sent later.
@@ -233,7 +242,7 @@ Then tap **Status → Check now**: it should say the internet is not reachable w
 ```powershell
 cd C:\Users\Balu\Documents\aurahealth\backend
 uv run pytest -q                                          # 49 API and safety-rule tests (no model calls)
-$env:AURA_E2E = "1"; uv run pytest tests/test_e2e.py -v   # 7 browser tests in Microsoft Edge, phone size
+$env:AURA_E2E = "1"; uv run pytest tests/test_e2e.py -v   # 9 browser tests in Microsoft Edge, phone size
 uv run python scripts/eval_splitter.py                    # text helper, real calls to the active AI helper
 uv run python scripts/eval_guidefinder.py --set heldout2  # guide finder, real calls (also: dev, heldout)
 uv run python scripts/eval_reader.py --glimmer            # photo reader with Muse Glimmer (also: --ocr)
@@ -265,7 +274,8 @@ EVAL_RESULTS/ JSON output of real measurement runs
 
 ## Safety rules in code
 
-- Emergency control: `frontend/src/components/TopBar.tsx` (sticky, above every dialog), `EmergencyCard.tsx`.
+- Emergency control: the SOS button in `frontend/src/components/BottomNav.tsx` (always on screen, above every
+  sheet) opens `SosSheet.tsx`; the call itself is a plain `tel:112` link (the dialer opens; nothing is called by itself).
 - Exact-words check for the text helper: `backend/src/aurahealth/structuring.py` (`validate`, `uncovered`).
 - Report fields are proposals; the model's reading cannot be overwritten by the client:
   `backend/src/aurahealth/app.py` (`update_fields`), `extraction.py`.

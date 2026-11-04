@@ -58,3 +58,15 @@ able to swallow; no diet or sugar-free drinks. The IFRC's amount (15-20 g of glu
 in AuraHealth. The chat points to this guide when "diabetic" comes with sweating, shaking, confusion or drowsiness,
 or when someone says the sugar is low now. The guide finder's list was not changed (it was measured as it is).
 
+## 2 Nov 2026: seven more guides
+
+So that Aura can help with more of what happens at home, seven more guides were written from the IFRC 2020
+guidelines, in the same plain style, each with its IFRC pages: breathing difficulty or asthma attack (175-183),
+severe allergic reaction (279-287), poisoning (258-263), burns (213-220), head injury (233-237), feeling faint or
+fainting (299-303) and fever (304-307). Medicine is named only where the IFRC's key action names it, and never with
+an amount: the person's own inhaler or adrenaline auto-injector, and for fever "a fever medicine such as paracetamol:
+give only the dose written on the label or the prescription". Two lines are AuraHealth's own wording, not quoted
+from the IFRC: "Do not make them lie flat" (breathing; the IFRC advises a seated position) and the India examples
+(kerosene, pesticide) in the poisoning guide. The chat answers at once for these, except fever and dizziness, which
+go to the AI with the guide attached. All 17 guides are in the review PDF.
+

@@ -66,17 +66,24 @@ def phone(browser, server):
     ctx.close()
 
 
-def _check_sos(page):
-    """The emergency control is visible, opens the dialer for 112, and is not covered by anything."""
+def _open_sos(page):
+    """SOS is always in the bottom bar and not covered; it opens the emergency sheet (a second tap calls)."""
     sos = page.get_by_test_id("sos")
     expect(sos).to_be_visible()
-    assert sos.get_attribute("href") == "tel:112"
     box = sos.bounding_box()
     on_top = page.evaluate(
         "([x, y]) => !!document.elementFromPoint(x, y)?.closest('[data-testid=sos]')",
         [box["x"] + box["width"] / 2, box["y"] + box["height"] / 2],
     )
     assert on_top, "emergency control is covered"
+    sos.click()
+    expect(page.get_by_test_id("sos-call")).to_have_attribute("href", "tel:112")
+
+
+def _check_sos(page):
+    _open_sos(page)
+    page.keyboard.press("Escape")
+    expect(page.get_by_test_id("sos-call")).to_have_count(0)
 
 
 def _next(page):
@@ -161,27 +168,62 @@ def test_full_handoff_keeps_emergency_reachable_and_stays_local(phone):
     assert hosts == {urlparse(base).netloc}, f"requests left the laptop: {hosts}"
 
 
+def test_emergency_answer_shows_its_call_button_above_the_typing_box(phone):
+    page, _, base = phone
+    page.goto(base)
+    page.get_by_test_id("nav-chat").click()
+    page.get_by_test_id("chat-text").fill("my mother is not breathing")
+    page.get_by_test_id("chat-send").click()
+    call = page.get_by_test_id("chat-call")
+    expect(call).to_be_visible()
+    page.wait_for_timeout(300)  # the scroll to the newest answer runs on the next frame
+    box = call.bounding_box()
+    typing = page.locator(".chat-input").bounding_box()
+    assert box["y"] >= 0 and box["y"] + box["height"] <= typing["y"], (box, typing)
+
+
+def test_phone_back_key_closes_the_menu_and_the_sheet_first(phone):
+    page, _, base = phone
+    page.goto(base)
+    back = "window.auraBack()"
+    assert page.evaluate(back) is False  # nothing open: Android goes back a screen
+    page.get_by_test_id("menu-button").click()
+    expect(page.get_by_test_id("drawer")).to_be_visible()
+    assert page.evaluate(back) is True
+    expect(page.get_by_test_id("drawer")).to_have_count(0)
+    page.get_by_test_id("sos").click()
+    expect(page.get_by_test_id("sos-call")).to_be_visible()
+    assert page.evaluate(back) is True
+    expect(page.get_by_test_id("sos-call")).to_have_count(0)
+
+
 def test_emergency_still_works_when_the_laptop_is_unreachable(phone):
     page, _, base = phone
     page.goto(base + "/")
     expect(page.get_by_test_id("help-now")).to_be_visible()
     page.context.set_offline(True)  # the phone loses its Wi-Fi link to the laptop
     expect(page.get_by_test_id("server-down")).to_be_visible(timeout=20_000)
-    _check_sos(page)
+    _open_sos(page)
     expect(page.get_by_test_id("emergency-card").get_by_role("link")).to_have_attribute("href", "tel:112")
+    page.keyboard.press("Escape")
     page.context.set_offline(False)
 
 
 def test_telugu_is_labelled_unreviewed_with_english_under_safety_lines(phone):
     page, _, base = phone
     page.goto(base + "/")
+    page.get_by_test_id("menu-button").click()
     page.get_by_role("button", name="తెలుగు").first.click()
+    page.keyboard.press("Escape")
     expect(page.locator(".lang-strip")).to_contain_text("Unreviewed draft translation")
+    _open_sos(page)
     card = page.get_by_test_id("emergency-card")
     expect(card).to_contain_text("112 is India's emergency number")  # English baseline kept under the draft
     expect(card).to_contain_text("Nothing is called automatically")
-    _check_sos(page)
+    page.keyboard.press("Escape")
+    page.get_by_test_id("menu-button").click()
     page.get_by_role("button", name="English").first.click()
+    page.keyboard.press("Escape")
     expect(page.locator(".lang-strip")).to_have_count(0)
 
 

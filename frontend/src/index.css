@@ -302,7 +302,7 @@ mark { background: #ffe9a8; border-radius: 4px; padding: 0 2px; }
   box-shadow: var(--shadow); color: var(--ink);
 }
 .tile:hover { border-color: var(--accent); }
-.tile-icon { width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.tile-icon { flex: none; width: 42px; height: 42px; border-radius: 14px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
 .tile-title { font-weight: 750; font-size: 18px; }
 .tile-sub { font-size: 14px; color: var(--muted); }
 .tile-night { background: linear-gradient(160deg, #182a45 0%, #0e1a2e 100%); border-color: #22375a; color: #eef3ff; }
@@ -390,13 +390,62 @@ mark { background: #ffe9a8; border-radius: 4px; padding: 0 2px; }
 .bubble-actions .btn.sos { min-height: 56px; font-size: 19px; }
 .bubble-source { display: block; margin-top: 8px; font-size: 12px; color: var(--muted); }
 .chat-examples { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-.chat-input { display: grid; gap: 8px; position: sticky; bottom: 0; background: var(--bg); padding: 8px 0; }
-.chat-input textarea { min-height: 56px; resize: vertical; }
-.chat-buttons { display: flex; gap: 10px; }
-.chat-buttons .btn.primary { flex: 1; }
-.btn.mic { background: var(--accent-soft); color: var(--accent); width: 64px; padding: 0; border: 2px solid var(--accent); }
+.chat-input { display: flex; align-items: flex-end; gap: 8px; position: sticky; bottom: 0; background: var(--bg); padding: 8px 0; }
+.chat-input textarea { flex: 1; min-width: 0; min-height: 52px; resize: none; }
+.chat-input .btn { flex: none; width: 52px; height: 52px; min-height: 52px; padding: 0; }
+.btn.mic { background: var(--accent-soft); color: var(--accent); border: 2px solid var(--accent); }
 .btn.mic.on { background: var(--sos); color: #fff; border-color: var(--sos); animation: mic-pulse 1.2s ease-in-out infinite; }
 @keyframes mic-pulse { 50% { box-shadow: 0 0 0 8px rgba(179, 38, 30, 0.18); } }
 @media (prefers-reduced-motion: reduce) { .btn.mic.on { animation: none; } }
 label.row { flex-wrap: nowrap; }
 label.row > span { min-width: 0; }
+
+/* ---------- app shell: menu, profile, bottom bar with SOS (2 Nov) ---------- */
+:root { --nav-h: 70px; }
+main { padding-bottom: calc(var(--nav-h) + 40px + env(safe-area-inset-bottom)); }
+.icon-btn.plain { border: 0; background: transparent; padding: 0; min-width: 44px; color: var(--ink); }
+.topbar-inner .brand { padding-left: 0; }
+.avatar { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--accent); color: var(--accent-ink); display: inline-grid; place-items: center; font-weight: 800; font-size: 19px; cursor: pointer; flex: none; }
+.avatar.big { width: 52px; height: 52px; font-size: 22px; }
+.avatar.huge { width: 84px; height: 84px; font-size: 36px; }
+.bottom-nav {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 30;
+  display: grid; grid-template-columns: repeat(5, 1fr); align-items: end;
+  background: rgba(255, 253, 249, 0.97); backdrop-filter: blur(8px);
+  border-top: 1px solid var(--line); height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom);
+}
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; height: var(--nav-h); border: 0; background: none; color: var(--muted); font-size: 12.5px; font-weight: 650; cursor: pointer; }
+.nav-item.on { color: var(--accent); }
+.nav-item.on svg { transform: translateY(-1px); }
+.nav-sos { height: var(--nav-h); border: 0; background: none; display: grid; place-items: center; cursor: pointer; }
+.nav-sos-ring {
+  width: 62px; height: 62px; margin-top: -22px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--sos); color: #fff; font-weight: 900; letter-spacing: 0.04em; font-size: 16px;
+  border: 4px solid var(--paper); box-shadow: 0 6px 18px rgba(179, 38, 30, 0.35);
+}
+.chat-input { bottom: calc(var(--nav-h) + env(safe-area-inset-bottom)); }
+.chat-screen { margin-bottom: -32px; }
+.drawer-backdrop { position: fixed; inset: 0; z-index: 60; background: rgba(15, 30, 29, 0.45); display: flex; }
+.drawer {
+  width: min(320px, 84vw); height: 100%; background: var(--paper); display: flex; flex-direction: column;
+  padding: max(16px, env(safe-area-inset-top)) 12px max(16px, env(safe-area-inset-bottom)); overflow: auto;
+  box-shadow: 8px 0 30px rgba(15, 30, 29, 0.2); animation: drawer-in 0.18s ease-out;
+}
+@keyframes drawer-in { from { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .drawer { animation: none; } }
+.drawer-profile { display: flex; align-items: center; gap: 12px; text-align: left; border: 0; background: var(--accent-soft); border-radius: 18px; padding: 12px; cursor: pointer; color: var(--ink); font-size: 17px; }
+.drawer-list { display: grid; gap: 2px; margin: 12px 0; }
+.drawer-item { display: flex; align-items: center; gap: 14px; min-height: 52px; padding: 0 12px; border: 0; background: none; border-radius: 12px; font-size: 17px; font-weight: 600; color: var(--ink); cursor: pointer; text-align: left; }
+.drawer-item:hover, .drawer-item:focus-visible { background: var(--accent-soft); }
+.drawer-item svg { color: var(--accent); flex: none; }
+.drawer-foot { margin-top: auto; padding: 8px 12px 0; }
+.greeting { margin: 0; color: var(--accent); font-weight: 700; font-size: 17px; }
+.setup-card, .profile-row { display: flex; align-items: center; gap: 14px; width: 100%; text-align: left; border: 1px solid var(--line); background: var(--card); border-radius: 18px; padding: 14px; cursor: pointer; color: var(--ink); font-size: 17px; }
+.setup-card { border: 2px dashed var(--accent); }
+.profile-head { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 8px 0; }
+.profile-list { display: grid; gap: 8px; padding: 10px; }
+.profile-list .profile-row { border: 0; border-radius: 14px; }
+.profile-list .profile-row:hover { background: var(--accent-soft); }
+/* SOS stays reachable above any open sheet; sheets leave room for the bottom bar. */
+.bottom-nav { z-index: 45; }
+.sheet { padding-bottom: calc(var(--nav-h) + 20px + env(safe-area-inset-bottom)); }

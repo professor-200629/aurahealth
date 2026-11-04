@@ -123,6 +123,11 @@ Kept up to date so work can resume if context is lost. `[x]` = done and checked,
       made again
 - [x] 2 Nov: Aura vs August on the phone, 10 questions, rules fixed first (docs/AUGUST_VS_AURA.md): Aura 76/80 after
       fixes (blind reviewer 76), August 25-44/80. Low blood sugar guide added (IFRC 2020 pp. 291-294), so "sugar if awake and able to swallow" is now said
+- [x] 2 Nov evening: real app layout (side menu, profile without login, bottom bar with SOS that opens an emergency
+      sheet), laptop banner hidden in the app, chat retries a stuck AI call and never blocks a new question,
+      health readings answered on the phone (NHS / AHA / ADA thresholds), 7 more IFRC guides (17 in all)
+- [x] 4 Nov: this build tested on the Galaxy A36. Fixed what that found: Call button hidden behind the typing box,
+      Back key leaving the app with the menu open, fever and dizzy answered at once with the AI added after
 - [ ] Country choice: only India (112) is set up; other countries need a sourced emergency number first
 
 ## Open decisions for the developer

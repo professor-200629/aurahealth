@@ -81,11 +81,12 @@ final class AiClient {
                             .put("max_tokens", 1500)
                             .put("response_format", new JSONObject().put("type", "json_object"))
                             .put("reasoning_effort", "low");  // same settings as the laptop (backend/src/aurahealth/ai.py)
-                    String[] r = post(body, key);
+                    int readMs = Math.max(10_000, Math.min(req.optInt("timeoutMs", 90_000), 120_000));
+                    String[] r = post(body, key, readMs);
                     if (r[0].equals("400") || r[0].equals("422")) {  // a host may reject the optional settings
                         body.remove("response_format");
                         body.remove("reasoning_effort");
-                        r = post(body, key);
+                        r = post(body, key, readMs);
                     }
                     int code = Integer.parseInt(r[0]);
                     if (code == 401 || code == 403) out.put("ok", false).put("error", "key_rejected");
@@ -120,11 +121,11 @@ final class AiClient {
     }
 
     /** POST the body; returns {status code, response text}. The key goes only in the Authorization header. */
-    private static String[] post(JSONObject body, String key) throws IOException {
+    private static String[] post(JSONObject body, String key, int readMs) throws IOException {
         HttpURLConnection conn = (HttpURLConnection) new URL(API).openConnection();
         try {
             conn.setConnectTimeout(10_000);
-            conn.setReadTimeout(90_000);
+            conn.setReadTimeout(readMs);
             conn.setRequestMethod("POST");
             conn.setDoOutput(true);
             conn.setRequestProperty("Content-Type", "application/json");

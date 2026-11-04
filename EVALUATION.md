@@ -17,8 +17,8 @@ safety or usability validation.
 
 | Suite | Command | Result |
 | --- | --- | --- |
-| API and safety rules | `uv run pytest -q` | **49 passed** (2 Nov, after the August comparison fixes) |
-| Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **7 passed** (2 Nov, 00:33). At 12:50 and 13:00 the guide-finder test failed twice: NVIDIA's free API did not answer within its 60 s limit (the same hour the chat test had timeouts); the other 6 passed |
+| API and safety rules | `uv run pytest -q` | **51 passed** (4 Nov) |
+| Browser end-to-end (Edge, 375×812, touch) | `$env:AURA_E2E="1"; uv run pytest tests/test_e2e.py -v` | **9 tests.** 4 Nov: 7 passed in a full run; the 2 new ones (Call button above the typing box, Back key) failed there from a mistake in the tests themselves, were corrected and passed in a rerun with 2 of the others. 2 Nov, 00:33: 7 passed. At 12:50 and 13:00 the guide-finder test failed twice: NVIDIA's free API did not answer within its 60 s limit (the same hour the chat test had timeouts); the other 6 passed |
 
 What the API tests check (model output is injected, no model call):
 
@@ -257,6 +257,40 @@ Round 3 (same day): a 10th guide, "Low blood sugar (diabetes)" from IFRC 2020 pp
 confused diabetic now gets "give something sugary if awake and able to swallow" at once; Aura scored 75/80 that run
 (model wording varies between runs). August answered everyday questions faster (7–11 s vs 12–17 s); Aura answered emergencies in 0.1 s.
 Scores are by AI, not by a clinician.
+
+## 2g. Health readings and the new guides (2 Nov 2026, evening)
+
+Checked in the browser preview (phone size) with fictional messages; the same code runs in the APK:
+
+- Readings answered at once on the phone: "temperature it showing 99.9" → 37.7°C, a little above normal, not a
+  fever (NHS: 38°C / 100.4°F); "fever 102 F" → high, home care and when to see a doctor or call 112; "temp 40.2 C" →
+  very high, call 112 or get urgent help; "BP is 190/125" → the AHA symptoms that mean call 112, otherwise re-measure
+  and call the doctor; "bp 150/95" → stage 2, not an emergency on its own; "sugar 62" → low, sugar if awake (Low
+  blood sugar guide); "glucose 48 and she is confused" → serious, call 112; "oxygen 91" → re-check, 92% or below call
+  112; "spo2 96" → normal. Not misread: "his hba1c is 7.5" and "Meeting at 10/30" go to the AI.
+- New guides answered at once: a burn from hot tea, swelling lips after peanuts, drinking kerosene, a fall with a
+  head hit, an asthma attack, each with its first steps and its guide. 51 API tests pass, including these.
+- While a slow AI answer is pending, new questions are still answered (before this fix they were silently ignored).
+- Browser tests updated for the SOS sheet; the full-handoff test passed after SOS was kept above open sheets.
+
+**On the phone (Galaxy A36, debug APK, 4 Nov 2026, over USB; no laptop server, fictional questions):**
+
+- Fifteen readings and emergencies were answered in 0.2-0.3 s, with no model involved: the nine readings above, a burn,
+  swelling lips, kerosene, a head hit, an asthma attack, "my mother is not breathing".
+- AI answers (Muse Glimmer, from the phone's own internet) took 6.6 to 35.9 s and, with a retry, 80-91 s; one more
+  (dizziness) did not arrive within 110 s. So the free API is often slow. "Fever" and "dizzy" now show the guide's first
+  steps at once (0.3 s) and the AI's answer is added below when it comes; if it never comes, nothing is lost.
+- The phone test found real bugs that the browser had not, now fixed and re-tested on the phone:
+  - The Call 112 button on an emergency answer was hidden behind the typing box until you scrolled. It is now above it
+    (browser test added).
+  - The phone's Back key left the app with the side menu open. It now closes the menu or sheet first, then goes back
+    one screen (Family → Medicines), then leaves (browser test added for the first part).
+  - "Glucose 48 and she is confused" said "if they are awake, give sugar" first. It now starts with Call 112.
+  - The typing box took a quarter of the screen. It is now one row.
+- Added to the fever answer: a baby needs a doctor right away at 38°C or more under 3 months, 39°C or more at 3 to 6
+  months (NHS, "High temperature (fever) in children").
+- Not tested on the phone in this round: saving a profile name (the phone's real data was left alone; it was tested in
+  the browser), a spoken question, tapping Taken on a reminder, a real missed-dose text, a real night-guard alert.
 
 ## 3. Report reader (Meta Llama 3.2 Vision 11B)
 

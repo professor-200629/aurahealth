@@ -634,12 +634,12 @@ def test_chat_emergency_words_always_show_the_call_button_and_a_guide():
     assert "emergency_added" in out["checks"] and "guides_added" in out["checks"]
     assert chat.red_flags("She is not bleeding and has no chest pain") == (False, [])
     assert chat.red_flags("Amma's face is drooping and her speech is slurred") == (True, ["stroke"])
-    assert chat.red_flags("he swallowed a lot of pills") == (True, [])
+    assert chat.red_flags("he swallowed a lot of pills") == (True, ["poisoning"])
 
 
 def test_chat_never_shows_a_medicine_amount_or_an_unknown_guide_or_action():
     from aurahealth import chat
-    raw = json.dumps({"reply": "Give her 2 tablets of paracetamol now.", "guides": ["cpr", "fever", "choking"],
+    raw = json.dumps({"reply": "Give her 2 tablets of paracetamol now.", "guides": ["cpr", "migraine", "choking"],
                       "action": "order_medicine"})
     out = chat.check(raw, "Can I give my mother something for fever?", "112")
     assert "tablets" not in out["reply"] and "doctor or pharmacist" in out["reply"]
@@ -700,3 +700,24 @@ def test_low_blood_sugar_points_to_its_guide_and_says_sugar_only_if_awake():
     guide = packs.guides()["guides"]["low_sugar"]
     assert guide["steps"][0]["kind"] == "question" and "swallow" in guide["steps"][0]["text"]
     assert "awake and can swallow" in guide["chat_now"] and "low_sugar" not in guidefinder.CHOICES
+
+
+def test_the_new_guides_are_sourced_and_the_chat_points_to_them():
+    from aurahealth import chat
+    guides = packs.guides()["guides"]
+    for gid in ("breathing", "allergy", "poisoning", "burns", "head_injury", "faint", "fever", "low_sugar"):
+        g = guides[gid]
+        assert g["source_pages"] and g["chat_now"] and gid in chat.CHOICES
+    cases = {
+        "My son spilled hot tea on his arm and it is burnt": ["burns"],
+        "Her lips and tongue are swelling after eating peanuts": ["allergy"],
+        "Grandpa drank kerosene by mistake": ["poisoning"],
+        "She is wheezing and having an asthma attack": ["breathing"],
+        "Dad fell in the bathroom and hit his head": ["head_injury"],
+        "I feel faint and light-headed": ["faint"],
+    }
+    for text, want in cases.items():
+        assert chat.red_flags(text) == (True, want), text
+    assert chat.red_flags("I have heartburn after dinner") == (False, [])  # not a burn
+    assert chat.red_flags("Mom has a fever since yesterday") == (False, [])  # fever goes to the AI, with its guide attached
+

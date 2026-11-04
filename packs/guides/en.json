@@ -492,6 +492,408 @@
           "goto": "guide:check"
         }
       ]
+    },
+    {
+      "id": "breathing",
+      "chat_now": "Help them sit up, leaning forward with their arms resting on something, and loosen tight clothes. If they have an inhaler, help them use it. Call {number} now if it does not help within a few minutes or there is none, if they cannot speak, their lips turn blue, or they get confused or sleepy.",
+      "title": "Breathing difficulty or asthma attack",
+      "when": "Short of breath, wheezing, or an asthma attack.",
+      "source_pages": "175-183",
+      "steps": [
+        {
+          "id": "sit",
+          "kind": "action",
+          "text": "Help them sit up, leaning forward with their arms resting on a table or on their knees. Stay calm and reassure them.",
+          "log": "Helped them sit up"
+        },
+        {
+          "id": "inhaler",
+          "kind": "action",
+          "text": "If they have their own inhaler or medicine for this, help them use it. Loosen tight clothing and move them away from smoke or dust.",
+          "log": "Helped with their inhaler"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} now if: there is no inhaler and it lasts more than a few minutes, the inhaler does not help within a few minutes, it is very hard to breathe or speak, their lips or fingers turn blue, they get confused or sleepy, or their breathing becomes slow and quieter as they tire.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "stay",
+          "kind": "action",
+          "text": "Stay with them, calm and sitting up, until their breathing is normal. They may use their inhaler again as their doctor prescribed.",
+          "log": "Stayed with them"
+        }
+      ],
+      "do_not": [
+        "Do not make them lie flat."
+      ],
+      "notes": [
+        "Fast breathing from panic (with dizziness or tingling hands): take them somewhere quiet and ask them to breathe slowly into their cupped hands.",
+        "If they stop responding, open \"Someone collapsed: start here\"."
+      ],
+      "links": [
+        {
+          "label": "They stopped responding",
+          "goto": "guide:check"
+        }
+      ]
+    },
+    {
+      "id": "allergy",
+      "chat_now": "If the lips, tongue or throat swell, or breathing is hard, call {number} now: it may be a severe allergic reaction. If they have an adrenaline (epinephrine) auto-injector, help them use it in the middle of the outer thigh. Help them lie down, or sit up if breathing is hard.",
+      "title": "Severe allergic reaction",
+      "when": "Swelling of the lips, tongue or throat, hives, or trouble breathing after a food, a sting or a medicine.",
+      "source_pages": "279-287",
+      "steps": [
+        {
+          "id": "severe",
+          "kind": "question",
+          "text": "Is it severe: swelling of the lips, tongue or throat, trouble breathing or wheezing, or feeling faint?",
+          "log": "Signs of a severe reaction",
+          "choices": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "goto": "next"
+            },
+            {
+              "id": "no",
+              "label": "No, only an itchy rash or sneezing",
+              "goto": "mild"
+            }
+          ]
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} now. Say it may be a severe allergic reaction (anaphylaxis).",
+          "log": "Called {number}"
+        },
+        {
+          "id": "pen",
+          "kind": "action",
+          "text": "If they have their own adrenaline (epinephrine) auto-injector, help them use it now in the middle of the outer thigh. It can go through thin clothes. Tell the ambulance team when it was given.",
+          "log": "Helped with their auto-injector"
+        },
+        {
+          "id": "position",
+          "kind": "action",
+          "text": "Help them lie down. If breathing is hard, help them sit up instead.",
+          "log": "Lying down, or sitting if breathing is hard"
+        },
+        {
+          "id": "watch",
+          "kind": "action",
+          "text": "Keep watching their breathing and whether they respond. If they are not better 5 to 10 minutes after the injection and have a second one, it may be used.",
+          "log": "Watched breathing and response",
+          "end": true
+        },
+        {
+          "id": "mild",
+          "kind": "action",
+          "text": "For a mild reaction: move them away from what caused it, or rinse it off the skin, and help them take their own allergy medicine if they have it. Watch for any of the severe signs.",
+          "log": "Mild reaction: removed the cause"
+        }
+      ],
+      "do_not": [
+        "Do not wait to see if it gets better when the lips, tongue or throat swell or breathing is hard."
+      ],
+      "notes": [
+        "A severe reaction can come back: watch them closely for the next three days.",
+        "Someone who has had a severe reaction should always carry an allergy card."
+      ],
+      "links": [
+        {
+          "label": "They stopped responding",
+          "goto": "guide:check"
+        }
+      ]
+    },
+    {
+      "id": "poisoning",
+      "chat_now": "Stop more contact with the poison: take it away, or get them into fresh air if it is safe for you. Call {number} and say what it was, how much and when. Do not make them vomit. Keep the bottle or packet.",
+      "title": "Poisoning",
+      "when": "Swallowed medicines, a chemical, kerosene, a pesticide or a plant, or breathed in gas or smoke.",
+      "source_pages": "258-263",
+      "steps": [
+        {
+          "id": "stop",
+          "kind": "action",
+          "text": "Stop more contact with the poison. Take it away from them. With gas or smoke, get them into fresh air only if it is safe for you.",
+          "log": "Stopped more contact with the poison"
+        },
+        {
+          "id": "what",
+          "kind": "action",
+          "text": "Find out what it was, how much and when. Touch the packet only if it is safe.",
+          "log": "Found out what, how much and when"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} and tell them what it was, how much and when. Follow their instructions.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "side",
+          "kind": "action",
+          "text": "Help them into a comfortable position, on their left side if possible. Watch their breathing and whether they respond.",
+          "log": "On their left side, watched breathing"
+        },
+        {
+          "id": "keep",
+          "kind": "action",
+          "text": "Keep the bottles, packets or labels to give to the ambulance team.",
+          "log": "Kept the packets for the ambulance team"
+        }
+      ],
+      "do_not": [
+        "Do not make them vomit: it can damage the throat.",
+        "If they swallowed a strong chemical (such as acid, bleach or drain cleaner), do not give water or milk to dilute it."
+      ],
+      "notes": [
+        "Poisoning can look like a fit, a stroke or low blood sugar.",
+        "Keep medicines and chemicals locked away and out of reach of children."
+      ],
+      "links": [
+        {
+          "label": "They stopped responding",
+          "goto": "guide:check"
+        }
+      ]
+    },
+    {
+      "id": "burns",
+      "chat_now": "Cool the burn under clean running water now, for at least 10 minutes and best 20. Take off rings and clothes near it unless they are stuck. Call {number} if the burn is large or deep, on the face, mouth, throat or private parts, or from flames, electricity or a chemical.",
+      "title": "Burns",
+      "when": "Burned by fire, hot water, oil, steam, a chemical or electricity.",
+      "source_pages": "213-220",
+      "steps": [
+        {
+          "id": "safe",
+          "kind": "action",
+          "text": "Make it safe first: stop the heat, for example cover a burning pot. With electricity, switch it off before you touch them.",
+          "log": "Made it safe"
+        },
+        {
+          "id": "cool",
+          "kind": "action",
+          "text": "Cool the burn under clean running water for at least 10 minutes, best 20. Let the water flow over it gently. No running water? Use any cool, clean liquid.",
+          "log": "Cooled the burn with running water"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} if the burn is large or deep, on the face, mouth, throat or private parts, or caused by flames, electricity or a chemical. Any burn on a baby, an older person or someone with diabetes needs a doctor.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "remove",
+          "kind": "action",
+          "text": "Take off rings, bangles, watches and clothes on or near the burn, unless they are stuck to the skin.",
+          "log": "Took off jewellery and clothes near the burn"
+        },
+        {
+          "id": "cover",
+          "kind": "action",
+          "text": "After cooling, cover it loosely with cling film, a clean wet cloth or a non-stick dressing. Cover it, do not wrap it tightly: it may swell.",
+          "log": "Covered the burn"
+        },
+        {
+          "id": "watch",
+          "kind": "action",
+          "text": "Keep the rest of the body warm. Watch their breathing and whether they respond, especially for a child or an older person.",
+          "log": "Kept them warm and watched"
+        }
+      ],
+      "do_not": [
+        "Do not put ice or ice-cold water on a burn.",
+        "Do not pop blisters.",
+        "Do not pull off clothing that is stuck to the burn."
+      ],
+      "notes": [
+        "A chemical on the skin or in the eye: rinse with plenty of clean running water until the pain eases.",
+        "If the burn later gets more painful, red and warm, or they get a fever, see a doctor: it may be infected."
+      ],
+      "links": []
+    },
+    {
+      "id": "head_injury",
+      "chat_now": "Ask them to stop and rest, and watch them closely. Call {number} if they were knocked out even for a few seconds, are confused or behaving differently, vomit more than once, have weakness or tingling, double or blurred vision, a bad headache, or blood or clear fluid from the nose or ears.",
+      "title": "Head injury (fall or blow to the head)",
+      "when": "Fell, or hit their head.",
+      "source_pages": "233-237",
+      "steps": [
+        {
+          "id": "rest",
+          "kind": "action",
+          "text": "Help them stop what they were doing and rest. After a hard fall, keep their head and neck still.",
+          "log": "Stopped and rested"
+        },
+        {
+          "id": "signs",
+          "kind": "question",
+          "text": "Any of these? Knocked out even for a few seconds; confused, slurred speech or behaving differently; a fit; weakness or tingling in an arm or leg; vomiting more than once; double or blurred vision; blood or clear fluid from the nose or ears; a bad headache for more than 2 hours.",
+          "log": "Signs of a serious head injury",
+          "choices": [
+            {
+              "id": "yes",
+              "label": "Yes, one or more",
+              "goto": "call"
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "goto": "watch"
+            }
+          ]
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} now. Keep their head and neck as still as possible: you can hold the head gently with your hands. Keep watching their breathing and whether they respond.",
+          "log": "Called {number}",
+          "end": true
+        },
+        {
+          "id": "watch",
+          "kind": "action",
+          "text": "A bump, a mild headache or feeling sick: let them rest and stay with them. Keep watching for the signs above for the next 24 hours, and call {number} if one appears.",
+          "log": "Watching for 24 hours"
+        }
+      ],
+      "do_not": [
+        "Do not let them drive, use machines or play sport until all signs have gone."
+      ],
+      "notes": [
+        "Signs of a serious head injury can appear hours, or even days, later.",
+        "After a hard fall or blow, the neck may be hurt too."
+      ],
+      "links": [
+        {
+          "label": "They stopped responding",
+          "goto": "guide:check"
+        }
+      ]
+    },
+    {
+      "id": "faint",
+      "chat_now": "Help them sit or lie down where they cannot fall. If they lie down, raise their legs. Ask them to cross their legs and squeeze their leg, belly and bottom muscles. If they faint and do not wake up at once, call {number} and check their breathing.",
+      "title": "Feeling faint or fainting",
+      "when": "Dizzy, pale, about to faint, or fainted and woke up quickly.",
+      "source_pages": "299-303",
+      "steps": [
+        {
+          "id": "sit",
+          "kind": "action",
+          "text": "Help them sit or lie down on the floor, in a safe place where they cannot fall.",
+          "log": "Helped them sit or lie down"
+        },
+        {
+          "id": "press",
+          "kind": "action",
+          "text": "Ask them to cross their legs and squeeze their leg, belly and bottom muscles, or to squat. If they are lying down, you can raise their legs instead.",
+          "log": "Leg squeezing, or legs raised"
+        },
+        {
+          "id": "awake",
+          "kind": "question",
+          "text": "Did they faint and are they still not responding?",
+          "log": "Still not responding after fainting",
+          "choices": [
+            {
+              "id": "no",
+              "label": "No, they are awake",
+              "goto": "next"
+            },
+            {
+              "id": "yes",
+              "label": "Yes, not responding",
+              "goto": "guide:check"
+            }
+          ]
+        },
+        {
+          "id": "watch",
+          "kind": "action",
+          "text": "Stay with them and talk to them. Watch whether they respond and how they breathe. Give water if they are awake and can swallow, and ask what might have caused it (hunger, heat, standing for long).",
+          "log": "Stayed and watched"
+        },
+        {
+          "id": "slow",
+          "kind": "action",
+          "text": "Let them get up slowly, only when they feel better: they may feel faint again.",
+          "log": "Got up slowly"
+        }
+      ],
+      "do_not": [
+        "Do not let them stand up quickly."
+      ],
+      "notes": [
+        "A faint should last only seconds. If they do not wake up at once, it may be something more serious, such as a heart problem: call {number}.",
+        "If they fell, check for a head injury."
+      ],
+      "links": [
+        {
+          "label": "They hit their head",
+          "goto": "guide:head_injury"
+        }
+      ]
+    },
+    {
+      "id": "fever",
+      "chat_now": "Let them rest in light clothes and drink plenty of fluids. You can sponge them with lukewarm (not cold) water. Call {number} if the fever comes with a rash, confusion or a change in behaviour, trouble breathing, severe belly pain, or eyes hurting in the light with vomiting.",
+      "title": "Fever (high temperature)",
+      "when": "Temperature 38°C (100.4°F) or more, hot and sweaty, or shivering.",
+      "source_pages": "304-307",
+      "steps": [
+        {
+          "id": "rest",
+          "kind": "action",
+          "text": "Help them rest and dress lightly. Do not cover them with heavy blankets.",
+          "log": "Resting in light clothes"
+        },
+        {
+          "id": "fluids",
+          "kind": "action",
+          "text": "Give water or other fluids to drink often, to replace what they lose by sweating.",
+          "log": "Gave fluids"
+        },
+        {
+          "id": "sponge",
+          "kind": "action",
+          "text": "You can sponge them with lukewarm water if they like it. Never use cold water.",
+          "log": "Sponged with lukewarm water"
+        },
+        {
+          "id": "medicine",
+          "kind": "action",
+          "text": "If they feel really unwell, a fever medicine such as paracetamol can help: give only the dose written on the label or the prescription. Ask a doctor or pharmacist first for older people, or anyone with liver problems or on other medicines.",
+          "log": "Fever medicine as on the label"
+        },
+        {
+          "id": "call",
+          "kind": "call",
+          "text": "Call {number} now if the fever comes with a rash, a change in how they think or behave (confused, very sleepy), trouble breathing, severe belly pain, eyes hurting in the light with vomiting, or cold, pale and clammy skin.",
+          "log": "Called {number}"
+        },
+        {
+          "id": "doctor",
+          "kind": "action",
+          "text": "See a doctor soon if they are over 65, have cancer or a weak immune system, if the fever lasts more than 3 days or does not come down with the medicine, or if anything else worries you.",
+          "log": "Advised to see a doctor"
+        }
+      ],
+      "do_not": [
+        "Do not use cold water or ice: it makes the body keep its heat in and causes shivering.",
+        "Do not wrap them in thick blankets or many layers."
+      ],
+      "notes": [
+        "A fever is a temperature above 38°C (100.4°F). Above 39°C (102.5°F) it can be harmful.",
+        "Where malaria is common, see a doctor for any fever, even without other signs."
+      ],
+      "links": []
     }
   ]
 }

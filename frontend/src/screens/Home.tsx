@@ -1,9 +1,7 @@
-import { EmergencyCard } from '../components/EmergencyCard'
 import { HealthCard } from '../components/HealthCard'
 import { NearbyHelp } from '../components/NearbyHelp'
-import { LanguageToggle } from '../components/StatusSheet'
-import type { Lang } from '../types'
-import { Dual, Icon, useUi } from '../ui'
+import { clockOf, loadDoses, personName, today, useHousehold } from '../household'
+import { Icon, useUi } from '../ui'
 import { Moon } from './Guard'
 
 interface Props {
@@ -13,6 +11,7 @@ interface Props {
   notice: string
   guardOn: boolean
   inApp: boolean
+  ownerName: string
   onStart: () => void
   onHelp: () => void
   onGuard: () => void
@@ -21,12 +20,17 @@ interface Props {
   onFamily: () => void
   onResume: () => void
   onAbout: () => void
-  onLang: (l: Lang) => void
+  onProfile: () => void
 }
 
 export function Home(props: Props) {
-  const { hasSession, busy, error, notice, guardOn, inApp, onStart, onHelp, onGuard, onChat, onMeds, onFamily, onResume, onAbout, onLang } = props
+  const { hasSession, busy, error, notice, guardOn, inApp, ownerName, onStart, onHelp, onGuard, onChat, onMeds, onFamily, onResume, onAbout, onProfile } = props
   const { t } = useUi()
+  const [h] = useHousehold()
+  const next = today(h, loadDoses()).find((d) => d.status === 'upcoming' || d.status === 'due' || d.status === 'scheduled')
+  const hour = new Date().getHours()
+  const hello = hour < 12 ? 'home.morning' : hour < 17 ? 'home.afternoon' : 'home.evening'
+
   return (
     <div className="stack">
       {notice && (
@@ -35,13 +39,9 @@ export function Home(props: Props) {
         </div>
       )}
       <section className="hero stack">
-        <div className="row between">
-          <span className="prototype-badge">{t('app.prototype')}</span>
-          <LanguageToggle onChange={onLang} />
-        </div>
         <div>
-          <h1>{t('app.tagline')}</h1>
-          <p className="hero-intro">{t('home.intro')}</p>
+          <p className="greeting">{ownerName ? t(hello, { name: ownerName }) : t('home.welcome')}</p>
+          <h1 style={{ margin: '2px 0 0' }}>{t('home.question')}</h1>
         </div>
         {error && (
           <div className="banner error" role="alert">
@@ -51,28 +51,41 @@ export function Home(props: Props) {
         <button className="btn help block" onClick={onHelp} data-testid="help-now">
           <HeartPulse /> {t('home.help')}
         </button>
-        <p className="small muted" style={{ margin: '-6px 0 0' }}>
-          {t('home.helpNote')}
-        </p>
         <button className="btn talk block" onClick={onChat} data-testid="talk-aura">
           <Icon name="mic" size={24} /> {t('home.talk')}
         </button>
       </section>
 
+      {!ownerName && (
+        <button className="setup-card" onClick={onProfile} data-testid="setup-profile">
+          <span className="tile-icon">
+            <Icon name="user" />
+          </span>
+          <span>
+            <strong>{t('home.setupTitle')}</strong>
+            <span className="small muted" style={{ display: 'block' }}>
+              {t('home.setupNote')}
+            </span>
+          </span>
+        </button>
+      )}
+
       <div className="tiles">
+        <button className="tile" onClick={onMeds} data-testid="tile-meds">
+          <span className="tile-icon">
+            <Icon name="pill" />
+          </span>
+          <span className="tile-title">{t('home.meds')}</span>
+          <span className="tile-sub">
+            {next ? t('home.nextDose', { time: clockOf(next.due), name: next.name, who: personName(h, next.person) || '' }).replace(' ()', '') : t('home.medsSub')}
+          </span>
+        </button>
         <button className={`tile tile-night ${guardOn ? 'on' : ''}`} onClick={onGuard} data-testid="tile-guard">
           <span className="tile-icon">
             <Moon />
           </span>
           <span className="tile-title">{t('home.guard')}</span>
           <span className="tile-sub">{!inApp ? t('home.guardWeb') : guardOn ? t('home.guardOn') : t('home.guardOff')}</span>
-        </button>
-        <button className="tile" onClick={onMeds} data-testid="tile-meds">
-          <span className="tile-icon">
-            <Icon name="pill" />
-          </span>
-          <span className="tile-title">{t('home.meds')}</span>
-          <span className="tile-sub">{t('home.medsSub')}</span>
         </button>
         <button className="tile" onClick={onFamily} data-testid="tile-family">
           <span className="tile-icon">
@@ -95,24 +108,12 @@ export function Home(props: Props) {
         </button>
       )}
 
-      <EmergencyCard />
-
       <HealthCard onEdit={onFamily} />
 
       <NearbyHelp />
 
-      <section className="card flat">
-        <h2>{t('home.howTitle')}</h2>
-        <ol style={{ paddingLeft: 22, margin: 0 }}>
-          <li>{t('home.how1')}</li>
-          <li>{t('home.how2')}</li>
-          <li>{t('home.how3')}</li>
-        </ol>
-      </section>
-
-      <Dual k="app.prototype" className="footer-note" />
       <p className="footer-note">
-        {t('app.setup')} ·{' '}
+        {t('app.prototype')} ·{' '}
         <button className="btn ghost" onClick={onAbout}>
           {t('about.title')}
         </button>

@@ -9,7 +9,14 @@
     "stroke": "face drooping on one side, a weak arm, or sudden strange or slurred speech",
     "snakebite": "bitten by a snake, or might have been",
     "seizure": "a seizure or fit: shaking, jerking, stiffening",
-    "low_sugar": "someone with diabetes who is sweating, shaky, weak, confused or drowsy (low blood sugar)"
+    "low_sugar": "someone with diabetes who is sweating, shaky, weak, confused or drowsy (low blood sugar)",
+    "breathing": "short of breath, wheezing, an asthma attack, or struggling to breathe",
+    "allergy": "a severe allergic reaction: swelling of the lips, tongue or throat, hives, or trouble breathing after a food, sting or medicine",
+    "poisoning": "swallowed medicines, a chemical, kerosene, pesticide or plant, or breathed in gas or smoke",
+    "burns": "a burn from fire, hot water, oil, steam, a chemical or electricity",
+    "head_injury": "a fall or a blow to the head",
+    "faint": "feeling faint, dizzy and pale, about to faint, or fainted and woke up quickly",
+    "fever": "a fever or high temperature"
   },
   "actions": [
     "none",

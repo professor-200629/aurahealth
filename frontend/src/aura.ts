@@ -10,7 +10,7 @@ import { native, nativeJson, onNativeEvent } from './native'
 
 const ACTIONS = pack.actions as ChatAction[]
 const CHOICES = Object.keys(pack.choices)
-const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure', 'low_sugar']
+const GUIDE_ORDER = ['check', 'cpr', 'recovery', 'choking', 'bleeding', 'chest_pain', 'stroke', 'snakebite', 'seizure', 'low_sugar', 'breathing', 'allergy', 'poisoning', 'burns', 'head_injury', 'faint', 'fever']
 const MAX_TURNS = 10
 const MAX_CHARS = 500
 const MAX_REPLY = 600
@@ -86,8 +86,23 @@ export type PhoneAiError = 'no_key' | 'key_rejected' | 'rate_limited' | 'timeout
 
 let nextRequest = 1
 
-/** One call from the phone to Muse Glimmer. Resolves to the checked answer, or to an error name. */
-export function askFromPhone(turns: { role: string; text: string }[]): Promise<{ answer: AuraAnswer } | { error: PhoneAiError }> {
+const RETRY: PhoneAiError[] = ['timeout', 'network', 'rate_limited']
+
+/**
+ * Ask Muse Glimmer from the phone: a first try of up to 40 s, then one more of up to 50 s if it hung or the free
+ * service was busy. onRetry lets the screen say it is trying again.
+ */
+export async function askFromPhone(
+  turns: { role: string; text: string }[],
+  onRetry?: () => void,
+): Promise<{ answer: AuraAnswer } | { error: PhoneAiError }> {
+  const first = await askOnce(turns, 40000)
+  if ('answer' in first || !(RETRY.includes(first.error) || first.error.startsWith('http_5'))) return first
+  onRetry?.()
+  return askOnce(turns, 50000)
+}
+
+function askOnce(turns: { role: string; text: string }[], timeoutMs: number): Promise<{ answer: AuraAnswer } | { error: PhoneAiError }> {
   const bridge = native()
   if (!bridge?.askAi) return Promise.resolve({ error: 'no_key' })
   const id = `a${nextRequest++}`
@@ -96,13 +111,13 @@ export function askFromPhone(turns: { role: string; text: string }[]): Promise<{
     const timer = window.setTimeout(() => {
       off()
       resolve({ error: 'timeout' })
-    }, 100000)
+    }, timeoutMs + 5000)
     const off = onNativeEvent((e) => {
       if (e.type !== 'ai' || e.id !== id) return
       window.clearTimeout(timer)
       off()
       resolve(e.ok && e.content !== undefined ? { answer: check(e.content, last) } : { error: e.error ?? 'bad_response' })
     })
-    bridge.askAi!(JSON.stringify({ id, system: systemPrompt(), user: userContent(turns) }))
+    bridge.askAi!(JSON.stringify({ id, system: systemPrompt(), user: userContent(turns), timeoutMs }))
   })
 }
